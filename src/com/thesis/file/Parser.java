@@ -1,5 +1,6 @@
 package com.thesis.file;
 
+import com.sun.org.apache.bcel.internal.util.ClassPath;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.JavaClass;
@@ -17,26 +18,26 @@ public class Parser {
         mReader = new Reader(directory);
     }
 
-    public void parseClassFile(String file){
+    public JavaClass parseClassFile(String file) throws FileNotFoundException {
 
         ClassParser parser = null;
+
+        parser = new ClassParser(mReader.openClassFile(file), file);
         try {
-            parser = new ClassParser(mReader.openFile(file), file);
-            mClass =  parser.parse();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            mClass = parser.parse();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return mClass;
     }
 
     public void printCode() {
         Method[] methods = mClass.getMethods();
-        for(int i=0; i < methods.length; i++) {
+        for (int i = 0; i < methods.length; i++) {
             System.out.println(methods[i]);
 
             Code code = methods[i].getCode();
-            if(code != null) // Non-abstract method
+            if (code != null) // Non-abstract method
                 System.out.println(code);
         }
     }

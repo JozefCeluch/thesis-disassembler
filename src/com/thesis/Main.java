@@ -3,13 +3,18 @@ package com.thesis;
 import com.thesis.file.Parser;
 import org.apache.bcel.classfile.JavaClass;
 
+import java.io.FileNotFoundException;
+
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("line");
-        Parser p = new Parser("tests");
+        Parser p = new Parser("tests/example");
 
-        p.parseClassFile("Main.class");
+        try {
+            p.parseClassFile("Atom.class");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         p.printCode();
 

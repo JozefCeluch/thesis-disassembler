@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
@@ -16,19 +17,19 @@ public class ParserTest {
 
     @Before
     public void setUp() throws Exception {
-        mParser = new Parser("tests");
+        mParser = new Parser("tests/example");
     }
 
     @Test
     @Ignore
     public void testParseClassFile_correctInput() throws IOException {
-        mParser.parseClassFile("Main.class");
+        mParser.parseClassFile("Atom.class");
 //        assertNotNull(javaClass);
 //        assertEquals("com.thesis.Main", javaClass.getClassName());
     }
 
-    @Test(expected = IOException.class)
-    public void testParseClassFile_incorrectInput() throws IOException {
-        mParser.parseClassFile("Main");
+    @Test(expected = FileNotFoundException.class)
+    public void testParseClassFile_incorrectInput() throws Exception {
+        mParser.parseClassFile("Atom");
     }
 }
