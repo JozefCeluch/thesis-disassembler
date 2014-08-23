@@ -44,7 +44,9 @@ public class DecompilerClassVisitor extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-        return super.visitTypeAnnotation(typeRef, typePath, desc, visible);
+        Printer p = printer.visitClassTypeAnnotation(typeRef, typePath, desc, visible);
+        AnnotationVisitor av = cv == null ? null : cv.visitTypeAnnotation(typeRef, typePath, desc, visible);
+        return new DecompilerAnnotationVisitor(av, p);
     }
 
     @Override
@@ -61,18 +63,22 @@ public class DecompilerClassVisitor extends ClassVisitor {
 
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        return super.visitField(access, name, desc, signature, value);
+        Printer p = printer.visitField(access, name, desc, signature, value);
+        FieldVisitor fv = cv == null ? null : cv.visitField(access, name, desc, signature, value);
+        return new DecompilerFieldVisitor(fv, p);
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        cv.visitMethod(access, name, desc, signature, exceptions);
-        return super.visitMethod(access, name, desc, signature, exceptions);
+        Printer p = printer.visitMethod(access, name, desc, signature, exceptions);
+        MethodVisitor mv = cv == null ? null : cv.visitMethod(access, name, desc, signature, exceptions);
+        return new DecompilerMethodVisitor(mv, p);
     }
 
     @Override
     public void visitEnd() {
         printer.visitClassEnd();
+        //todo print
         super.visitEnd();
     }
 }
