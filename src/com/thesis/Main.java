@@ -1,7 +1,6 @@
 package com.thesis;
 
 import com.thesis.file.Parser;
-import org.apache.bcel.classfile.JavaClass;
 
 import java.io.FileNotFoundException;
 
@@ -16,7 +15,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        p.printCode();
+//        p.printCode();
 
     }
 
