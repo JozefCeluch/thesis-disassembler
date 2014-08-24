@@ -43,7 +43,7 @@ public class Parser {
         try {
             ClassReader classReader = new ClassReader(is);
             ClassNode classNode = new ClassNode();
-            ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
+            ClassVisitor classVisitor = new DecompilerClassVisitor(new PrintWriter(System.out));
             classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
             System.out.println("access: " + classNode.access);
