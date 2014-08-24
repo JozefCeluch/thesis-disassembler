@@ -4,17 +4,21 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 
+import java.io.PrintWriter;
+
 public class DecompilerClassVisitor extends ClassVisitor {
 
     private final Printer printer;
+    private  final PrintWriter printWriter;
 
-    public DecompilerClassVisitor() {
-        this(new Textifier()); //todo create own printer
+    public DecompilerClassVisitor(PrintWriter printWriter) {
+        this(new Textifier(), printWriter);
     }
 
-    public DecompilerClassVisitor(Printer printer) {
+    public DecompilerClassVisitor(Printer printer, PrintWriter printWriter) {
         super(Opcodes.ASM5);
         this.printer = printer;
+        this.printWriter = printWriter;
     }
 
     @Override
@@ -78,7 +82,10 @@ public class DecompilerClassVisitor extends ClassVisitor {
     @Override
     public void visitEnd() {
         printer.visitClassEnd();
-        //todo print
+        if (printWriter != null) {
+            printer.print(printWriter);
+            printWriter.flush();
+        }
         super.visitEnd();
     }
 }
