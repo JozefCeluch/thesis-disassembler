@@ -62,41 +62,18 @@ public class TextMaker extends Textifier {
             appendSuperClass(superName);
         }
 
-        if (isClass) {
+        if (isClass || isEnum) {
             appendInterfaces(interfaces);
         }
 
-        buf.append(" ").append(LEFT_BRACKET_NL).append(NEW_LINE);
+        appendBlockBeginning();
 
         text.add(buf.toString());
     }
 
-    private void appendInterfaces(String[] interfaces) {
-        if (interfaces != null && interfaces.length > 0) {
-            buf.append(" implements ");
-            for (int i = 0; i < interfaces.length; i++) {
-                buf.append(javaObjectName(interfaces[i]));
-                if (i < interfaces.length - 1) {
-                    buf.append(", ");
-                }
-            }
-        }
-    }
-
-    private void appendSuperClass(String superName) {
-        if (superName != null && !superName.equals("java/lang/Object")) {
-            buf.append(" extends ").append(javaObjectName(superName)).append(" ");
-        }
-    }
-
-    private void removeFromBuffer(String str) {
-        int abstractLocation = buf.indexOf(str);
-        buf.replace(abstractLocation, abstractLocation + str.length(),"");
-    }
-
     @Override
     public void visitSource(String file, String debug) {
-//        super.visitSource(file, debug); TODO
+//        super.visitSource(file, debug); TODO logging
     }
 
     @Override
@@ -414,6 +391,33 @@ public class TextMaker extends Textifier {
 
     private static boolean containsFlag(int value, int flag) {
         return (value & flag) != 0;
+    }
+
+    private void appendBlockBeginning() {
+        buf.append(" ").append(LEFT_BRACKET_NL);
+    }
+
+    private void appendInterfaces(String[] interfaces) {
+        if (interfaces != null && interfaces.length > 0) {
+            buf.append(" implements ");
+            for (int i = 0; i < interfaces.length; i++) {
+                buf.append(javaObjectName(interfaces[i]));
+                if (i < interfaces.length - 1) {
+                    buf.append(", ");
+                }
+            }
+        }
+    }
+
+    private void appendSuperClass(String superName) {
+        if (superName != null && !superName.equals("java/lang/Object")) {
+            buf.append(" extends ").append(javaObjectName(superName)).append(" ");
+        }
+    }
+
+    private void removeFromBuffer(String str) {
+        int abstractLocation = buf.indexOf(str);
+        buf.replace(abstractLocation, abstractLocation + str.length(),"");
     }
 
     private static String javaObjectName(String objectName) {

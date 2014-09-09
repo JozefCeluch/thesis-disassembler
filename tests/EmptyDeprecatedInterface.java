@@ -1,4 +1,3 @@
 @Deprecated
 public interface EmptyDeprecatedInterface {
-
 }

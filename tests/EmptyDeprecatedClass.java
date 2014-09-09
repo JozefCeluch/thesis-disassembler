@@ -1,4 +1,3 @@
 @Deprecated
 public class EmptyDeprecatedClass {
-
 }
