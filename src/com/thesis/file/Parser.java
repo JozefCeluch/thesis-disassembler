@@ -42,29 +42,29 @@ public class Parser {
         InputStream is = mReader.openClassFile(file);
         try {
             ClassReader classReader = new ClassReader(is);
-            ClassNode classNode = new ClassNode();
+//            ClassNode classNode = new ClassNode();
             ClassVisitor classVisitor = new DecompilerClassVisitor(new PrintWriter(System.out));
-            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+//            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
-            System.out.println("access: " + classNode.access);
-            for (Object field : classNode.fields) {
-                System.out.print(((FieldNode) field).access);
-                System.out.print(" ");
-                System.out.print(((FieldNode) field).name);
-                System.out.print(" ");
-                System.out.println();
-            }
-
-            for (Object field : classNode.methods) {
-                System.out.print(((MethodNode) field).access);
-                System.out.print(" ");
-                System.out.print(((MethodNode) field).name);
-                System.out.print(" ");
-                System.out.print(((MethodNode) field).desc);
-                System.out.print(" ");
-                System.out.print(((MethodNode) field).maxLocals);
-                System.out.println();
-            }
+//            System.out.println("access: " + classNode.access);
+//            for (Object field : classNode.fields) {
+//                System.out.print(((FieldNode) field).access);
+//                System.out.print(" ");
+//                System.out.print(((FieldNode) field).name);
+//                System.out.print(" ");
+//                System.out.println();
+//            }
+//
+//            for (Object field : classNode.methods) {
+//                System.out.print(((MethodNode) field).access);
+//                System.out.print(" ");
+//                System.out.print(((MethodNode) field).name);
+//                System.out.print(" ");
+//                System.out.print(((MethodNode) field).desc);
+//                System.out.print(" ");
+//                System.out.print(((MethodNode) field).maxLocals);
+//                System.out.println();
+//            }
 
 
         } catch (IOException e) {

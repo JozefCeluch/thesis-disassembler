@@ -2,7 +2,6 @@ package com.thesis.file;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.Printer;
-import org.objectweb.asm.util.Textifier;
 
 import java.io.PrintWriter;
 
@@ -12,7 +11,7 @@ public class DecompilerClassVisitor extends ClassVisitor {
     private  final PrintWriter printWriter;
 
     public DecompilerClassVisitor(PrintWriter printWriter) {
-        this(new Textifier(), printWriter);
+        this(new TextMaker(), printWriter);
     }
 
     public DecompilerClassVisitor(Printer printer, PrintWriter printWriter) {
