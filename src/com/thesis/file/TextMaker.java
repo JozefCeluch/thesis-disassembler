@@ -8,6 +8,10 @@ import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 
 public class TextMaker extends Textifier {
+    public TextMaker() {
+        super(Opcodes.ASM5);
+    }
+    //region classes
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
@@ -15,7 +19,7 @@ public class TextMaker extends Textifier {
 
     @Override
     public void visitSource(String file, String debug) {
-        super.visitSource(file, debug);
+//        super.visitSource(file, debug);
     }
 
     @Override
@@ -50,14 +54,17 @@ public class TextMaker extends Textifier {
 
     @Override
     public Textifier visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return super.visitMethod(access, name, desc, signature, exceptions);
+//        return super.visitMethod(access, name, desc, signature, exceptions);
+        return this;
     }
 
     @Override
     public void visitClassEnd() {
         super.visitClassEnd();
     }
+    //endregion
 
+    //region annotations
     @Override
     public void visit(String name, Object value) {
         super.visit(name, value);
@@ -82,7 +89,9 @@ public class TextMaker extends Textifier {
     public void visitAnnotationEnd() {
         super.visitAnnotationEnd();
     }
+    //endregion
 
+    //region fields
     @Override
     public Textifier visitFieldAnnotation(String desc, boolean visible) {
         return super.visitFieldAnnotation(desc, visible);
@@ -102,7 +111,9 @@ public class TextMaker extends Textifier {
     public void visitFieldEnd() {
         super.visitFieldEnd();
     }
+    //endregion
 
+    //region methods
     @Override
     public void visitParameter(String name, int access) {
         super.visitParameter(name, access);
@@ -145,22 +156,22 @@ public class TextMaker extends Textifier {
 
     @Override
     public void visitInsn(int opcode) {
-        super.visitInsn(opcode);
+//        super.visitInsn(opcode);
     }
 
     @Override
     public void visitIntInsn(int opcode, int operand) {
-        super.visitIntInsn(opcode, operand);
+//        super.visitIntInsn(opcode, operand);
     }
 
     @Override
     public void visitVarInsn(int opcode, int var) {
-        super.visitVarInsn(opcode, var);
+//        super.visitVarInsn(opcode, var);
     }
 
     @Override
     public void visitTypeInsn(int opcode, String type) {
-        super.visitTypeInsn(opcode, type);
+//        super.visitTypeInsn(opcode, type);
     }
 
     @Override
@@ -170,94 +181,99 @@ public class TextMaker extends Textifier {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        super.visitMethodInsn(opcode, owner, name, desc);
+//        super.visitMethodInsn(opcode, owner, name, desc);
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-        super.visitMethodInsn(opcode, owner, name, desc, itf);
+//        super.visitMethodInsn(opcode, owner, name, desc, itf);
     }
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
-        super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
+//        super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
     }
 
     @Override
     public void visitJumpInsn(int opcode, Label label) {
-        super.visitJumpInsn(opcode, label);
+//        super.visitJumpInsn(opcode, label);
     }
 
     @Override
     public void visitLabel(Label label) {
-        super.visitLabel(label);
+//        super.visitLabel(label);
     }
 
     @Override
     public void visitLdcInsn(Object cst) {
-        super.visitLdcInsn(cst);
+//        super.visitLdcInsn(cst);
     }
 
     @Override
     public void visitIincInsn(int var, int increment) {
-        super.visitIincInsn(var, increment);
+//        super.visitIincInsn(var, increment);
     }
 
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
-        super.visitTableSwitchInsn(min, max, dflt, labels);
+//        super.visitTableSwitchInsn(min, max, dflt, labels);
     }
 
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
-        super.visitLookupSwitchInsn(dflt, keys, labels);
+//        super.visitLookupSwitchInsn(dflt, keys, labels);
     }
 
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
-        super.visitMultiANewArrayInsn(desc, dims);
+//        super.visitMultiANewArrayInsn(desc, dims);
     }
 
     @Override
     public Printer visitInsnAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-        return super.visitInsnAnnotation(typeRef, typePath, desc, visible);
+//        return super.visitInsnAnnotation(typeRef, typePath, desc, visible);
+        return this;
     }
 
     @Override
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        super.visitTryCatchBlock(start, end, handler, type);
+//        super.visitTryCatchBlock(start, end, handler, type);
     }
 
     @Override
     public Printer visitTryCatchAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-        return super.visitTryCatchAnnotation(typeRef, typePath, desc, visible);
+//        return super.visitTryCatchAnnotation(typeRef, typePath, desc, visible);
+        return this;
     }
 
     @Override
     public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-        super.visitLocalVariable(name, desc, signature, start, end, index);
+//        super.visitLocalVariable(name, desc, signature, start, end, index);
     }
 
     @Override
     public Printer visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String desc, boolean visible) {
-        return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, desc, visible);
+//        return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, desc, visible);
+        return this;
     }
 
     @Override
     public void visitLineNumber(int line, Label start) {
-        super.visitLineNumber(line, start);
+//        super.visitLineNumber(line, start);
     }
 
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        super.visitMaxs(maxStack, maxLocals);
+//        super.visitMaxs(maxStack, maxLocals);
     }
 
     @Override
     public void visitMethodEnd() {
         super.visitMethodEnd();
     }
+    //endregion
 
+    //region common
     @Override
     public Textifier visitAnnotation(String desc, boolean visible) {
         return super.visitAnnotation(desc, visible);
