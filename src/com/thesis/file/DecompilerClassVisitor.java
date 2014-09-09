@@ -11,7 +11,7 @@ public class DecompilerClassVisitor extends ClassVisitor {
     private  final PrintWriter printWriter;
 
     public DecompilerClassVisitor(PrintWriter printWriter) {
-        this(new TextMaker(), printWriter);
+        this(new TextMaker(Opcodes.ASM5), printWriter);
     }
 
     public DecompilerClassVisitor(Printer printer, PrintWriter printWriter) {
