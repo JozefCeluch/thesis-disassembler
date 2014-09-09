@@ -17,7 +17,7 @@ public class ParserTest {
 
     @Before
     public void setUp() throws Exception {
-        mParser = new Parser("tests/example");
+        mParser = new Parser("tests");
     }
 
     @Test
@@ -35,7 +35,7 @@ public class ParserTest {
 
     @Test
     public void testClassParsed() throws Exception {
-        mParser.parseClassFile("XYZApp.class");
+        mParser.parseClassFile("EmptyClass.class");
     }
 
 
