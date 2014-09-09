@@ -10,10 +10,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import org.objectweb.asm.ClassReader;
 import org.apache.bcel.classfile.JavaClass;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.List;
 
 public class Parser {
@@ -38,12 +35,13 @@ public class Parser {
 //        return mClass;
 //    }
 
-    public void parseClassFile(String file) throws FileNotFoundException {
+    public String parseClassFile(String file) throws FileNotFoundException {
         InputStream is = mReader.openClassFile(file);
         try {
             ClassReader classReader = new ClassReader(is);
 //            ClassNode classNode = new ClassNode();
-            ClassVisitor classVisitor = new DecompilerClassVisitor(new PrintWriter(System.out));
+            StringWriter stringWriter = new StringWriter();
+            ClassVisitor classVisitor = new DecompilerClassVisitor(new PrintWriter(stringWriter));
 //            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 //            System.out.println("access: " + classNode.access);
@@ -66,10 +64,11 @@ public class Parser {
 //                System.out.println();
 //            }
 
-
+        return stringWriter.toString().trim();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
 //    public void printCode() {
