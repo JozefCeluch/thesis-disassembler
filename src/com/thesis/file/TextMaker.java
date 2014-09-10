@@ -1,8 +1,10 @@
 package com.thesis.file;
 
 import org.objectweb.asm.*;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceSignatureVisitor;
 
 public class TextMaker extends Textifier {
 
@@ -45,23 +47,26 @@ public class TextMaker extends Textifier {
 
 		appendDeprecatedAnnotationIfNeeded(access);
 
-		if (signature != null) {
-			//TODO handle signature
-		}
-
 		appendAccess(access & ~Opcodes.ACC_SUPER);
-		if (containsFlag(access, Opcodes.ACC_ANNOTATION)) {
-			buf.append("@interface ");
-			removeFromBuffer("abstract ");
-		} else if (containsFlag(access, Opcodes.ACC_INTERFACE)) {
-			buf.append("interface "); // interface is implicitly abstract
-			removeFromBuffer("abstract ");
-		} else if (!containsFlag(access, Opcodes.ACC_ENUM)) {
-			buf.append("class ");
-			isClass = true;
+
+		if (containsFlag(access, Opcodes.ACC_ENUM)) isEnum = true; //enum has a weird signature
+
+		if (signature != null && !isEnum) {
+			appendSignature(signature);
 		} else {
-			isEnum = true;
-			removeFromBuffer("final ");
+			if (containsFlag(access, Opcodes.ACC_ANNOTATION)) {
+				buf.append("@interface ");
+				removeFromBuffer("abstract ");
+			} else if (containsFlag(access, Opcodes.ACC_INTERFACE)) {
+				buf.append("interface "); // interface is implicitly abstract
+				removeFromBuffer("abstract ");
+			} else if (!containsFlag(access, Opcodes.ACC_ENUM)) {
+				buf.append("class ");
+				isClass = true;
+			} else {
+				isEnum = true;
+				removeFromBuffer("final ");
+			}
 		}
 
 		buf.append(name);
@@ -120,7 +125,7 @@ public class TextMaker extends Textifier {
 
 	@Override
 	public Textifier visitField(int access, String name, String desc, String signature, Object value) {
-//        return super.visitField(access, name, desc, signature, value);  //TODO
+//        return super.visitField(access, name, desc, signature, value);
 		clearBuffer();
 		if ((access & Opcodes.ACC_SYNTHETIC) == 0) { //synthetic fields are not generated back to source code
 			buf.append(NEW_LINE);
@@ -129,13 +134,13 @@ public class TextMaker extends Textifier {
 				buf.append(TAB);
 			}
 
-			if (signature != null) {
-				//todo signature
-			}
-
 			appendAccess(access);
 
-			appendType(desc);
+			if (signature != null) {
+				appendSignature(signature);
+			} else {
+				appendType(desc);
+			}
 			buf.append(name);
 			if (value != null) {
 				buf.append(" = ").append(value);
@@ -148,44 +153,73 @@ public class TextMaker extends Textifier {
 		return tm;
 	}
 
+	private void appendSignature(String signature) {
+		TraceSignatureVisitor sv = new TraceSignatureVisitor(0);
+		SignatureReader r = new SignatureReader(signature);
+		r.acceptType(sv);
+		buf.append(sv.getDeclaration()).append(" ");
+	}
+
 	private void appendType(String desc) {
 		if (desc.startsWith("L")) {
-			buf.append(javaObjectName(desc.substring(1))).append(" ");
+			appendReferenceType(desc);
 		}
 		if (desc.startsWith("[")) {
-			//todo array type
+			appendArrayReference(desc);
 		} else {
-			String type;
-			switch (desc) {
-				case "B":
-					type = "byte ";
-					break;
-				case "C":
-					type = "char ";
-					break;
-				case "D":
-					type = "double ";
-					break;
-				case "F":
-					type = "float ";
-					break;
-				case "I":
-					type = "int ";
-					break;
-				case "J":
-					type = "long ";
-					break;
-				case "s":
-					type = "short ";
-					break;
-				case "Z":
-					type = "boolean ";
-					break;
-				default:
-					type = "";
-			}
-			buf.append(type);
+			appendPrimitiveType(desc);
 		}
+	}
+
+	private void appendArrayReference(String desc) {
+		int dimensions = desc.lastIndexOf('[') + 1;
+		String type = desc.substring(dimensions);
+		if (type.startsWith("L")) {
+			appendReferenceType(type);
+		} else {
+			appendPrimitiveType(type);
+		}
+		for (int i = 0; i < dimensions; i++) {
+			buf.append("[]");
+		}
+		buf.append(" ");
+	}
+
+	private void appendReferenceType(String desc) {
+		buf.append(javaObjectName(desc.substring(1))).append(" ");
+	}
+
+	private void appendPrimitiveType(String desc) {
+		String type;
+		switch (desc) {
+			case "B":
+				type = "byte ";
+				break;
+			case "C":
+				type = "char ";
+				break;
+			case "D":
+				type = "double ";
+				break;
+			case "F":
+				type = "float ";
+				break;
+			case "I":
+				type = "int ";
+				break;
+			case "J":
+				type = "long ";
+				break;
+			case "s":
+				type = "short ";
+				break;
+			case "Z":
+				type = "boolean ";
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown primitive type");
+		}
+		buf.append(type);
 	}
 
 	private TextMaker createTextMaker() {

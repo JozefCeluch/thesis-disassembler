@@ -42,6 +42,7 @@ public class Parser {
 //            ClassNode classNode = new ClassNode();
             StringWriter stringWriter = new StringWriter();
             ClassVisitor classVisitor = new DecompilerClassVisitor(new PrintWriter(stringWriter));
+//            ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(stringWriter));
 //            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 //            System.out.println("access: " + classNode.access);
