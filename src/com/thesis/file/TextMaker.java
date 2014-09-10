@@ -84,14 +84,6 @@ public class TextMaker extends Textifier {
 		text.add(buf.toString());
 	}
 
-	private boolean appendDeprecatedAnnotationIfNeeded(int access) {
-		if (containsFlag(access, Opcodes.ACC_DEPRECATED)) {
-			buf.append("@Deprecated").append(NEW_LINE);
-			return true;
-		}
-		return false;
-	}
-
 	@Override
 	public void visitSource(String file, String debug) {
 //        super.visitSource(file, debug); TODO logging
@@ -153,84 +145,6 @@ public class TextMaker extends Textifier {
 		return tm;
 	}
 
-	private void appendSignature(String signature) {
-		TraceSignatureVisitor sv = new TraceSignatureVisitor(0);
-		SignatureReader r = new SignatureReader(signature);
-		r.acceptType(sv);
-		buf.append(sv.getDeclaration()).append(" ");
-	}
-
-	private void appendType(String desc) {
-		if (desc.startsWith("L")) {
-			appendReferenceType(desc);
-		}
-		if (desc.startsWith("[")) {
-			appendArrayReference(desc);
-		} else {
-			appendPrimitiveType(desc);
-		}
-	}
-
-	private void appendArrayReference(String desc) {
-		int dimensions = desc.lastIndexOf('[') + 1;
-		String type = desc.substring(dimensions);
-		if (type.startsWith("L")) {
-			appendReferenceType(type);
-		} else {
-			appendPrimitiveType(type);
-		}
-		for (int i = 0; i < dimensions; i++) {
-			buf.append("[]");
-		}
-		buf.append(" ");
-	}
-
-	private void appendReferenceType(String desc) {
-		buf.append(javaObjectName(desc.substring(1))).append(" ");
-	}
-
-	private void appendPrimitiveType(String desc) {
-		String type;
-		switch (desc) {
-			case "B":
-				type = "byte ";
-				break;
-			case "C":
-				type = "char ";
-				break;
-			case "D":
-				type = "double ";
-				break;
-			case "F":
-				type = "float ";
-				break;
-			case "I":
-				type = "int ";
-				break;
-			case "J":
-				type = "long ";
-				break;
-			case "s":
-				type = "short ";
-				break;
-			case "Z":
-				type = "boolean ";
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown primitive type");
-		}
-		buf.append(type);
-	}
-
-	private TextMaker createTextMaker() {
-		return new TextMaker();
-	}
-
-	private void clearBuffer() {
-		buf.setLength(0);
-	}
-    //endregion
-
     @Override
 	public Textifier visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 //        return super.visitMethod(access, name, desc, signature, exceptions); TODO
@@ -241,7 +155,7 @@ public class TextMaker extends Textifier {
 	public void visitClassEnd() {
 		super.visitClassEnd();
 	}
-
+	//endregion
 	//region annotations
 	@Override
 	public void visit(String name, Object value) {
@@ -257,7 +171,7 @@ public class TextMaker extends Textifier {
 	public Textifier visitAnnotation(String name, String desc) {
 		return super.visitAnnotation(name, desc);
 	}
-    //endregion
+
 
     @Override
 	public Textifier visitArray(String name) {
@@ -268,7 +182,7 @@ public class TextMaker extends Textifier {
 	public void visitAnnotationEnd() {
 		super.visitAnnotationEnd();
 	}
-
+	//endregion
 	//region fields
 	@Override
 	public Textifier visitFieldAnnotation(String desc, boolean visible) {
@@ -279,7 +193,6 @@ public class TextMaker extends Textifier {
 	public Printer visitFieldTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
 		return visitTypeAnnotation(typeRef, typePath, desc, visible);
 	}
-    //endregion
 
     @Override
 	public void visitFieldAttribute(Attribute attr) {
@@ -290,7 +203,7 @@ public class TextMaker extends Textifier {
 	public void visitFieldEnd() {
 		super.visitFieldEnd();
 	}
-
+	//endregion
 	//region methods
 	@Override
 	public void visitParameter(String name, int access) {
@@ -439,7 +352,7 @@ public class TextMaker extends Textifier {
 	public void visitLineNumber(int line, Label start) {
 //        super.visitLineNumber(line, start); TODO
 	}
-    //endregion
+
 
     @Override
 	public void visitMaxs(int maxStack, int maxLocals) {
@@ -450,13 +363,13 @@ public class TextMaker extends Textifier {
 	public void visitMethodEnd() {
 		super.visitMethodEnd();
 	}
-
+	//endregion
 	//region common
 	@Override
 	public Textifier visitAnnotation(String desc, boolean visible) {
 		return super.visitAnnotation(desc, visible);
 	}
-    //endregion
+
 
 	@Override
 	public Textifier visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
@@ -467,8 +380,17 @@ public class TextMaker extends Textifier {
 	public void visitAttribute(Attribute attr) {
 		super.visitAttribute(attr);
 	}
-
+	//endregion
 	//region utils
+
+	private boolean appendDeprecatedAnnotationIfNeeded(int access) {
+		if (containsFlag(access, Opcodes.ACC_DEPRECATED)) {
+			buf.append("@Deprecated").append(NEW_LINE);
+			return true;
+		}
+		return false;
+	}
+
 	private void appendAccess(int access) {
 		if (containsFlag(access, Opcodes.ACC_PRIVATE)) {
 			buf.append("private ");
@@ -536,6 +458,83 @@ public class TextMaker extends Textifier {
 	private void removeFromBuffer(String str) {
 		int abstractLocation = buf.indexOf(str);
 		buf.replace(abstractLocation, abstractLocation + str.length(), "");
+	}
+
+	private void appendSignature(String signature) {
+		TraceSignatureVisitor sv = new TraceSignatureVisitor(0);
+		SignatureReader r = new SignatureReader(signature);
+		r.acceptType(sv);
+		buf.append(sv.getDeclaration()).append(" ");
+	}
+
+	private void appendType(String desc) {
+		if (desc.startsWith("L")) {
+			appendReferenceType(desc);
+		}
+		if (desc.startsWith("[")) {
+			appendArrayReference(desc);
+		} else {
+			appendPrimitiveType(desc);
+		}
+	}
+
+	private void appendArrayReference(String desc) {
+		int dimensions = desc.lastIndexOf('[') + 1;
+		String type = desc.substring(dimensions);
+		if (type.startsWith("L")) {
+			appendReferenceType(type);
+		} else {
+			appendPrimitiveType(type);
+		}
+		for (int i = 0; i < dimensions; i++) {
+			buf.append("[]");
+		}
+		buf.append(" ");
+	}
+
+	private void appendReferenceType(String desc) {
+		buf.append(javaObjectName(desc.substring(1))).append(" ");
+	}
+
+	private void appendPrimitiveType(String desc) {
+		String type;
+		switch (desc) {
+			case "B":
+				type = "byte ";
+				break;
+			case "C":
+				type = "char ";
+				break;
+			case "D":
+				type = "double ";
+				break;
+			case "F":
+				type = "float ";
+				break;
+			case "I":
+				type = "int ";
+				break;
+			case "J":
+				type = "long ";
+				break;
+			case "s":
+				type = "short ";
+				break;
+			case "Z":
+				type = "boolean ";
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown primitive type");
+		}
+		buf.append(type);
+	}
+
+	private TextMaker createTextMaker() {
+		return new TextMaker();
+	}
+
+	private void clearBuffer() {
+		buf.setLength(0);
 	}
     //endregion
 }
