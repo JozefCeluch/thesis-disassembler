@@ -87,8 +87,14 @@ public class ParserTest {
         String result = mParser.parseClassFile("ClassWithFields.class");
         String expected = javaClassText("ClassWithFields.java");
         assertEquals(expected, result);
-
     }
+
+	@Test
+	public void testParseClassWithMethods() throws Exception {
+		String result = mParser.parseClassFile("ClassWithMethods.class");
+		String expected = javaClassText("ClassWithMethods.java");
+		assertEquals(expected, result);
+	}
 
     private static String javaClassText(String fileName) throws IOException {
         byte[] fileContents = Files.readAllBytes(Paths.get("tests/" + fileName));

@@ -1,5 +1,6 @@
 package com.thesis.file;
 
+import org.apache.bcel.generic.NEW;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.util.Printer;
@@ -147,11 +148,57 @@ public class TextMaker extends Textifier {
 
     @Override
 	public Textifier visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-//        return super.visitMethod(access, name, desc, signature, exceptions); TODO
-		return this;
+//        return super.visitMethod(access, name, desc, signature, exceptions);
+		clearBuffer();
+		buf.append(NEW_LINE);
+		buf.append(TAB);
+
+		if (appendDeprecatedAnnotationIfNeeded(access)){
+			buf.append(TAB);
+		}
+		appendAccess(access & ~Opcodes.ACC_VOLATILE);
+		if (containsFlag(access, Opcodes.ACC_NATIVE)) {
+			buf.append("native ");
+		}
+		if (containsFlag(access,Opcodes.ACC_VARARGS)) {
+			buf.append("varargs ");
+		}
+		if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
+			buf.append("bridge ");
+		}
+		if (containsFlag(accessFlags, Opcodes.ACC_INTERFACE)
+				&& !containsFlag(access, Opcodes.ACC_ABSTRACT)
+				&& !containsFlag(access, Opcodes.ACC_STATIC)) {
+			buf.append("default ");
+		}
+
+		buf.append(name);
+		if (signature != null) {
+			//todo
+		} else {
+//			appendType(desc); //todo start here
+		}
+
+		appendExceptions(exceptions);
+
+		buf.append(LEFT_BRACKET_NL);
+		text.add(buf.toString());
+		TextMaker tm = createTextMaker();
+		text.add(tm.getText());
+		return tm;
 	}
 
-    @Override
+	private void appendExceptions(String[] exceptions) {
+		if (exceptions != null && exceptions.length > 0) {
+			buf.append(" throws ");
+			for (int i = 0; i < exceptions.length; ++i) {
+				buf.append(javaObjectName(exceptions[i]));
+				buf.append(' ');
+			}
+		}
+	}
+
+	@Override
 	public void visitClassEnd() {
 		super.visitClassEnd();
 	}
@@ -212,7 +259,7 @@ public class TextMaker extends Textifier {
 
     @Override
 	public Textifier visitAnnotationDefault() {
-		return super.visitAnnotationDefault();
+		return visitAnnotationDefault();
 	}
 
     @Override
@@ -222,7 +269,7 @@ public class TextMaker extends Textifier {
 
     @Override
 	public Printer visitMethodTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-		return super.visitMethodTypeAnnotation(typeRef, typePath, desc, visible);
+		return this.visitTypeAnnotation(typeRef, typePath, desc, visible);
 	}
 
     @Override
@@ -361,7 +408,7 @@ public class TextMaker extends Textifier {
 
     @Override
 	public void visitMethodEnd() {
-		super.visitMethodEnd();
+		text.add(TAB+RIGHT_BRACKET_NL);
 	}
 	//endregion
 	//region common
@@ -470,8 +517,7 @@ public class TextMaker extends Textifier {
 	private void appendType(String desc) {
 		if (desc.startsWith("L")) {
 			appendReferenceType(desc);
-		}
-		if (desc.startsWith("[")) {
+		}else if (desc.startsWith("[")) {
 			appendArrayReference(desc);
 		} else {
 			appendPrimitiveType(desc);
