@@ -2,6 +2,7 @@ package com.thesis.file;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceSignatureVisitor;
@@ -18,6 +19,7 @@ public class TextMaker extends Textifier {
 	private static final String TAB = "\t";
 	private int accessFlags;
 	private String className;
+	private boolean isEnum;
 
 	public TextMaker(int api) {
 		super(api);
@@ -38,13 +40,11 @@ public class TextMaker extends Textifier {
 	//region classes
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-//        super.visit(version, access, name, signature, superName, interfaces);
 		accessFlags = access;
 		className = name;
 		int major = version & 0xFFFF;
 		int minor = version >>> 16;
 		boolean isClass = false;
-		boolean isEnum = false;
 
 		clearBuffer();
 //        todo print to log file
@@ -57,7 +57,7 @@ public class TextMaker extends Textifier {
 		if (containsFlag(access, Opcodes.ACC_ENUM)) isEnum = true; //enum has a weird signature
 
 		if (signature != null && !isEnum) {
-			appendSignature(signature);
+			appendFieldSignature(signature);
 		} else {
 			if (containsFlag(access, Opcodes.ACC_ANNOTATION)) {
 				buf.append("@interface ");
@@ -122,7 +122,6 @@ public class TextMaker extends Textifier {
 
 	@Override
 	public Textifier visitField(int access, String name, String desc, String signature, Object value) {
-//        return super.visitField(access, name, desc, signature, value);
 		clearBuffer();
 		if (!containsFlag(access, Opcodes.ACC_SYNTHETIC)) { //synthetic fields are not generated back to source code
 			buf.append(NEW_LINE);
@@ -134,7 +133,7 @@ public class TextMaker extends Textifier {
 			appendAccess(access);
 
 			if (signature != null) {
-				appendSignature(signature);
+				appendFieldSignature(signature);
 			} else {
 				appendType(desc);
 			}
@@ -144,15 +143,16 @@ public class TextMaker extends Textifier {
 			}
 			buf.append(";" + NEW_LINE);
 		}
-		return addBufferToTextAndReturnTextMaker();
+		return addBufferToTextAndReturnNewInstance();
 	}
 
-    @Override
+	@Override
 	public Textifier visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-//        return super.visitMethod(access, name, desc, signature, exceptions);
 		clearBuffer();
+
 		boolean hasVarargs = false;
-		if (!containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
+
+		if (!containsFlag(access, Opcodes.ACC_SYNTHETIC) && !containsFlag(access, Opcodes.ACC_BRIDGE)) {
 			buf.append(NEW_LINE);
 			buf.append(TAB);
 
@@ -161,120 +161,48 @@ public class TextMaker extends Textifier {
 			}
 
 			appendAccess(access & ~Opcodes.ACC_VOLATILE);
+
 			if (containsFlag(access, Opcodes.ACC_NATIVE)) {
 				buf.append("native ");
 			}
 			if (containsFlag(access, Opcodes.ACC_VARARGS)) {
-				int transientPosition = buf.indexOf("transient ");
-				if (transientPosition > -1) {
-					buf.replace(transientPosition, transientPosition + "transient ".length(), "");
-				}
+				removeFromBuffer("transient ");
 				hasVarargs = true;
 			}
-			if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
-				buf.append("bridge ");
-			}
-			if (containsFlag(accessFlags, Opcodes.ACC_INTERFACE)
-					&& !containsFlag(access, Opcodes.ACC_ABSTRACT)
+			if (containsFlag(accessFlags, Opcodes.ACC_INTERFACE) && !containsFlag(access, Opcodes.ACC_ABSTRACT)
 					&& !containsFlag(access, Opcodes.ACC_STATIC)) {
 				buf.append("default ");
+			}
+
+			String genericDecl = null;
+			String genericReturn = null;
+			String genericExceptions = null;
+			if (signature != null) {
+				DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0);
+				SignatureReader r = new SignatureReader(signature);
+				r.accept(v);
+				genericDecl = v.getDeclaration();
+				genericReturn = v.getReturnType();
+				genericExceptions = v.getExceptions();
+
+				if (genericDecl.startsWith("<")) {
+					int gtPosition = genericDecl.indexOf('>') + 1;
+					genericReturn = genericDecl.substring(0, gtPosition)+ " " + genericReturn;
+					genericDecl = genericDecl.substring(gtPosition);
+				}
 			}
 
 			if (name.equals("<init>")) {
 				buf.append(className);
 			} else {
-				appendMethodReturnType(desc);
+				appendMethodReturnType(desc, genericReturn);
 				buf.append(name);
 			}
-			if (signature != null) {
-				System.out.println(signature);
-			} else {
-				appendMethodArgs(desc, hasVarargs);
-
-			}
-
-			appendExceptions(exceptions);
-
+			appendMethodArgs(desc, genericDecl, hasVarargs);
+			appendExceptions(exceptions, genericExceptions);
 			buf.append(" ").append(LEFT_BRACKET_NL);
 		}
-		return addBufferToTextAndReturnTextMaker();
-	}
-
-	private Textifier addBufferToTextAndReturnTextMaker() {
-		text.add(buf.toString());
-		TextMaker tm = createTextMaker();
-		text.add(tm.getText());
-		return tm;
-	}
-
-	private void appendMethodArgs(String desc, boolean hasVarargs) {
-		buf.append("(");
-		int closingBracketPosition = desc.lastIndexOf(')');
-		String args = desc.substring(1, closingBracketPosition);
-		String[] splitArgs = splitMethodArguments(args);
-		for(int i = 0; i < splitArgs.length; i++) {
-			if (!splitArgs[i].isEmpty()) {
-				appendType(splitArgs[i]);
-				if (hasVarargs && (i == splitArgs.length - 1)) {
-					buf.replace(buf.length() - 3, buf.length(), "... ");
-				}
-				buf.append("arg").append(i);
-				if (i < splitArgs.length - 1) {
-					buf.append(", ");
-				}
-			}
-		}
-		buf.append(")");
-	}
-
-	private String[] splitMethodArguments(final String args){
-		if (args.isEmpty()) {
-			return new String[0];
-		}
-		List<String> argumentList = new ArrayList<>();
-		for (int i = 0; i < args.length();) {
-			String brackets = "";
-			int bracketEnd = i;
-
-			if (args.charAt(i) == '[') {
-				while (args.charAt(bracketEnd) == '['){
-					bracketEnd++;
-				}
-				brackets = args.substring(i, bracketEnd);
-			}
-
-			String arg = brackets + getTypeIndicator(args.substring(bracketEnd));
-			argumentList.add(arg);
-			i += arg.length();
-		}
-
-		return argumentList.toArray(new String[argumentList.size()]);
-	}
-
-	private String getTypeIndicator(String args) {
-		if (args.startsWith("L")) {
-			int positionAfterSemicolon = args.indexOf(';') + 1;
-			String objectType = args.substring(0, positionAfterSemicolon);
-			return objectType;
-		} else {
-			return args.substring(0, 1);
-		}
-	}
-
-	private void appendMethodReturnType(String desc) {
-		int closingBracketPosition = desc.lastIndexOf(')');
-		appendType(desc.substring(closingBracketPosition + 1));
-	}
-
-	private void appendExceptions(String[] exceptions) {
-		if (exceptions != null && exceptions.length > 0) {
-			buf.append(" throws ");
-			for (int i = 0; i < exceptions.length; ++i) {
-				buf.append(javaObjectName(exceptions[i]));
-				if (i < exceptions.length - 1)
-					buf.append(' ');
-			}
-		}
+		return addBufferToTextAndReturnNewInstance();
 	}
 
 	@Override
@@ -577,12 +505,13 @@ public class TextMaker extends Textifier {
 	}
 
 	private void removeFromBuffer(String str) {
-		int abstractLocation = buf.indexOf(str);
-		buf.replace(abstractLocation, abstractLocation + str.length(), "");
+		int location = buf.indexOf(str);
+		if (location > -1)
+			buf.replace(location, location + str.length(), "");
 	}
 
-	private void appendSignature(String signature) {
-		TraceSignatureVisitor sv = new TraceSignatureVisitor(0);
+	private void appendFieldSignature(String signature) {
+		DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
 		SignatureReader r = new SignatureReader(signature);
 		r.acceptType(sv);
 		buf.append(sv.getDeclaration()).append(" ");
@@ -651,6 +580,95 @@ public class TextMaker extends Textifier {
 				throw new IllegalArgumentException("Unknown primitive type");
 		}
 		buf.append(type);
+	}
+
+	private TextMaker addBufferToTextAndReturnNewInstance() {
+		text.add(buf.toString());
+		TextMaker tm = createTextMaker();
+		text.add(tm.getText());
+		return tm;
+	}
+
+	private void appendMethodArgs(String desc, String genericDecl, boolean hasVarargs) {
+		if (genericDecl != null) {
+			buf.append(genericDecl);
+		} else {
+			buf.append("(");
+			int closingBracketPosition = desc.lastIndexOf(')');
+			String args = desc.substring(1, closingBracketPosition);
+			String[] splitArgs = splitMethodArguments(args);
+			for (int i = 0; i < splitArgs.length; i++) {
+				if (!splitArgs[i].isEmpty()) {
+					appendType(splitArgs[i]);
+					buf.append("arg").append(i);
+					if (i < splitArgs.length - 1) {
+						buf.append(", ");
+					}
+				}
+			}
+			buf.append(")");
+		}
+		if (hasVarargs) {
+			int lastBrackets = buf.lastIndexOf("[]");
+			buf.replace(lastBrackets, lastBrackets+2, "...");
+		}
+	}
+
+	private String[] splitMethodArguments(final String args){
+		if (args.isEmpty()) {
+			return new String[0];
+		}
+		List<String> argumentList = new ArrayList<>();
+		for (int i = 0; i < args.length();) {
+			String brackets = "";
+			int bracketEnd = i;
+
+			if (args.charAt(i) == '[') {
+				while (args.charAt(bracketEnd) == '['){
+					bracketEnd++;
+				}
+				brackets = args.substring(i, bracketEnd);
+			}
+
+			String arg = brackets + getTypeIndicator(args.substring(bracketEnd));
+			argumentList.add(arg);
+			i += arg.length();
+		}
+
+		return argumentList.toArray(new String[argumentList.size()]);
+	}
+
+	private String getTypeIndicator(String args) {
+		if (args.startsWith("L")) {
+			int positionAfterSemicolon = args.indexOf(';') + 1;
+			return args.substring(0, positionAfterSemicolon);
+		} else {
+			return args.substring(0, 1);
+		}
+	}
+
+	private void appendMethodReturnType(String desc, String genericReturn) {
+		if (genericReturn != null){
+			buf.append(genericReturn).append(" ");
+		} else {
+			int closingBracketPosition = desc.lastIndexOf(')');
+			appendType(desc.substring(closingBracketPosition + 1));
+		}
+	}
+
+	private void appendExceptions(String[] exceptions, String genericExceptions) {
+		if (genericExceptions != null) {
+			buf.append(genericExceptions);
+		} else {
+			if (exceptions != null && exceptions.length > 0) {
+				buf.append(" throws ");
+				for (int i = 0; i < exceptions.length; ++i) {
+					buf.append(javaObjectName(exceptions[i]));
+					if (i < exceptions.length - 1)
+						buf.append(' ');
+				}
+			}
+		}
 	}
 
 	private TextMaker createTextMaker() {
