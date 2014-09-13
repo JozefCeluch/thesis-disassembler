@@ -1,11 +1,13 @@
 package com.thesis.file;
 
-import org.apache.bcel.generic.NEW;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceSignatureVisitor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TextMaker extends Textifier {
 
@@ -15,6 +17,7 @@ public class TextMaker extends Textifier {
     private static final String RIGHT_BRACKET_NL = "}\n";
 	private static final String TAB = "\t";
 	private int accessFlags;
+	private String className;
 
 	public TextMaker(int api) {
 		super(api);
@@ -37,6 +40,7 @@ public class TextMaker extends Textifier {
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 //        super.visit(version, access, name, signature, superName, interfaces);
 		accessFlags = access;
+		className = name;
 		int major = version & 0xFFFF;
 		int minor = version >>> 16;
 		boolean isClass = false;
@@ -120,7 +124,7 @@ public class TextMaker extends Textifier {
 	public Textifier visitField(int access, String name, String desc, String signature, Object value) {
 //        return super.visitField(access, name, desc, signature, value);
 		clearBuffer();
-		if ((access & Opcodes.ACC_SYNTHETIC) == 0) { //synthetic fields are not generated back to source code
+		if (!containsFlag(access, Opcodes.ACC_SYNTHETIC)) { //synthetic fields are not generated back to source code
 			buf.append(NEW_LINE);
 			buf.append(TAB);
 			if (appendDeprecatedAnnotationIfNeeded(access)) {
@@ -140,52 +144,126 @@ public class TextMaker extends Textifier {
 			}
 			buf.append(";" + NEW_LINE);
 		}
-		text.add(buf.toString());
-		TextMaker tm = createTextMaker();
-		text.add(tm.getText());
-		return tm;
+		return addBufferToTextAndReturnTextMaker();
 	}
 
     @Override
 	public Textifier visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 //        return super.visitMethod(access, name, desc, signature, exceptions);
 		clearBuffer();
-		buf.append(NEW_LINE);
-		buf.append(TAB);
-
-		if (appendDeprecatedAnnotationIfNeeded(access)){
+		boolean hasVarargs = false;
+		if (!containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
+			buf.append(NEW_LINE);
 			buf.append(TAB);
-		}
-		appendAccess(access & ~Opcodes.ACC_VOLATILE);
-		if (containsFlag(access, Opcodes.ACC_NATIVE)) {
-			buf.append("native ");
-		}
-		if (containsFlag(access,Opcodes.ACC_VARARGS)) {
-			buf.append("varargs ");
-		}
-		if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
-			buf.append("bridge ");
-		}
-		if (containsFlag(accessFlags, Opcodes.ACC_INTERFACE)
-				&& !containsFlag(access, Opcodes.ACC_ABSTRACT)
-				&& !containsFlag(access, Opcodes.ACC_STATIC)) {
-			buf.append("default ");
-		}
 
-		buf.append(name);
-		if (signature != null) {
-			//todo
-		} else {
-//			appendType(desc); //todo start here
+			if (appendDeprecatedAnnotationIfNeeded(access)) {
+				buf.append(TAB);
+			}
+
+			appendAccess(access & ~Opcodes.ACC_VOLATILE);
+			if (containsFlag(access, Opcodes.ACC_NATIVE)) {
+				buf.append("native ");
+			}
+			if (containsFlag(access, Opcodes.ACC_VARARGS)) {
+				int transientPosition = buf.indexOf("transient ");
+				if (transientPosition > -1) {
+					buf.replace(transientPosition, transientPosition + "transient ".length(), "");
+				}
+				hasVarargs = true;
+			}
+			if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
+				buf.append("bridge ");
+			}
+			if (containsFlag(accessFlags, Opcodes.ACC_INTERFACE)
+					&& !containsFlag(access, Opcodes.ACC_ABSTRACT)
+					&& !containsFlag(access, Opcodes.ACC_STATIC)) {
+				buf.append("default ");
+			}
+
+			if (name.equals("<init>")) {
+				buf.append(className);
+			} else {
+				appendMethodReturnType(desc);
+				buf.append(name);
+			}
+			if (signature != null) {
+				System.out.println(signature);
+			} else {
+				appendMethodArgs(desc, hasVarargs);
+
+			}
+
+			appendExceptions(exceptions);
+
+			buf.append(" ").append(LEFT_BRACKET_NL);
 		}
+		return addBufferToTextAndReturnTextMaker();
+	}
 
-		appendExceptions(exceptions);
-
-		buf.append(LEFT_BRACKET_NL);
+	private Textifier addBufferToTextAndReturnTextMaker() {
 		text.add(buf.toString());
 		TextMaker tm = createTextMaker();
 		text.add(tm.getText());
 		return tm;
+	}
+
+	private void appendMethodArgs(String desc, boolean hasVarargs) {
+		buf.append("(");
+		int closingBracketPosition = desc.lastIndexOf(')');
+		String args = desc.substring(1, closingBracketPosition);
+		String[] splitArgs = splitMethodArguments(args);
+		for(int i = 0; i < splitArgs.length; i++) {
+			if (!splitArgs[i].isEmpty()) {
+				appendType(splitArgs[i]);
+				if (hasVarargs && (i == splitArgs.length - 1)) {
+					buf.replace(buf.length() - 3, buf.length(), "... ");
+				}
+				buf.append("arg").append(i);
+				if (i < splitArgs.length - 1) {
+					buf.append(", ");
+				}
+			}
+		}
+		buf.append(")");
+	}
+
+	private String[] splitMethodArguments(final String args){
+		if (args.isEmpty()) {
+			return new String[0];
+		}
+		List<String> argumentList = new ArrayList<>();
+		for (int i = 0; i < args.length();) {
+			String brackets = "";
+			int bracketEnd = i;
+
+			if (args.charAt(i) == '[') {
+				while (args.charAt(bracketEnd) == '['){
+					bracketEnd++;
+				}
+				brackets = args.substring(i, bracketEnd);
+			}
+
+			String arg = brackets + getTypeIndicator(args.substring(bracketEnd));
+			argumentList.add(arg);
+			i += arg.length();
+		}
+
+		return argumentList.toArray(new String[argumentList.size()]);
+	}
+
+	private String getTypeIndicator(String args) {
+		if (args.startsWith("L")) {
+			int positionAfterSemicolon = args.indexOf(';') + 1;
+			String objectType = args.substring(0, positionAfterSemicolon);
+			return objectType;
+		} else {
+			return args.substring(0, 1);
+		}
+	}
+
+	private void appendMethodReturnType(String desc) {
+		int closingBracketPosition = desc.lastIndexOf(')');
+		appendType(desc.substring(closingBracketPosition + 1));
 	}
 
 	private void appendExceptions(String[] exceptions) {
@@ -193,7 +271,8 @@ public class TextMaker extends Textifier {
 			buf.append(" throws ");
 			for (int i = 0; i < exceptions.length; ++i) {
 				buf.append(javaObjectName(exceptions[i]));
-				buf.append(' ');
+				if (i < exceptions.length - 1)
+					buf.append(' ');
 			}
 		}
 	}
@@ -469,12 +548,6 @@ public class TextMaker extends Textifier {
 		if (containsFlag(access, Opcodes.ACC_STRICT)) {
 			buf.append("strictfp ");
 		}
-		if (containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
-			buf.append("synthetic ");
-		}
-		if (containsFlag(access, Opcodes.ACC_MANDATED)) {
-			buf.append("mandated ");
-		}
 		if (containsFlag(access, Opcodes.ACC_ENUM)) {
 			buf.append("enum ");
 		}
@@ -489,6 +562,7 @@ public class TextMaker extends Textifier {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.length; i++) {
 				buf.append(javaObjectName(interfaces[i]));
+
 				if (i < interfaces.length - 1) {
 					buf.append(", ");
 				}
@@ -522,6 +596,7 @@ public class TextMaker extends Textifier {
 		} else {
 			appendPrimitiveType(desc);
 		}
+		buf.append(" ");
 	}
 
 	private void appendArrayReference(String desc) {
@@ -535,41 +610,44 @@ public class TextMaker extends Textifier {
 		for (int i = 0; i < dimensions; i++) {
 			buf.append("[]");
 		}
-		buf.append(" ");
 	}
 
 	private void appendReferenceType(String desc) {
-		buf.append(javaObjectName(desc.substring(1))).append(" ");
+		buf.append(javaObjectName(desc.substring(1)));
 	}
 
 	private void appendPrimitiveType(String desc) {
 		String type;
 		switch (desc) {
 			case "B":
-				type = "byte ";
+				type = "byte";
 				break;
 			case "C":
-				type = "char ";
+				type = "char";
 				break;
 			case "D":
-				type = "double ";
+				type = "double";
 				break;
 			case "F":
-				type = "float ";
+				type = "float";
 				break;
 			case "I":
-				type = "int ";
+				type = "int";
 				break;
 			case "J":
-				type = "long ";
+				type = "long";
 				break;
-			case "s":
-				type = "short ";
+			case "S":
+				type = "short";
+				break;
+			case "V":
+				type = "void";
 				break;
 			case "Z":
-				type = "boolean ";
+				type = "boolean";
 				break;
 			default:
+				System.out.println("type: " + desc);
 				throw new IllegalArgumentException("Unknown primitive type");
 		}
 		buf.append(type);
