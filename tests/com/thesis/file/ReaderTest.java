@@ -12,12 +12,13 @@ import static org.junit.Assert.*;
 
 public class ReaderTest {
 
+	private static String TEST_FOLDER = "testData/";
     private Reader mReader;
 
     @Before
     public void setUp() throws Exception {
-        mReader = new Reader("tests");
-        mReader.setDirectoryName("tests");
+        mReader = new Reader(TEST_FOLDER);
+        mReader.setDirectoryName(TEST_FOLDER);
     }
 
     @Test

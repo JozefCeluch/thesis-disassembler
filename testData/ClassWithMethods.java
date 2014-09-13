@@ -19,6 +19,8 @@ public class ClassWithMethods {
 	}
 
 	private int intMethodWithExceptions() throws java.lang.NullPointerException {
-		return 0;
+	}
+
+	public <T> T genericMethod(T arg0) {
 	}
 }

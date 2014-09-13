@@ -15,11 +15,12 @@ import static org.junit.Assert.assertNotNull;
 
 public class ParserTest {
 
+	private static String TEST_FOLDER = "testData/";
     Parser mParser;
 
     @Before
     public void setUp() throws Exception {
-        mParser = new Parser("tests");
+        mParser = new Parser(TEST_FOLDER);
     }
 
     @Test(expected = FileNotFoundException.class)
@@ -97,7 +98,7 @@ public class ParserTest {
 	}
 
     private static String javaClassText(String fileName) throws IOException {
-        byte[] fileContents = Files.readAllBytes(Paths.get("tests/" + fileName));
+        byte[] fileContents = Files.readAllBytes(Paths.get(TEST_FOLDER + fileName));
         return new String(fileContents).trim();
     }
 
