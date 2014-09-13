@@ -101,13 +101,13 @@ public class TextMaker extends Textifier {
 
     @Override
 	public Textifier visitClassAnnotation(String desc, boolean visible) {
-//        return super.visitClassAnnotation(desc, visible); TODO
+//        return super.visitClassAnnotation(desc, visible);
 		return this;
 	}
 
     @Override
 	public Printer visitClassTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-		return super.visitClassTypeAnnotation(typeRef, typePath, desc, visible);
+		return visitTypeAnnotation(typeRef, typePath, desc, visible);
 	}
 
     @Override
