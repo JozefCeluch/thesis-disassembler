@@ -1,2 +1,2 @@
-interface EmptyInterface {
+interface EmptyInterface<T> {
 }
