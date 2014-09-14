@@ -164,9 +164,17 @@ public class Disassembler {
 		clearBuffer();
 		for (MethodNode method : methods) {
 			appendMethodNode(method.access, method.name, method.desc, method.signature, method.exceptions);
-			appendBlockBeginning();
+			if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
+				if (method.annotationDefault != null) {
+					buf.append(" default ");
+					appendAnnotationValue(null, method.annotationDefault);
+				}
+				appendStatementEnd();
+			} else {
+				appendBlockBeginning();
 //			append code
-			appendBlockEnd();
+				appendBlockEnd();
+			}
 		}
 		text.add(buf.toString());
 	}

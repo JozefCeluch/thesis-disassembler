@@ -30,6 +30,8 @@ public class Parser {
             StringWriter stringWriter = new StringWriter();
             classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
 			Disassembler disassembler = new Disassembler(new PrintWriter(stringWriter));
+//			ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
+//			classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 			disassembler.disassembleClass(classNode);
 			disassembler.print();
         return stringWriter.toString();

@@ -1,5 +1,5 @@
 public @interface EmptyInterfaceAnnotation {
-java.lang.String[] name1();
-java.lang.String[] name2();
-EmptyEnum[] en() default {};
+public abstract java.lang.String[] name1();
+public abstract java.lang.String[] name2();
+public abstract EmptyEnum[] en() default {EmptyEnum.A};
 }
