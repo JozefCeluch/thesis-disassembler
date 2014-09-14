@@ -18,6 +18,7 @@ public class TextMaker extends Textifier {
     private static final String RIGHT_BRACKET_NL = "}\n";
 	private static final String TAB = "\t";
 	private int accessFlags;
+	private int classVersion;
 	private String className;
 	private boolean isEnum;
 
@@ -42,6 +43,7 @@ public class TextMaker extends Textifier {
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		accessFlags = access;
 		className = name;
+		classVersion = version;
 		int major = version & 0xFFFF;
 		int minor = version >>> 16;
 		boolean isClass = false;
@@ -117,7 +119,7 @@ public class TextMaker extends Textifier {
 
     @Override
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
-		super.visitInnerClass(name, outerName, innerName, access);
+		visit(classVersion, access, name, null, null, new String[0]);
 	}
 
 	@Override
