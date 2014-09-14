@@ -1,3 +1,3 @@
-@Deprecated
+@java.lang.Deprecated
 public interface EmptyDeprecatedInterface {
 }

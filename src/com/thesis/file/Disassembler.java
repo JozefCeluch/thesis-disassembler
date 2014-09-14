@@ -1,16 +1,16 @@
 package com.thesis.file;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InnerClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.Printer;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Disassembler {
 	private ClassNode mClassNode;
@@ -33,28 +33,64 @@ public class Disassembler {
 
 	public void disassembleClass(ClassNode classNode) {
 		mClassNode = classNode;
+		appendClassAnnotations(classNode.visibleAnnotations);
+		appendClassAnnotations(classNode.invisibleAnnotations);
 		appendClassBeginning(classNode.version, classNode.access, classNode.name, classNode.signature, classNode.superName, classNode.interfaces);
 		appendFields(classNode.fields);
 		appendMethods(classNode.methods);
 		appendInnerClasses(classNode.innerClasses);
 
+
 		appendClassEnd();
 	}
 
-	private void appendInnerClasses(List<InnerClassNode> innerClasses) {
-		for (InnerClassNode innerClass : innerClasses) {
-			if (mClassNode.name.equals(innerClass.outerName))
-				appendInnerClassNode(innerClass.name);
+	private void appendClassAnnotations(List<AnnotationNode> visibleAnnotations) {
+		if (visibleAnnotations == null) return;
+		clearBuffer();
+		for(AnnotationNode annotation : visibleAnnotations) {
+			appendAnnotationNode(annotation.desc, annotation.values);
+			buf.append(NEW_LINE);
+		}
+		text.add(buf.toString());
+	}
+
+	private void appendAnnotationNode(String desc, List values) {
+		if (desc != null) {
+			buf.append("@").append(javaObjectName(getType(desc))); //todo more complicated annotations
+			if (values != null) {
+				buf.append("(");
+				for (int i = 0; i < values.size(); i +=2) {
+					appendComma(i);
+					appendAnnotationValue((String)values.get(i), values.get(i+1));
+				}
+				buf.append(")");
+			}
 		}
 	}
 
-	private void appendInnerClassNode(String name) {
-		Parser p = new Parser("testData/");
-		try {
-			text.add(p.parseClassFile(name + ".class"));
-			text.add(NEW_LINE);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+	private void appendAnnotationValue(String name, Object value) {
+		if (name != null) {
+			buf.append(name).append("=");
+		}
+		if (value instanceof List<?>) {
+			buf.append('{');
+			for (int i = 0; i < ((List) value).size(); i++) {
+				appendComma(i);
+				appendAnnotationValue(null, ((List) value).get(i));
+			}
+			buf.append('}');
+		} else if(value instanceof String[]){
+			buf.append(getType(((String[]) value)[0])).append(".").append(((String[]) value)[1]);
+		} else if (value instanceof String) {
+			buf.append("\"").append(value).append("\"");
+		} else if (value instanceof Character) {
+			buf.append("\'").append(value).append("\'");
+		} else if (value instanceof Type) {
+			buf.append(javaObjectName(((Type) value).getClassName())).append(".class");
+		} else if (value instanceof AnnotationNode){
+			appendAnnotationNode(((AnnotationNode) value).desc, ((AnnotationNode) value).values);
+		} else {
+			buf.append(value);
 		}
 	}
 
@@ -63,11 +99,6 @@ public class Disassembler {
 //		int minor = version >>> 16;
 		boolean isClass = false;
 		clearBuffer();
-//        todo print to log file
-//        buf.append(COMMENT).append("class version ").append(major).append(".").append(minor).append(NEW_LINE);
-
-		appendDeprecatedAnnotationIfNeeded(access);
-
 		appendAccess(access & ~Opcodes.ACC_SUPER);
 
 		if (containsFlag(access, Opcodes.ACC_ANNOTATION)) {
@@ -191,6 +222,23 @@ public class Disassembler {
 		appendExceptions(exceptions, genericExceptions);
 	}
 
+	private void appendInnerClasses(List<InnerClassNode> innerClasses) {
+		for (InnerClassNode innerClass : innerClasses) {
+			if (mClassNode.name.equals(innerClass.outerName))
+				appendInnerClassNode(innerClass.name);
+		}
+	}
+
+	private void appendInnerClassNode(String name) {
+		Parser p = new Parser("testData/"); //todo folder
+		try {
+			text.add(p.parseClassFile(name + ".class")); //todo make extension optional
+			text.add(NEW_LINE);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void appendMethodReturnType(String desc, String genericReturn) {
 		if (genericReturn != null){
 			buf.append(genericReturn).append(" ");
@@ -210,9 +258,9 @@ public class Disassembler {
 			String[] splitArgs = splitMethodArguments(args);
 			for (int i = 0; i < splitArgs.length; i++) {
 				if (!splitArgs[i].isEmpty()) {
+					appendComma(i);
 					appendType(splitArgs[i]);
 					buf.append("arg").append(i);
-					appendComma(i, splitArgs.length);
 				}
 			}
 			buf.append(")");
@@ -230,8 +278,8 @@ public class Disassembler {
 			if (exceptions != null && exceptions.size() > 0) {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
+					appendComma(i);
 					buf.append(javaObjectName(exceptions.get(i)));
-					appendComma(i, exceptions.size());
 				}
 			}
 		}
@@ -339,8 +387,8 @@ public class Disassembler {
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
+				appendComma(i);
 				buf.append(javaObjectName(interfaces.get(i)));
-				appendComma(i, interfaces.size());
 			}
 		}
 	}
@@ -361,8 +409,8 @@ public class Disassembler {
 		buf.append(" /* ").append(comment).append(" */ ");
 	}
 
-	private void appendComma(int currentPosition, int listSize) {
-		if (currentPosition < listSize - 1)
+	private void appendComma(int currentPosition) {
+		if (currentPosition > 0)
 			buf.append(", ");
 	}
 
