@@ -4,8 +4,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +36,26 @@ public class Disassembler {
 		appendClassBeginning(classNode.version, classNode.access, classNode.name, classNode.signature, classNode.superName, classNode.interfaces);
 		appendFields(classNode.fields);
 		appendMethods(classNode.methods);
+		appendInnerClasses(classNode.innerClasses);
 
 		appendClassEnd();
+	}
+
+	private void appendInnerClasses(List<InnerClassNode> innerClasses) {
+		for (InnerClassNode innerClass : innerClasses) {
+			if (mClassNode.name.equals(innerClass.outerName))
+				appendInnerClassNode(innerClass.name);
+		}
+	}
+
+	private void appendInnerClassNode(String name) {
+		Parser p = new Parser("testData/");
+		try {
+			text.add(p.parseClassFile(name + ".class"));
+			text.add(NEW_LINE);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void appendClassBeginning(int version, int access, String name, String signature, String superName, List interfaces) {
@@ -61,7 +81,7 @@ public class Disassembler {
 			isClass = true;
 		}
 
-		buf.append(name);
+		buf.append(removeOuterClasses(name));
 		String genericDeclaration = null;
 		if (signature != null) {
 			DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
@@ -162,7 +182,7 @@ public class Disassembler {
 		}
 
 		if (name.equals("<init>")) {
-			buf.append(mClassNode.name);
+			buf.append(removeOuterClasses(mClassNode.name));
 		} else {
 			appendMethodReturnType(desc, genericReturn);
 			buf.append(name);
@@ -369,7 +389,15 @@ public class Disassembler {
 		} else {
 			type = getPrimitiveType(desc);
 		}
-		return type;
+		return removeOuterClasses(type);
+	}
+
+	private static String removeOuterClasses(String name) {
+		if (name.contains("$")) {
+			int lastName = name.lastIndexOf("$");
+			return name.substring(lastName + 1);
+		}
+		return name;
 	}
 
 	private static String getArrayReferenceType(String desc) {
