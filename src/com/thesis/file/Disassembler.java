@@ -4,13 +4,11 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.Printer;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Disassembler {
 	private ClassNode mClassNode;
@@ -33,8 +31,8 @@ public class Disassembler {
 
 	public void disassembleClass(ClassNode classNode) {
 		mClassNode = classNode;
-		appendClassAnnotations(classNode.visibleAnnotations);
-		appendClassAnnotations(classNode.invisibleAnnotations);
+		//todo imports
+		appendAllSingleLineAnnotations(classNode.visibleAnnotations, classNode.invisibleAnnotations);
 		appendClassBeginning(classNode.version, classNode.access, classNode.name, classNode.signature, classNode.superName, classNode.interfaces);
 		appendFields(classNode.fields);
 		appendMethods(classNode.methods);
@@ -44,31 +42,43 @@ public class Disassembler {
 		appendClassEnd();
 	}
 
-	private void appendClassAnnotations(List<AnnotationNode> visibleAnnotations) {
-		if (visibleAnnotations == null) return;
-		clearBuffer();
-		for(AnnotationNode annotation : visibleAnnotations) {
-			appendAnnotationNode(annotation.desc, annotation.values);
-			buf.append(NEW_LINE);
+	private void addAllTypeAnnotations(List... annotationLists){
+		for (List annotationNodeList : annotationLists){
+			addAnnotations(annotationNodeList, " ");
 		}
-		text.add(buf.toString());
 	}
 
-	private void appendAnnotationNode(String desc, List values) {
+	private void appendAllSingleLineAnnotations(List... annotationLists){
+		for (List annotationNodeList : annotationLists){
+			clearBuffer();
+			addAnnotations(annotationNodeList, NEW_LINE);
+			text.add(buf.toString());
+		}
+	}
+
+	private void addAnnotations(List<AnnotationNode> annotations, String separator) {
+		if (annotations == null) return;
+		for(AnnotationNode annotation : annotations) {
+			addAnnotationNode(annotation.desc, annotation.values);
+			buf.append(separator);
+		}
+	}
+
+	private void addAnnotationNode(String desc, List values) {
 		if (desc != null) {
-			buf.append("@").append(javaObjectName(getType(desc))); //todo more complicated annotations
+			buf.append("@").append(javaObjectName(getType(desc))); //todo more complicated annotations?
 			if (values != null) {
 				buf.append("(");
 				for (int i = 0; i < values.size(); i +=2) {
 					appendComma(i);
-					appendAnnotationValue((String)values.get(i), values.get(i+1));
+					addAnnotationValue((String) values.get(i), values.get(i + 1));
 				}
 				buf.append(")");
 			}
 		}
 	}
 
-	private void appendAnnotationValue(String name, Object value) {
+	private void addAnnotationValue(String name, Object value) {
 		if (name != null) {
 			buf.append(name).append("=");
 		}
@@ -76,7 +86,7 @@ public class Disassembler {
 			buf.append('{');
 			for (int i = 0; i < ((List) value).size(); i++) {
 				appendComma(i);
-				appendAnnotationValue(null, ((List) value).get(i));
+				addAnnotationValue(null, ((List) value).get(i));
 			}
 			buf.append('}');
 		} else if(value instanceof String[]){
@@ -88,7 +98,7 @@ public class Disassembler {
 		} else if (value instanceof Type) {
 			buf.append(javaObjectName(((Type) value).getClassName())).append(".class");
 		} else if (value instanceof AnnotationNode){
-			appendAnnotationNode(((AnnotationNode) value).desc, ((AnnotationNode) value).values);
+			addAnnotationNode(((AnnotationNode) value).desc, ((AnnotationNode) value).values);
 		} else {
 			buf.append(value);
 		}
@@ -134,12 +144,13 @@ public class Disassembler {
 	}
 
 	private void appendFields(List<FieldNode> fields) {
-		clearBuffer();
 		for (FieldNode field : fields) {
+			appendAllSingleLineAnnotations(field.visibleAnnotations, field.invisibleAnnotations);
+			clearBuffer();
 			appendFieldNode(field.access, field.name, field.desc, field.signature, field.value);
 			appendStatementEnd();
+			text.add(buf.toString());
 		}
-		text.add(buf.toString());
 	}
 
 	private void appendFieldNode(int access, String name, String desc, String signature, Object value) {
@@ -161,13 +172,17 @@ public class Disassembler {
 	}
 
 	private void appendMethods(List<MethodNode> methods) {
-		clearBuffer();
+
 		for (MethodNode method : methods) {
+
+			appendAllSingleLineAnnotations(method.visibleAnnotations, method.invisibleAnnotations);
+			clearBuffer();
+			//TODO parameter annotations, easy with debug info
 			appendMethodNode(method.access, method.name, method.desc, method.signature, method.exceptions);
 			if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
 				if (method.annotationDefault != null) {
 					buf.append(" default ");
-					appendAnnotationValue(null, method.annotationDefault);
+					addAnnotationValue(null, method.annotationDefault);
 				}
 				appendStatementEnd();
 			} else {
@@ -175,10 +190,12 @@ public class Disassembler {
 //			append code
 				appendBlockEnd();
 			}
+			text.add(buf.toString());
 		}
-		text.add(buf.toString());
-	}
 
+	}
+//todo split into smaller methods: (access, name, desc, genRet); (desc, genDecl typeAnnotations); (exceptions, genExceptions)
+	//todo add param type annotations to signature visitor
 	private void appendMethodNode(int access, String name, String desc, String signature, List<String> exceptions) {
 		boolean hasVarargs = false;
 		appendDeprecatedAnnotationIfNeeded(access);
