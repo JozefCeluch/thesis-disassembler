@@ -17,4 +17,10 @@ return 0;
 public <T> T genericMethod(T arg0) {
 return arg0;
 }
+public java.util.Map<java.lang.Integer, java.lang.Float>[] crazyReturn() {
+return null;
+}
+public <T> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T arg0) {
+return null;
+}
 }

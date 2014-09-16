@@ -42,6 +42,7 @@ public class Disassembler {
 		appendClassEnd();
 	}
 
+	//region annotations
 	private void addAllTypeAnnotations(List... annotationLists){
 		for (List annotationNodeList : annotationLists){
 			addAnnotations(annotationNodeList, " ");
@@ -103,13 +104,14 @@ public class Disassembler {
 			buf.append(value);
 		}
 	}
+	//endregion
 
 	private void appendClassBeginning(int version, int access, String name, String signature, String superName, List interfaces) {
 //		int major = version & 0xFFFF;
 //		int minor = version >>> 16;
 		boolean isClass = false;
 		clearBuffer();
-		appendAccess(access & ~Opcodes.ACC_SUPER);
+		addAccess(access & ~Opcodes.ACC_SUPER);
 
 		if (containsFlag(access, Opcodes.ACC_ANNOTATION)) {
 			buf.append("@interface ");
@@ -134,147 +136,143 @@ public class Disassembler {
 		if (genericDeclaration != null){
 			buf.append(genericDeclaration);
 		} else {
-			appendSuperClass(superName);
-			if (isClass) appendInterfaces(interfaces);
+			addSuperClass(superName);
+			if (isClass) addInterfaces(interfaces);
 		}
 
-		appendBlockBeginning();
+		addBlockBeginning();
 
 		text.add(buf.toString());
 	}
 
+	//region fields
 	private void appendFields(List<FieldNode> fields) {
 		for (FieldNode field : fields) {
 			appendAllSingleLineAnnotations(field.visibleAnnotations, field.invisibleAnnotations);
-			clearBuffer();
 			appendFieldNode(field.access, field.name, field.desc, field.signature, field.value);
-			appendStatementEnd();
-			text.add(buf.toString());
 		}
 	}
 
 	private void appendFieldNode(int access, String name, String desc, String signature, Object value) {
-//		//synthetic fields are not generated back to source code
-		appendDeprecatedAnnotationIfNeeded(access);
-		appendAccess(access);
+		clearBuffer();
+		addDeprecatedAnnotationIfNeeded(access);
+		addAccess(access);
 		if (containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
-			appendComment("synthetic");
+			addComment("synthetic");
 		}
 		if (signature != null) {
-			appendFieldSignature(signature);
+			addFieldSignature(signature);
 		} else {
-			appendType(desc);
+			addType(desc);
 		}
 		buf.append(name);
 		if (value != null) {
 			buf.append(" = ").append(value);
 		}
+		addStatementEnd();
+		text.add(buf.toString());
 	}
+	//endregion
 
+	//region methods
 	private void appendMethods(List<MethodNode> methods) {
-
 		for (MethodNode method : methods) {
-
 			appendAllSingleLineAnnotations(method.visibleAnnotations, method.invisibleAnnotations);
-			clearBuffer();
 			//TODO parameter annotations, easy with debug info
-			appendMethodNode(method.access, method.name, method.desc, method.signature, method.exceptions);
-			if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
-				if (method.annotationDefault != null) {
-					buf.append(" default ");
-					addAnnotationValue(null, method.annotationDefault);
-				}
-				appendStatementEnd();
-			} else {
-				appendBlockBeginning();
-//			append code
-				appendBlockEnd();
-			}
-			text.add(buf.toString());
+			appendMethodNode(method);
+			appendCodeBlock(method);
 		}
 
 	}
-//todo split into smaller methods: (access, name, desc, genRet); (desc, genDecl typeAnnotations); (exceptions, genExceptions)
-	//todo add param type annotations to signature visitor
-	private void appendMethodNode(int access, String name, String desc, String signature, List<String> exceptions) {
+
+	private void appendMethodNode(MethodNode method) {
+		clearBuffer();
 		boolean hasVarargs = false;
-		appendDeprecatedAnnotationIfNeeded(access);
-		appendAccess(access & ~Opcodes.ACC_VOLATILE);
+		StringBuilder genericDecl = new StringBuilder();
+		StringBuilder genericReturn = new StringBuilder();
+		StringBuilder genericExceptions = new StringBuilder();
+
+		parseSignature(method.signature, genericDecl, genericReturn, genericExceptions);
+
+		addMethodAccessAndName(method.access, method.name, method.desc, genericReturn.toString());
+
+		if (containsFlag(method.access, Opcodes.ACC_TRANSIENT)) {
+			removeFromBuffer("transient ");
+			hasVarargs = true;
+		}
+		addMethodArgs(method.desc, genericDecl.toString(), hasVarargs);
+		addExceptions(method.exceptions, genericExceptions.toString());
+		addAbstractMethodDeclarationEnding(method);
+
+		text.add(buf.toString());
+	}
+
+	private void appendCodeBlock(MethodNode method) {
+		clearBuffer();
+		if (!containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
+			addBlockBeginning();
+//			append code
+			addBlockEnd();
+		}
+		text.add(buf.toString());
+	}
+
+	private void parseSignature(String signature, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
+		if (signature != null) {
+			DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0);
+			SignatureReader r = new SignatureReader(signature);
+			r.accept(v);
+			if (v.getDeclaration() != null) genericDecl.append(v.getDeclaration());
+			if (v.getReturnType() != null) genericReturn.append(v.getReturnType());
+			if (v.getExceptions() != null) genericExceptions.append(v.getExceptions());
+
+			if (genericDecl.indexOf("<") == 0) {
+				int gtPosition = genericDecl.indexOf(">") + 1;
+				genericReturn.insert(0, " ");
+				genericReturn.insert(0, genericDecl.substring(0, gtPosition));
+				genericDecl.replace(0, gtPosition, "");
+			}
+		}
+	}
+
+	private void addMethodAccessAndName(int access, String name, String desc, String genericReturn) {
+		addDeprecatedAnnotationIfNeeded(access);
+		addAccess(access & ~Opcodes.ACC_VOLATILE);
 
 		if (containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
-			appendComment("synthetic");
+			addComment("synthetic");
 		}
 		if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
-			appendComment("bridge");
+			addComment("bridge");
 		}
 		if (containsFlag(access, Opcodes.ACC_NATIVE)) {
 			buf.append("native ");
 		}
-		if (containsFlag(access, Opcodes.ACC_VARARGS)) {
-			removeFromBuffer("transient ");
-			hasVarargs = true;
-		}
+
 		if (containsFlag(mClassNode.access, Opcodes.ACC_INTERFACE) && !containsFlag(access, Opcodes.ACC_ABSTRACT)
 				&& !containsFlag(access, Opcodes.ACC_STATIC)) {
 			buf.append("default ");
 		}
 
-		String genericDecl = null;
-		String genericReturn = null;
-		String genericExceptions = null;
-		if (signature != null) {
-			DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0);
-			SignatureReader r = new SignatureReader(signature);
-			r.accept(v);
-			genericDecl = v.getDeclaration();
-			genericReturn = v.getReturnType();
-			genericExceptions = v.getExceptions();
-
-			if (genericDecl.startsWith("<")) {
-				int gtPosition = genericDecl.indexOf('>') + 1;
-				genericReturn = genericDecl.substring(0, gtPosition) + " " + genericReturn;
-				genericDecl = genericDecl.substring(gtPosition);
-			}
-		}
-
 		if (name.equals("<init>")) {
 			buf.append(removeOuterClasses(mClassNode.name));
 		} else {
-			appendMethodReturnType(desc, genericReturn);
+			addMethodReturnType(desc, genericReturn);
 			buf.append(name);
 		}
-		appendMethodArgs(desc, genericDecl, hasVarargs);
-		appendExceptions(exceptions, genericExceptions);
 	}
 
-	private void appendInnerClasses(List<InnerClassNode> innerClasses) {
-		for (InnerClassNode innerClass : innerClasses) {
-			if (mClassNode.name.equals(innerClass.outerName))
-				appendInnerClassNode(innerClass.name);
-		}
-	}
-
-	private void appendInnerClassNode(String name) {
-		Parser p = new Parser("testData/"); //todo folder
-		try {
-			text.add(p.parseClassFile(name + ".class")); //todo make extension optional
-			text.add(NEW_LINE);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void appendMethodReturnType(String desc, String genericReturn) {
-		if (genericReturn != null){
+	private void addMethodReturnType(String desc, String genericReturn) {
+		if (genericReturn != null && !genericReturn.isEmpty()){
 			buf.append(genericReturn).append(" ");
 		} else {
 			int closingBracketPosition = desc.lastIndexOf(')');
-			appendType(desc.substring(closingBracketPosition + 1));
+			addType(desc.substring(closingBracketPosition + 1));
 		}
 	}
 
-	private void appendMethodArgs(String desc, String genericDecl, boolean hasVarargs) {
-		if (genericDecl != null) {
+	private void addMethodArgs(String desc, String genericDecl, boolean hasVarargs) {
+		if (genericDecl != null && !genericDecl.isEmpty()) {
 			buf.append(genericDecl);
 		} else {
 			buf.append("(");
@@ -284,7 +282,7 @@ public class Disassembler {
 			for (int i = 0; i < splitArgs.length; i++) {
 				if (!splitArgs[i].isEmpty()) {
 					appendComma(i);
-					appendType(splitArgs[i]);
+					addType(splitArgs[i]);
 					buf.append("arg").append(i);
 				}
 			}
@@ -296,8 +294,8 @@ public class Disassembler {
 		}
 	}
 
-	private void appendExceptions(List<String> exceptions, String genericExceptions) {
-		if (genericExceptions != null) {
+	private void addExceptions(List<String> exceptions, String genericExceptions) {
+		if (genericExceptions != null && !genericExceptions.isEmpty()) {
 			buf.append(genericExceptions);
 		} else {
 			if (exceptions != null && exceptions.size() > 0) {
@@ -334,7 +332,36 @@ public class Disassembler {
 		return argumentList.toArray(new String[argumentList.size()]);
 	}
 
-	private String getTypeIndicator(String args) {
+	private void addAbstractMethodDeclarationEnding(MethodNode method) {
+		if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
+			if (method.annotationDefault != null) {
+				buf.append(" default ");
+				addAnnotationValue(null, method.annotationDefault);
+			}
+			addStatementEnd();
+		}
+	}
+	//endregion
+
+	private void appendInnerClasses(List<InnerClassNode> innerClasses) {
+		for (InnerClassNode innerClass : innerClasses) {
+			if (mClassNode.name.equals(innerClass.outerName))
+				appendInnerClassNode(innerClass.name);
+		}
+	}
+
+	private void appendInnerClassNode(String name) {
+		Parser p = new Parser("testData/"); //todo folder
+		try {
+			text.add(p.parseClassFile(name + ".class")); //todo make extension optional
+			text.add(NEW_LINE);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	private static String getTypeIndicator(String args) {
 		if (args.startsWith("L")) {
 			int positionAfterSemicolon = args.indexOf(';') + 1;
 			return args.substring(0, positionAfterSemicolon);
@@ -351,7 +378,7 @@ public class Disassembler {
 		buf.setLength(0);
 	}
 
-	private boolean appendDeprecatedAnnotationIfNeeded(int access) {
+	private boolean addDeprecatedAnnotationIfNeeded(int access) {
 		if (containsFlag(access, Opcodes.ACC_DEPRECATED)) {
 			buf.append("@Deprecated").append(NEW_LINE);
 			return true;
@@ -359,7 +386,7 @@ public class Disassembler {
 		return false;
 	}
 
-	private void appendAccess(int access) {
+	private void addAccess(int access) {
 		if (containsFlag(access, Opcodes.ACC_PRIVATE)) {
 			buf.append("private ");
 		}
@@ -395,20 +422,20 @@ public class Disassembler {
 		}
 	}
 
-	private void appendFieldSignature(String signature) {
+	private void addFieldSignature(String signature) {
 		DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
 		SignatureReader r = new SignatureReader(signature);
 		r.acceptType(sv);
 		buf.append(sv.getDeclaration()).append(" ");
 	}
 
-	private void appendSuperClass(String superName) {
+	private void addSuperClass(String superName) {
 		if (superName != null && !superName.equals("java/lang/Object")) {
 			buf.append(" extends ").append(javaObjectName(superName)).append(" ");
 		}
 	}
 
-	private void appendInterfaces(List<String> interfaces) {
+	private void addInterfaces(List<String> interfaces) {
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
@@ -418,19 +445,19 @@ public class Disassembler {
 		}
 	}
 
-	private void appendType(String desc) {
+	private void addType(String desc) {
 		buf.append(getType(desc)).append(" ");
 	}
 
-	private void appendBlockBeginning() {
+	private void addBlockBeginning() {
 		buf.append(" ").append(LEFT_BRACKET).append(NEW_LINE);
 	}
 
-	private void appendBlockEnd(){
+	private void addBlockEnd(){
 		buf.append(RIGHT_BRACKET).append(NEW_LINE);
 	}
 
-	private void appendComment(String comment) {
+	private void addComment(String comment) {
 		buf.append(" /* ").append(comment).append(" */ ");
 	}
 
@@ -439,7 +466,7 @@ public class Disassembler {
 			buf.append(", ");
 	}
 
-	private void appendStatementEnd() {
+	private void addStatementEnd() {
 		buf.append(";" + NEW_LINE);
 	}
 
