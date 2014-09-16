@@ -3,6 +3,8 @@ package com.thesis.file;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureVisitor;
 
+import java.util.List;
+
 /**
  * A {@link SignatureVisitor} that prints a disassembled view of the signature
  * it visits. Adjusted version of TraceSignatureVisitor
@@ -28,6 +30,8 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 
 	private StringBuffer exceptions;
 
+	private StringBuffer annotations;
+
 	private int argCount;
 
 	/**
@@ -46,6 +50,22 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	private int arrayStack;
 
 	private String separator = "";
+
+	private List[] visibleParamAnnotations;
+
+	private List[] invisibleParamAnnotations;
+
+	private AnnotationParser annotationParser;
+
+	public DecompilerSignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
+		super(Opcodes.ASM5);
+		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
+		this.declaration = new StringBuffer();
+		this.visibleParamAnnotations = visibleParameterAnnotations;
+		this.invisibleParamAnnotations = invisibleParameterAnnotations;
+		annotationParser = new AnnotationParser();
+		annotations = new StringBuffer();
+	}
 
 	public DecompilerSignatureVisitor(final int access) {
 		super(Opcodes.ASM5);
@@ -137,6 +157,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 
 	@Override
 	public void visitBaseType(final char descriptor) {
+		declaration.append(getCurrentArgAnnotations());
 		switch (descriptor) {
 			case 'V':
 				declaration.append("void");
@@ -170,14 +191,35 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 		endType();
 	}
 
+	private String getCurrentArgAnnotations() {
+		if (annotations == null || argumentStack % 2 != 0 || arrayStack % 2 != 0) return "";
+
+		annotations.setLength(0);
+		if (visibleParamAnnotations != null) {
+			if(visibleParamAnnotations[argCount] != null) {
+				annotations.append(annotationParser.getAnnotations(visibleParamAnnotations[argCount], " "));
+			}
+		}
+
+		if (invisibleParamAnnotations != null) {
+			if(invisibleParamAnnotations[argCount] != null) {
+				annotations.append(annotationParser.getAnnotations(invisibleParamAnnotations[argCount], " "));
+			}
+		}
+
+		return annotations.toString();
+	}
+
 	@Override
 	public void visitTypeVariable(final String name) {
+		declaration.append(getCurrentArgAnnotations());
 		declaration.append(name);
 		endType();
 	}
 
 	@Override
 	public SignatureVisitor visitArrayType() {
+		declaration.append(getCurrentArgAnnotations());
 		startType();
 		arrayStack |= 1;
 		return this;
@@ -185,6 +227,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 
 	@Override
 	public void visitClassType(final String name) {
+		declaration.append(getCurrentArgAnnotations());
 		if ("java/lang/Object".equals(name)) {
 			// Map<java.lang.Object,java.util.List>
 			// or
@@ -204,6 +247,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 
 	@Override
 	public void visitInnerClassType(final String name) {
+		declaration.append(getCurrentArgAnnotations());
 		if (argumentStack % 2 != 0) {
 			declaration.append('>');
 		}

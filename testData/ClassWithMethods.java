@@ -5,7 +5,7 @@ public void voidMethodNoArgs() {
 }
 private void voidMethodWithOneArg(boolean arg0) {
 }
-private void voidMethodWithMoreArgs(short[] arg0, int arg1, java.lang.String arg2, float arg3, java.lang.String arg4) {
+private void voidMethodWithMoreArgs(@SimpleAnnotation short[] arg0, @SimpleAnnotation int arg1, java.lang.String arg2, float arg3, @SimpleAnnotation java.lang.String arg4) {
 }
 private void voidMethodWithMorePrimitiveArgs(int arg0, boolean arg1, short arg2) {
 }

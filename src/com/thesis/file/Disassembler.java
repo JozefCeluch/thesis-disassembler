@@ -1,7 +1,6 @@
 package com.thesis.file;
 
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
 
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Disassembler {
+	private final AnnotationParser mAnnotationParser;
 	private ClassNode mClassNode;
 	private StringBuffer buf;
 	private List<Object> text;
@@ -27,6 +27,7 @@ public class Disassembler {
 		pw = printWriter;
 		text = new ArrayList<>();
 		buf = new StringBuffer();
+		mAnnotationParser = new AnnotationParser();
 	}
 
 	public void disassembleClass(ClassNode classNode) {
@@ -45,64 +46,18 @@ public class Disassembler {
 	//region annotations
 	private void addAllTypeAnnotations(List... annotationLists){
 		for (List annotationNodeList : annotationLists){
-			addAnnotations(annotationNodeList, " ");
+			buf.append(mAnnotationParser.getAnnotations(annotationNodeList, " "));
 		}
 	}
 
 	private void appendAllSingleLineAnnotations(List... annotationLists){
-		for (List annotationNodeList : annotationLists){
-			clearBuffer();
-			addAnnotations(annotationNodeList, NEW_LINE);
-			text.add(buf.toString());
+		for (List annotationNodeList : annotationLists) {
+			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NEW_LINE));
 		}
 	}
 
-	private void addAnnotations(List<AnnotationNode> annotations, String separator) {
-		if (annotations == null) return;
-		for(AnnotationNode annotation : annotations) {
-			addAnnotationNode(annotation.desc, annotation.values);
-			buf.append(separator);
-		}
-	}
-
-	private void addAnnotationNode(String desc, List values) {
-		if (desc != null) {
-			buf.append("@").append(javaObjectName(getType(desc))); //todo more complicated annotations?
-			if (values != null) {
-				buf.append("(");
-				for (int i = 0; i < values.size(); i +=2) {
-					appendComma(i);
-					addAnnotationValue((String) values.get(i), values.get(i + 1));
-				}
-				buf.append(")");
-			}
-		}
-	}
-
-	private void addAnnotationValue(String name, Object value) {
-		if (name != null) {
-			buf.append(name).append("=");
-		}
-		if (value instanceof List<?>) {
-			buf.append('{');
-			for (int i = 0; i < ((List) value).size(); i++) {
-				appendComma(i);
-				addAnnotationValue(null, ((List) value).get(i));
-			}
-			buf.append('}');
-		} else if(value instanceof String[]){
-			buf.append(getType(((String[]) value)[0])).append(".").append(((String[]) value)[1]);
-		} else if (value instanceof String) {
-			buf.append("\"").append(value).append("\"");
-		} else if (value instanceof Character) {
-			buf.append("\'").append(value).append("\'");
-		} else if (value instanceof Type) {
-			buf.append(javaObjectName(((Type) value).getClassName())).append(".class");
-		} else if (value instanceof AnnotationNode){
-			addAnnotationNode(((AnnotationNode) value).desc, ((AnnotationNode) value).values);
-		} else {
-			buf.append(value);
-		}
+	private void addAnnotationValue(Object value) {
+		buf.append(mAnnotationParser.getAnnotationValue(value));
 	}
 	//endregion
 
@@ -192,7 +147,7 @@ public class Disassembler {
 		StringBuilder genericReturn = new StringBuilder();
 		StringBuilder genericExceptions = new StringBuilder();
 
-		parseSignature(method.signature, genericDecl, genericReturn, genericExceptions);
+		parseSignature(method, genericDecl, genericReturn, genericExceptions);
 
 		addMethodAccessAndName(method.access, method.name, method.desc, genericReturn.toString());
 
@@ -200,7 +155,7 @@ public class Disassembler {
 			removeFromBuffer("transient ");
 			hasVarargs = true;
 		}
-		addMethodArgs(method.desc, genericDecl.toString(), hasVarargs);
+		addMethodArgs(method, genericDecl.toString(), hasVarargs);
 		addExceptions(method.exceptions, genericExceptions.toString());
 		addAbstractMethodDeclarationEnding(method);
 
@@ -211,16 +166,16 @@ public class Disassembler {
 		clearBuffer();
 		if (!containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
 			addBlockBeginning();
-//			append code
+//			todo append code
 			addBlockEnd();
 		}
 		text.add(buf.toString());
 	}
 
-	private void parseSignature(String signature, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
-		if (signature != null) {
-			DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0);
-			SignatureReader r = new SignatureReader(signature);
+	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
+		if (method.signature != null) {
+			DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
+			SignatureReader r = new SignatureReader(method.signature);
 			r.accept(v);
 			if (v.getDeclaration() != null) genericDecl.append(v.getDeclaration());
 			if (v.getReturnType() != null) genericReturn.append(v.getReturnType());
@@ -271,17 +226,19 @@ public class Disassembler {
 		}
 	}
 
-	private void addMethodArgs(String desc, String genericDecl, boolean hasVarargs) {
+	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs) {
 		if (genericDecl != null && !genericDecl.isEmpty()) {
 			buf.append(genericDecl);
 		} else {
 			buf.append("(");
-			int closingBracketPosition = desc.lastIndexOf(')');
-			String args = desc.substring(1, closingBracketPosition);
+			int closingBracketPosition = method.desc.lastIndexOf(')');
+			String args = method.desc.substring(1, closingBracketPosition);
 			String[] splitArgs = splitMethodArguments(args);
 			for (int i = 0; i < splitArgs.length; i++) {
 				if (!splitArgs[i].isEmpty()) {
-					appendComma(i);
+					addComma(i);
+					addParameterAnnotations(method.invisibleParameterAnnotations, i);
+					addParameterAnnotations(method.visibleParameterAnnotations, i);
 					addType(splitArgs[i]);
 					buf.append("arg").append(i);
 				}
@@ -294,6 +251,13 @@ public class Disassembler {
 		}
 	}
 
+	private void addParameterAnnotations(List[] parameterAnnotationsList, int currentParameter) {
+		if (parameterAnnotationsList == null) return;
+		if (parameterAnnotationsList[currentParameter] != null)
+			addAllTypeAnnotations(parameterAnnotationsList[currentParameter]);
+
+	}
+
 	private void addExceptions(List<String> exceptions, String genericExceptions) {
 		if (genericExceptions != null && !genericExceptions.isEmpty()) {
 			buf.append(genericExceptions);
@@ -301,7 +265,7 @@ public class Disassembler {
 			if (exceptions != null && exceptions.size() > 0) {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
-					appendComma(i);
+					addComma(i);
 					buf.append(javaObjectName(exceptions.get(i)));
 				}
 			}
@@ -336,7 +300,7 @@ public class Disassembler {
 		if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
 			if (method.annotationDefault != null) {
 				buf.append(" default ");
-				addAnnotationValue(null, method.annotationDefault);
+				addAnnotationValue(method.annotationDefault);
 			}
 			addStatementEnd();
 		}
@@ -439,7 +403,7 @@ public class Disassembler {
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
-				appendComma(i);
+				addComma(i);
 				buf.append(javaObjectName(interfaces.get(i)));
 			}
 		}
@@ -461,7 +425,7 @@ public class Disassembler {
 		buf.append(" /* ").append(comment).append(" */ ");
 	}
 
-	private void appendComma(int currentPosition) {
+	private void addComma(int currentPosition) {
 		if (currentPosition > 0)
 			buf.append(", ");
 	}
@@ -480,7 +444,7 @@ public class Disassembler {
 			buf.replace(location, location + str.length(), "");
 	}
 
-	private static String getType(String desc){
+	public static String getType(String desc){
 		String type;
 		if (desc.startsWith("L")) {
 			type = getReferenceType(desc);
@@ -551,7 +515,7 @@ public class Disassembler {
 		return type;
 	}
 
-	private static String javaObjectName(String objectName) {
+	public static String javaObjectName(String objectName) {
 		return objectName.replaceAll("/", ".").replaceAll(";","");
 	}
 
