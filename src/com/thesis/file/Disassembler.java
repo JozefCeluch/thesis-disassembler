@@ -1,5 +1,6 @@
 package com.thesis.file;
 
+import jdk.internal.org.objectweb.asm.util.Printer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
@@ -8,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class Disassembler {
 	private final AnnotationParser mAnnotationParser;
@@ -167,9 +169,35 @@ public class Disassembler {
 		if (!containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
 			addBlockBeginning();
 //			todo append code
+			addCode(method);
 			addBlockEnd();
 		}
 		text.add(buf.toString());
+	}
+
+	//TODO
+	private void addCode(MethodNode method) {
+		InsnList instructions = method.instructions;
+		AbstractInsnNode node = instructions.getFirst();
+		while (node != null) {
+
+			switch (node.getType()) {
+				case AbstractInsnNode.LINE:
+					buf.append(((LineNumberNode) node).line);
+					break;
+				case AbstractInsnNode.LABEL:
+					buf.append(((LabelNode) node).getLabel().info);
+					break;
+				default:
+					buf.append(node).append(": ");
+					int opCode = node.getOpcode();
+					if (opCode > -1) {
+						buf.append(Printer.OPCODES[opCode]);
+					}
+			}
+			buf.append(NEW_LINE);
+			node = node.getNext();
+		}
 	}
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
