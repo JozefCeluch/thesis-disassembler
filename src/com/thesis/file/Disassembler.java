@@ -14,22 +14,25 @@ import java.util.ListIterator;
 public class Disassembler {
 	private final AnnotationParser mAnnotationParser;
 	private ClassNode mClassNode;
-	private StringBuffer buf;
-	private List<Object> text;
+	protected StringBuffer buf;
+	protected List<Object> text;
 	private PrintWriter pw;
 
-	private static final String NEW_LINE = "\n";
-	private static final String LEFT_BRACKET = "{";
-	private static final String RIGHT_BRACKET = "}";
-	private static final String TAB = "\t";
+	protected static final String NEW_LINE = "\n";
+	protected static final String LEFT_BRACKET = "{";
+	protected static final String RIGHT_BRACKET = "}";
+	protected static final String TAB = "\t";
 
 
-
-	public Disassembler(PrintWriter printWriter) {
-		pw = printWriter;
+	protected Disassembler() {
 		text = new ArrayList<>();
 		buf = new StringBuffer();
 		mAnnotationParser = new AnnotationParser();
+	}
+
+	public Disassembler(PrintWriter printWriter) {
+		this();
+		pw = printWriter;
 	}
 
 	public void disassembleClass(ClassNode classNode) {
@@ -168,36 +171,16 @@ public class Disassembler {
 		clearBuffer();
 		if (!containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
 			addBlockBeginning();
-//			todo append code
 			addCode(method);
 			addBlockEnd();
 		}
-		text.add(buf.toString());
 	}
 
 	//TODO
 	private void addCode(MethodNode method) {
-		InsnList instructions = method.instructions;
-		AbstractInsnNode node = instructions.getFirst();
-		while (node != null) {
+		MethodDisassembler methodDisassembler = new MethodDisassembler(method);
+		text.add(methodDisassembler.disassemble());
 
-			switch (node.getType()) {
-				case AbstractInsnNode.LINE:
-					buf.append(((LineNumberNode) node).line);
-					break;
-				case AbstractInsnNode.LABEL:
-					buf.append(((LabelNode) node).getLabel().info);
-					break;
-				default:
-					buf.append(node).append(": ");
-					int opCode = node.getOpcode();
-					if (opCode > -1) {
-						buf.append(Printer.OPCODES[opCode]);
-					}
-			}
-			buf.append(NEW_LINE);
-			node = node.getNext();
-		}
 	}
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
@@ -366,7 +349,7 @@ public class Disassembler {
 		printList(pw, text);
 	}
 
-	private void clearBuffer() {
+	protected void clearBuffer() {
 		buf.setLength(0);
 	}
 
