@@ -12,34 +12,35 @@ import java.util.List;
 public class ClassBlock extends Block {
 	ClassNode mClassNode;
 
-	public ClassBlock(ClassNode classNode) {
+	public ClassBlock(ClassNode classNode, Block parent) {
 		mClassNode = classNode;
+		mParent = parent;
 	}
 
-	public List<Object> disassemble(ClassNode classNode) {
+	public List<Object> disassemble() {
 
-		appendAllSingleLineAnnotations(classNode.visibleAnnotations, classNode.invisibleAnnotations); //todo
+		appendAllSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations); //todo
 
 		boolean isClass = false;
 		clearBuffer();
-		addAccess(classNode.access & ~Opcodes.ACC_SUPER);
+		addAccess(mClassNode.access & ~Opcodes.ACC_SUPER);
 
-		if (containsFlag(classNode.access, Opcodes.ACC_ANNOTATION)) {
+		if (Util.containsFlag(mClassNode.access, Opcodes.ACC_ANNOTATION)) {
 			buf.append("@interface ");
 			removeFromBuffer("abstract ");
-		} else if (containsFlag(classNode.access, Opcodes.ACC_INTERFACE)) {
+		} else if (Util.containsFlag(mClassNode.access, Opcodes.ACC_INTERFACE)) {
 			buf.append("interface "); // interface is implicitly abstract
 			removeFromBuffer("abstract ");
-		} else if (!containsFlag(classNode.access, Opcodes.ACC_ENUM)) {
+		} else if (!Util.containsFlag(mClassNode.access, Opcodes.ACC_ENUM)) {
 			buf.append("class ");
 			isClass = true;
 		}
 
-		buf.append(removeOuterClasses(classNode.name));
+		buf.append(Util.removeOuterClasses(mClassNode.name));
 		String genericDeclaration = null;
-		if (classNode.signature != null) {
+		if (mClassNode.signature != null) {
 			DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
-			SignatureReader r = new SignatureReader(classNode.signature);
+			SignatureReader r = new SignatureReader(mClassNode.signature);
 			r.accept(sv);
 			genericDeclaration = sv.getDeclaration();
 		}
@@ -47,88 +48,77 @@ public class ClassBlock extends Block {
 		if (genericDeclaration != null){
 			buf.append(genericDeclaration);
 		} else {
-			addSuperClass(classNode.superName);
-			if (isClass) addInterfaces(classNode.interfaces);
+			addSuperClass(mClassNode.superName);
+			if (isClass) addInterfaces(mClassNode.interfaces);
 		}
 		text.add(buf.toString());
 		text.add(BLOCK_START);
 
-		appendFields(classNode.fields);
+		appendFields(mClassNode.fields);
+		appendMethods(mClassNode.methods);
+		appendInnerClasses(mClassNode.innerClasses);
 
-		appendMethods(classNode.methods);
-		appendInnerClasses(classNode.innerClasses);
 
-
-		text.add(BLOCK_END);
+		appendClassEnd();
 
 		return text;
 	}
 
-	private void addSuperClass(String superName) {
-		if (superName != null && !superName.equals("java/lang/Object")) {
-			buf.append(" extends ").append(javaObjectName(superName)).append(" ");
+	private void appendAllSingleLineAnnotations(List... annotationLists){
+		for (List annotationNodeList : annotationLists) {
+			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
 		}
 	}
 
-	private void addInterfaces(List<String> interfaces) {
+	private void appendClassEnd() {
+		text.add(RIGHT_BRACKET);
+	}
+
+	private void addSuperClass(String superName) {
+		if (superName != null && !superName.equals("java/lang/Object")) {
+			buf.append(" extends ").append(Util.javaObjectName(superName)).append(" ");
+		}
+	}
+
+	private void addInterfaces(List interfaces) {
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
 				addComma(i);
-				buf.append(javaObjectName(interfaces.get(i)));
+				buf.append(Util.javaObjectName((String) interfaces.get(i)));
 			}
 		}
 	}
 
 	private void appendMethods(List methods) {
 		for (Object method : methods) {
-			MethodBlock methodBlock = new MethodBlock((MethodNode)method);
+			MethodBlock methodBlock = new MethodBlock((MethodNode)method, this);
 			methodBlock.setClassName(mClassNode.name);
 			methodBlock.setClassAccess(mClassNode.access);
 			text.add(methodBlock.disassemble());
 		}
 	}
 
-	//region fields
-	protected void appendFields(List<FieldNode> fields) {
-		for (FieldNode field : fields) {
-			appendAllSingleLineAnnotations(field.visibleAnnotations, field.invisibleAnnotations);
-			appendFieldNode(field);
+	protected void appendFields(List fields) {
+		for (Object object : fields) {
+			FieldNode field = (FieldNode)object;
+			FieldBlock fieldBlock = new FieldBlock(field, this);
+			text.add(fieldBlock.disassemble());
 		}
 	}
 
-	private void appendFieldNode(FieldNode field) {
-		clearBuffer();
-		addDeprecatedAnnotationIfNeeded(field.access);
-		addAccess(field.access);
-		if (containsFlag(field.access, Opcodes.ACC_SYNTHETIC)) {
-			addComment("synthetic");
-		}
-		if (field.signature != null) {
-			addFieldSignature(field.signature);
-		} else {
-			addType(field.desc);
-		}
-		buf.append(field.name);
-		if (field.value != null) {
-			buf.append(" = ").append(field.value);
-		}
-		addStatementEnd();
-		text.add(buf.toString());
-	}
-
-	private void addFieldSignature(String signature) {
-		DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
-		SignatureReader r = new SignatureReader(signature);
-		r.acceptType(sv);
-		buf.append(sv.getDeclaration()).append(" ");
-	}
-	//endregion
-
-	protected void appendInnerClasses(List<InnerClassNode> innerClasses) {
-		for (InnerClassNode innerClass : innerClasses) {
-			InnerClassBlock icb = new InnerClassBlock(innerClass, mClassNode.name);
+	protected void appendInnerClasses(List innerClasses) {
+		for (Object innerClass : innerClasses) {
+			InnerClassBlock icb = new InnerClassBlock((InnerClassNode)innerClass, mClassNode.name, this);
 			text.add(icb.disassemble());
 		}
+	}
+
+	@Override
+	public int countParents() {
+		if (!hasParent()) {
+			return 0;
+		}
+		return super.countParents();
 	}
 }

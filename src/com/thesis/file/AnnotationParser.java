@@ -31,7 +31,7 @@ public class AnnotationParser {
 
 	private void addAnnotationNode(String desc, List values) {
 		if (desc != null) {
-			buf.append("@").append(Disassembler.javaObjectName(Disassembler.getType(desc))); //todo more complicated annotations?
+			buf.append("@").append(Util.javaObjectName(Util.getType(desc))); //todo more complicated annotations?
 			if (values != null) {
 				buf.append("(");
 				for (int i = 0; i < values.size(); i += 2) {
@@ -55,13 +55,13 @@ public class AnnotationParser {
 			}
 			buf.append('}');
 		} else if (value instanceof String[]) {
-			buf.append(Disassembler.getType(((String[]) value)[0])).append(".").append(((String[]) value)[1]);
+			buf.append(Util.getType(((String[]) value)[0])).append(".").append(((String[]) value)[1]);
 		} else if (value instanceof String) {
 			buf.append("\"").append(value).append("\"");
 		} else if (value instanceof Character) {
 			buf.append("\'").append(value).append("\'");
 		} else if (value instanceof Type) {
-			buf.append(Disassembler.javaObjectName(((Type) value).getClassName())).append(".class");
+			buf.append(Util.javaObjectName(((Type) value).getClassName())).append(".class");
 		} else if (value instanceof AnnotationNode) {
 			addAnnotationNode(((AnnotationNode) value).desc, ((AnnotationNode) value).values);
 		} else {

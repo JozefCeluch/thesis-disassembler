@@ -1,6 +1,5 @@
 package com.thesis.file;
 
-import jdk.internal.org.objectweb.asm.util.Printer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
@@ -13,9 +12,9 @@ public class MethodBlock extends Block {
 	private String mClassName;
 	private int mClassAccess;
 
-	public MethodBlock(MethodNode methodNode) {
-		super();
+	public MethodBlock(MethodNode methodNode, Block parent) {
 		mMethodNode = methodNode;
+		mParent = parent;
 	}
 
 	public void setClassAccess(int classAccess) {
@@ -27,6 +26,7 @@ public class MethodBlock extends Block {
 	}
 
 	public List<Object> disassemble() {
+		text.add("Parents: " + countParents() + "\n");
 		appendAllSingleLineAnnotations(mMethodNode.visibleAnnotations, mMethodNode.invisibleAnnotations);
 		//TODO parameter annotations, easy with debug info
 		appendMethodNode(mMethodNode);
@@ -34,9 +34,15 @@ public class MethodBlock extends Block {
 		return text;
 	}
 
+	protected void appendAllSingleLineAnnotations(List... annotationLists){
+		for (List annotationNodeList : annotationLists) {
+			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
+		}
+	}
+
 	private void appendCodeBlock(MethodNode method) {
 		clearBuffer();
-		if (!containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
+		if (!Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
 			addCode();
 		}
 	}
@@ -52,7 +58,7 @@ public class MethodBlock extends Block {
 
 		addMethodAccessAndName(method.access, method.name, method.desc, genericReturn.toString());
 
-		if (containsFlag(method.access, Opcodes.ACC_TRANSIENT)) {
+		if (Util.containsFlag(method.access, Opcodes.ACC_TRANSIENT)) {
 			removeFromBuffer("transient ");
 			hasVarargs = true;
 		}
@@ -97,13 +103,12 @@ public class MethodBlock extends Block {
 //						buf.append(Printer.OPCODES[opCode]);
 //					}
 //			}
-//			buf.append(NEW_LINE);
+//			buf.append(NL);
 //			node = node.getNext();
 //
 //		}
 		text.add(buf.toString());
 		text.add(BLOCK_END);
-		text.add(NEW_LINE);
 	}
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
@@ -128,23 +133,23 @@ public class MethodBlock extends Block {
 		addDeprecatedAnnotationIfNeeded(access);
 		addAccess(access & ~Opcodes.ACC_VOLATILE);
 
-		if (containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
+		if (Util.containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
 			addComment("synthetic");
 		}
-		if (containsFlag(access, Opcodes.ACC_BRIDGE)) {
+		if (Util.containsFlag(access, Opcodes.ACC_BRIDGE)) {
 			addComment("bridge");
 		}
-		if (containsFlag(access, Opcodes.ACC_NATIVE)) {
+		if (Util.containsFlag(access, Opcodes.ACC_NATIVE)) {
 			buf.append("native ");
 		}
 
-		if (containsFlag(mClassAccess, Opcodes.ACC_INTERFACE) && !containsFlag(access, Opcodes.ACC_ABSTRACT)
-				&& !containsFlag(access, Opcodes.ACC_STATIC)) {
+		if (Util.containsFlag(mClassAccess, Opcodes.ACC_INTERFACE) && !Util.containsFlag(access, Opcodes.ACC_ABSTRACT)
+				&& !Util.containsFlag(access, Opcodes.ACC_STATIC)) {
 			buf.append("default ");
 		}
 
 		if (name.equals("<init>")) {
-			buf.append(removeOuterClasses(mClassName));
+			buf.append(Util.removeOuterClasses(mClassName));
 		} else {
 			addMethodReturnType(desc, genericReturn);
 			buf.append(name);
@@ -192,6 +197,12 @@ public class MethodBlock extends Block {
 
 	}
 
+	private void addAllTypeAnnotations(List... annotationLists){
+		for (List annotationNodeList : annotationLists){
+			buf.append(mAnnotationParser.getAnnotations(annotationNodeList, " "));
+		}
+	}
+
 	private void addExceptions(List<String> exceptions, String genericExceptions) {
 		if (genericExceptions != null && !genericExceptions.isEmpty()) {
 			buf.append(genericExceptions);
@@ -200,7 +211,7 @@ public class MethodBlock extends Block {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
 					addComma(i);
-					buf.append(javaObjectName(exceptions.get(i)));
+					buf.append(Util.javaObjectName(exceptions.get(i)));
 				}
 			}
 		}
@@ -231,12 +242,16 @@ public class MethodBlock extends Block {
 	}
 
 	private void addAbstractMethodDeclarationEnding(MethodNode method) {
-		if (containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
+		if (Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)) {
 			if (method.annotationDefault != null) {
 				buf.append(" default ");
 				addAnnotationValue(method.annotationDefault);
 			}
 			addStatementEnd();
 		}
+	}
+
+	private void addAnnotationValue(Object value) {
+		buf.append(mAnnotationParser.getAnnotationValue(value));
 	}
 }

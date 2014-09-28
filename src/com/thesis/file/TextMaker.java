@@ -50,7 +50,7 @@ public class TextMaker extends Textifier {
 
 		clearBuffer();
 //        todo print to log file
-//        buf.append(COMMENT).append("class version ").append(major).append(".").append(minor).append(NEW_LINE);
+//        buf.append(COMMENT).append("class version ").append(major).append(".").append(minor).append(NL);
 
 		appendDeprecatedAnnotationIfNeeded(access);
 

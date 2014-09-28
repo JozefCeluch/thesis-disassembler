@@ -10,9 +10,10 @@ public class InnerClassBlock extends Block {
 	InnerClassNode mInnerClassNode;
 	String mOuterClassName;
 
-	public InnerClassBlock(InnerClassNode innerClassNode, String outerClassName) {
+	public InnerClassBlock(InnerClassNode innerClassNode, String outerClassName, Block parent) {
 		mInnerClassNode = innerClassNode;
 		mOuterClassName = outerClassName;
+		mParent = parent;
 	}
 
 	public List<Object> disassemble() {
@@ -25,8 +26,8 @@ public class InnerClassBlock extends Block {
 	private void appendInnerClassNode(String name) {
 		Parser p = new Parser("testData/"); //todo folder
 		try {
-			text.add(p.parseClassFile(name + ".class")); //todo make extension optional
-			text.add(NEW_LINE);
+			text.add(p.parseClassFile(name + ".class", getParent())); //todo make extension optional
+			text.add(NL);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

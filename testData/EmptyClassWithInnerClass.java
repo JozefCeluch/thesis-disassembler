@@ -11,7 +11,7 @@ public VeryInnerClass(int a){
 }
 }
 }
-private class OtherInnerClass{
+public class OtherInnerClass{
 private OtherInnerClass(){
 }
 }
