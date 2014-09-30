@@ -57,6 +57,6 @@ public class FieldBlock extends StatementBlock {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		Util.printList(writer, text);
+		printList(writer, text);
 	}
 }

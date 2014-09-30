@@ -39,6 +39,6 @@ public class InnerClassBlock extends Block {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		Util.printList(writer, text);
+		printList(writer, text);
 	}
 }

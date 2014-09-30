@@ -86,18 +86,4 @@ public class Util {
 		return (value & flag) != 0;
 	}
 
-	public static void printList(final Writer pw, final List<?> l) {
-		for (int i = 0; i < l.size(); ++i) {
-			Object o = l.get(i);
-			if (o instanceof List) {
-				printList(pw, (List<?>) o);
-			} else {
-				try {
-					pw.write(o.toString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 }

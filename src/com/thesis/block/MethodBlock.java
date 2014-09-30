@@ -33,7 +33,7 @@ public class MethodBlock extends Block {
 		appendAllSingleLineAnnotations(mMethodNode.visibleAnnotations, mMethodNode.invisibleAnnotations);
 		//TODO parameter annotations, easy with debug info
 		appendMethodNode(mMethodNode);
-		appendCodeBlock(mMethodNode);
+		disassembleCodeBlock(mMethodNode);
 		return this;
 	}
 
@@ -43,7 +43,7 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void appendCodeBlock(MethodNode method) {
+	private void disassembleCodeBlock(MethodNode method) {
 		clearBuffer();
 		if (!Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
 			addCode();
@@ -74,7 +74,6 @@ public class MethodBlock extends Block {
 
 	public void addCode() {
 		clearBuffer();
-		text.add(BLOCK_START);
 //		InsnList instructions = mMethodNode.instructions;
 //		AbstractInsnNode node = instructions.getFirst();
 //		while (node != null) {
@@ -111,7 +110,6 @@ public class MethodBlock extends Block {
 //
 //		}
 		text.add(buf.toString());
-		text.add(BLOCK_END);
 	}
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
@@ -260,6 +258,11 @@ public class MethodBlock extends Block {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		Util.printList(writer, text);
+		printList(writer, text);
+		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
+			writer.write(BLOCK_START);
+			//todo print children
+			writer.write(BLOCK_END);
+		}
 	}
 }

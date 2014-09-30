@@ -122,7 +122,7 @@ public class ClassBlock extends Block {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		Util.printList(writer, text);
+		printList(writer, text);
 
 		for (Block block : children) {
 			block.write(writer);

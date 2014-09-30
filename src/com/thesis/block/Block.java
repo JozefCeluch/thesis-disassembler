@@ -5,6 +5,8 @@ import com.thesis.common.AnnotationParser;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,5 +132,19 @@ public abstract class Block implements Writable{
 	public int countParents() {
 		int parent = getParent().countParents();
 		return 1 + parent;
+	}
+
+	public static void printList(final Writer pw, final List<?> l) {
+		for (Object o : l) {
+			if (o instanceof List) {
+				printList(pw, (List<?>) o);
+			} else {
+				try {
+					pw.write(o.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }
