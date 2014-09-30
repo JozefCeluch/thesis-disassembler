@@ -1,9 +1,13 @@
-package com.thesis.file;
+package com.thesis.block;
 
+import com.thesis.common.SignatureVisitor;
+import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +29,12 @@ public class MethodBlock extends Block {
 		mClassName = className;
 	}
 
-	public List<Object> disassemble() {
-		text.add("Parents: " + countParents() + "\n");
+	public Block disassemble() {
 		appendAllSingleLineAnnotations(mMethodNode.visibleAnnotations, mMethodNode.invisibleAnnotations);
 		//TODO parameter annotations, easy with debug info
 		appendMethodNode(mMethodNode);
 		appendCodeBlock(mMethodNode);
-		return text;
+		return this;
 	}
 
 	protected void appendAllSingleLineAnnotations(List... annotationLists){
@@ -113,7 +116,7 @@ public class MethodBlock extends Block {
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
 		if (method.signature != null) {
-			DecompilerSignatureVisitor v = new DecompilerSignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
+			SignatureVisitor v = new SignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
 			SignatureReader r = new SignatureReader(method.signature);
 			r.accept(v);
 			if (v.getDeclaration() != null) genericDecl.append(v.getDeclaration());
@@ -253,5 +256,10 @@ public class MethodBlock extends Block {
 
 	private void addAnnotationValue(Object value) {
 		buf.append(mAnnotationParser.getAnnotationValue(value));
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		Util.printList(writer, text);
 	}
 }

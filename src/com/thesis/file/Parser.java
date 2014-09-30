@@ -1,5 +1,6 @@
 package com.thesis.file;
 
+import com.thesis.block.Block;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.ClassReader;
 

@@ -113,7 +113,7 @@ public class ParserTest {
 
     private static String javaClassText(String fileName) throws IOException {
         byte[] fileContents = Files.readAllBytes(Paths.get(TEST_FOLDER + fileName));
-        return new String(fileContents).trim();
+        return new String(fileContents);
     }
 
 }

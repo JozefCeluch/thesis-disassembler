@@ -1,11 +1,14 @@
-package com.thesis.file;
+package com.thesis.block;
 
+import com.thesis.Writable;
+import com.thesis.common.AnnotationParser;
+import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Block extends Disassembler{
+public abstract class Block implements Writable{
 	protected static final String NL = "\n";
 	protected static final String LEFT_BRACKET = "{";
 	protected static final String RIGHT_BRACKET = "}";
@@ -16,11 +19,17 @@ public abstract class Block extends Disassembler{
 	protected StringBuffer buf;
 	protected List<Object> text;
 	protected Block mParent;
+	protected final AnnotationParser mAnnotationParser;
+	protected List<Block> children;
 
 	protected Block() {
 		buf = new StringBuffer();
 		text = new ArrayList<>();
+		mAnnotationParser = new AnnotationParser();
+		children = new ArrayList<>();
 	}
+
+	public abstract Block disassemble();
 
 	protected static String getTypeIndicator(String args) {
 		if (args.startsWith("L")) {

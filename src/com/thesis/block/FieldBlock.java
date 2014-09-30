@@ -1,9 +1,13 @@
-package com.thesis.file;
+package com.thesis.block;
 
+import com.thesis.common.SignatureVisitor;
+import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.FieldNode;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 public class FieldBlock extends StatementBlock {
@@ -15,7 +19,8 @@ public class FieldBlock extends StatementBlock {
 		mParent = parent;
 	}
 
-	public String disassemble() {
+	@Override
+	public Block disassemble() {
 		appendAllSingleLineAnnotations(mFieldNode.visibleAnnotations, mFieldNode.invisibleAnnotations);
 		clearBuffer();
 		addDeprecatedAnnotationIfNeeded(mFieldNode.access);
@@ -33,11 +38,12 @@ public class FieldBlock extends StatementBlock {
 			buf.append(" = ").append(mFieldNode.value);
 		}
 		addStatementEnd();
-		return buf.toString();
+		text.add(buf.toString());
+		return this;
 	}
 
 	private void addFieldSignature(String signature) {
-		DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
+		SignatureVisitor sv = new SignatureVisitor(0);
 		SignatureReader r = new SignatureReader(signature);
 		r.acceptType(sv);
 		buf.append(sv.getDeclaration()).append(" ");
@@ -47,5 +53,10 @@ public class FieldBlock extends StatementBlock {
 		for (List annotationNodeList : annotationLists) {
 			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
 		}
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		Util.printList(writer, text);
 	}
 }

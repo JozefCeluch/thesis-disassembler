@@ -1,9 +1,12 @@
-package com.thesis.file;
+package com.thesis.block;
 
+import com.thesis.file.Parser;
+import com.thesis.common.Util;
 import org.objectweb.asm.tree.InnerClassNode;
 
 import java.io.FileNotFoundException;
-import java.util.List;
+import java.io.IOException;
+import java.io.Writer;
 
 public class InnerClassBlock extends Block {
 
@@ -16,11 +19,12 @@ public class InnerClassBlock extends Block {
 		mParent = parent;
 	}
 
-	public List<Object> disassemble() {
+	@Override
+	public Block disassemble() {
 		if (mOuterClassName.equals(mInnerClassNode.outerName)) {
 			appendInnerClassNode(mInnerClassNode.name);
 		}
-		return text;
+		return this;
 	}
 
 	private void appendInnerClassNode(String name) {
@@ -31,5 +35,10 @@ public class InnerClassBlock extends Block {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		Util.printList(writer, text);
 	}
 }

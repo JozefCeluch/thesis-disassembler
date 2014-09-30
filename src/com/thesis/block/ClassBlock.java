@@ -1,5 +1,7 @@
-package com.thesis.file;
+package com.thesis.block;
 
+import com.thesis.common.SignatureVisitor;
+import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -7,6 +9,8 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 public class ClassBlock extends Block {
@@ -17,7 +21,8 @@ public class ClassBlock extends Block {
 		mParent = parent;
 	}
 
-	public List<Object> disassemble() {
+	@Override
+	public Block disassemble() {
 
 		appendAllSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations); //todo
 
@@ -39,7 +44,7 @@ public class ClassBlock extends Block {
 		buf.append(Util.removeOuterClasses(mClassNode.name));
 		String genericDeclaration = null;
 		if (mClassNode.signature != null) {
-			DecompilerSignatureVisitor sv = new DecompilerSignatureVisitor(0);
+			SignatureVisitor sv = new SignatureVisitor(0);
 			SignatureReader r = new SignatureReader(mClassNode.signature);
 			r.accept(sv);
 			genericDeclaration = sv.getDeclaration();
@@ -58,20 +63,13 @@ public class ClassBlock extends Block {
 		appendMethods(mClassNode.methods);
 		appendInnerClasses(mClassNode.innerClasses);
 
-
-		appendClassEnd();
-
-		return text;
+		return this;
 	}
 
 	private void appendAllSingleLineAnnotations(List... annotationLists){
 		for (List annotationNodeList : annotationLists) {
 			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
 		}
-	}
-
-	private void appendClassEnd() {
-		text.add(RIGHT_BRACKET);
 	}
 
 	private void addSuperClass(String superName) {
@@ -95,7 +93,7 @@ public class ClassBlock extends Block {
 			MethodBlock methodBlock = new MethodBlock((MethodNode)method, this);
 			methodBlock.setClassName(mClassNode.name);
 			methodBlock.setClassAccess(mClassNode.access);
-			text.add(methodBlock.disassemble());
+			children.add(methodBlock.disassemble());
 		}
 	}
 
@@ -103,14 +101,14 @@ public class ClassBlock extends Block {
 		for (Object object : fields) {
 			FieldNode field = (FieldNode)object;
 			FieldBlock fieldBlock = new FieldBlock(field, this);
-			text.add(fieldBlock.disassemble());
+			children.add(fieldBlock.disassemble());
 		}
 	}
 
 	protected void appendInnerClasses(List innerClasses) {
 		for (Object innerClass : innerClasses) {
 			InnerClassBlock icb = new InnerClassBlock((InnerClassNode)innerClass, mClassNode.name, this);
-			text.add(icb.disassemble());
+			children.add(icb.disassemble());
 		}
 	}
 
@@ -120,5 +118,16 @@ public class ClassBlock extends Block {
 			return 0;
 		}
 		return super.countParents();
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		Util.printList(writer, text);
+
+		for (Block block : children) {
+			block.write(writer);
+		}
+
+		writer.append(BLOCK_END);
 	}
 }

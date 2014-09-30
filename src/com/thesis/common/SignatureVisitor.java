@@ -1,18 +1,17 @@
-package com.thesis.file;
+package com.thesis.common;
 
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.util.List;
 
 /**
- * A {@link SignatureVisitor} that prints a disassembled view of the signature
+ * A {@link org.objectweb.asm.signature.SignatureVisitor} that prints a disassembled view of the signature
  * it visits. Adjusted version of TraceSignatureVisitor
  *
  * @author Eugene Kuleshov
  * @author Eric Bruneton
  */
-public class DecompilerSignatureVisitor extends SignatureVisitor {
+public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisitor {
 
 	private final StringBuffer declaration;
 
@@ -57,7 +56,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 
 	private AnnotationParser annotationParser;
 
-	public DecompilerSignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
+	public SignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
 		super(Opcodes.ASM5);
 		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
 		this.declaration = new StringBuffer();
@@ -67,13 +66,13 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 		annotations = new StringBuffer();
 	}
 
-	public DecompilerSignatureVisitor(final int access) {
+	public SignatureVisitor(final int access) {
 		super(Opcodes.ASM5);
 		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
 		this.declaration = new StringBuffer();
 	}
 
-	private DecompilerSignatureVisitor(final StringBuffer buf) {
+	private SignatureVisitor(final StringBuffer buf) {
 		super(Opcodes.ASM5);
 		this.declaration = buf;
 	}
@@ -86,14 +85,14 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitClassBound() {
+	public org.objectweb.asm.signature.SignatureVisitor visitClassBound() {
 		separator = " extends ";
 		startType();
 		return this;
 	}
 
 	@Override
-	public SignatureVisitor visitInterfaceBound() {
+	public org.objectweb.asm.signature.SignatureVisitor visitInterfaceBound() {
 		separator = seenInterfaceBound ? ", " : " extends ";
 		seenInterfaceBound = true;
 		startType();
@@ -101,7 +100,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitSuperclass() {
+	public org.objectweb.asm.signature.SignatureVisitor visitSuperclass() {
 		endFormals();
 		separator = " extends ";
 		startType();
@@ -109,7 +108,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitInterface() {
+	public org.objectweb.asm.signature.SignatureVisitor visitInterface() {
 		separator = seenInterface ? ", " : isInterface ? " extends "
 				: " implements ";
 		seenInterface = true;
@@ -118,7 +117,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitParameterType() {
+	public org.objectweb.asm.signature.SignatureVisitor visitParameterType() {
 		endFormals();
 		if (seenParameter) {
 			declaration.append(", ");
@@ -132,7 +131,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitReturnType() {
+	public org.objectweb.asm.signature.SignatureVisitor visitReturnType() {
 		endFormals();
 		if (seenParameter) {
 			seenParameter = false;
@@ -141,18 +140,18 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 		}
 		declaration.append(')');
 		returnType = new StringBuffer();
-		return new DecompilerSignatureVisitor(returnType);
+		return new SignatureVisitor(returnType);
 	}
 
 	@Override
-	public SignatureVisitor visitExceptionType() {
+	public org.objectweb.asm.signature.SignatureVisitor visitExceptionType() {
 		if (exceptions == null) {
 			exceptions = new StringBuffer();
 		} else {
 			exceptions.append(", ");
 		}
 		// startType();
-		return new DecompilerSignatureVisitor(exceptions);
+		return new SignatureVisitor(exceptions);
 	}
 
 	@Override
@@ -218,7 +217,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitArrayType() {
+	public org.objectweb.asm.signature.SignatureVisitor visitArrayType() {
 		declaration.append(getCurrentArgAnnotations());
 		startType();
 		arrayStack |= 1;
@@ -270,7 +269,7 @@ public class DecompilerSignatureVisitor extends SignatureVisitor {
 	}
 
 	@Override
-	public SignatureVisitor visitTypeArgument(final char tag) {
+	public org.objectweb.asm.signature.SignatureVisitor visitTypeArgument(final char tag) {
 		if (argumentStack % 2 == 0) {
 			++argumentStack;
 			declaration.append('<');
