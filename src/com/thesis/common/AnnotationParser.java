@@ -1,6 +1,5 @@
 package com.thesis.common;
 
-import com.thesis.common.Util;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
@@ -14,11 +13,11 @@ public class AnnotationParser {
 		buf = new StringBuffer();
 	}
 
-	public String getAnnotations(List<AnnotationNode> annotations, String separator) {
+	public String getAnnotations(List annotations, String separator) {
 		if (annotations == null) return "";
 		buf.setLength(0);
-		for (AnnotationNode annotation : annotations) {
-			addAnnotationNode(annotation.desc, annotation.values);
+		for (Object annotation : annotations) {
+			addAnnotationNode(((AnnotationNode)annotation).desc, ((AnnotationNode)annotation).values);
 			buf.append(separator);
 		}
 		return buf.toString();

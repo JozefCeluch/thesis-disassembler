@@ -204,7 +204,7 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void addExceptions(List<String> exceptions, String genericExceptions) {
+	private void addExceptions(List exceptions, String genericExceptions) {
 		if (genericExceptions != null && !genericExceptions.isEmpty()) {
 			buf.append(genericExceptions);
 		} else {
@@ -212,7 +212,7 @@ public class MethodBlock extends Block {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
 					addComma(i);
-					buf.append(Util.javaObjectName(exceptions.get(i)));
+					buf.append(Util.javaObjectName((String)exceptions.get(i)));
 				}
 			}
 		}
