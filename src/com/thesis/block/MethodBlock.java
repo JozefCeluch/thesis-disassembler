@@ -1,5 +1,6 @@
 package com.thesis.block;
 
+import com.thesis.InstructionTranslator;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.ArithmeticExpression;
@@ -52,7 +53,8 @@ public class MethodBlock extends Block {
 	private void disassembleCodeBlock(MethodNode method) {
 		clearBuffer();
 		if (!Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
-			addCode();
+			InstructionTranslator translator = new InstructionTranslator(mMethodNode, children);
+			translator.addCode();
 		}
 	}
 
@@ -76,76 +78,6 @@ public class MethodBlock extends Block {
 		addAbstractMethodDeclarationEnding(method);
 
 		text.add(buf.toString());
-	}
-
-	public void addCode() {
-		clearBuffer();
-		Stack<Expression> vmStack = new Stack<>();
-
-		InsnList instructions = mMethodNode.instructions;
-		AbstractInsnNode node = instructions.getFirst();
-		while (node != null) {
-			int opCode;
-			switch (node.getType()) {
-				case AbstractInsnNode.VAR_INSN:
-					opCode = node.getOpcode();
-					if (opCode > -1) {
-						String op = Printer.OPCODES[opCode];
-						buf.append(op);
-						if (op.endsWith("LOAD"))
-							vmStack.push(new PrimaryExpression(mMethodNode.localVariables.get(((VarInsnNode)node).var)));
-						if (op.endsWith("STORE")) {
-							if (node instanceof VarInsnNode) {
-								Object localVar = mMethodNode.localVariables.get(((VarInsnNode) node).var);
-								PrimaryExpression leftSide = new PrimaryExpression(localVar);
-								children.add(new Statement(new AssignmentExpression(node, leftSide, vmStack.pop())));
-							} else {
-								children.add(new Statement(new AssignmentExpression(node, vmStack.pop())));
-							}
-						}
-					}
-					break;
-				case AbstractInsnNode.LDC_INSN:
-					opCode = node.getOpcode();
-					if (opCode > -1) {
-						buf.append(Printer.OPCODES[opCode]);
-					}
-					buf.append(" ").append(((LdcInsnNode)node).cst);
-					vmStack.push(new PrimaryExpression(((LdcInsnNode)node).cst));
-					break;
-				case AbstractInsnNode.LABEL:
-					break;
-				case AbstractInsnNode.INSN:
-					opCode = node.getOpcode();
-					String op = "";
-					if (opCode > -1) {
-						op = Printer.OPCODES[opCode];
-						buf.append(op);
-					}
-					if (vmStack.size() >= 2) {
-						Expression ex2 = vmStack.pop();
-						Expression ex1 = vmStack.pop();
-						vmStack.push(new ArithmeticExpression(node, ex1, ex2));
-					}
-					if (op.contains("CONST")) {
-						int valPos = op.lastIndexOf("_");
-						String val = op.substring(valPos + 1);
-						vmStack.push(new PrimaryExpression(val.toLowerCase()));
-					}
-					if (op.contains("RETURN")){
-						if(vmStack.size() == 1) children.add(new ReturnStatement(vmStack.pop()));
-					}
-					break;
-				default:
-					buf.append(node).append(": ");
-					opCode = node.getOpcode();
-					if (opCode > -1) {
-						buf.append(Printer.OPCODES[opCode]);
-					}
-			}
-			buf.append(NL);
-			node = node.getNext();
-		}
 	}
 
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
