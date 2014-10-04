@@ -3,13 +3,11 @@ package com.thesis;
 import com.thesis.block.Block;
 import com.thesis.block.ReturnStatement;
 import com.thesis.block.Statement;
-import com.thesis.expression.ArithmeticExpression;
-import com.thesis.expression.AssignmentExpression;
-import com.thesis.expression.Expression;
-import com.thesis.expression.PrimaryExpression;
+import com.thesis.expression.*;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Printer;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Stack;
 
@@ -106,72 +104,60 @@ public class InstructionTranslator {
 	 *            or MONITOREXIT.
 	 */
 	private void visitInsnNode(InsnNode node) {
-		int opCode;
-		opCode = node.getOpcode();
-		String op = "";
-		if (opCode > -1) {
-			op = Printer.OPCODES[opCode];
-			buf.append(op);
-		}
+		String opCode = getOpcodeString(node.getOpcode());
 		if (mStack.size() >= 2) {
 			Expression ex2 = mStack.pop();
 			Expression ex1 = mStack.pop();
 			mStack.push(new ArithmeticExpression(node, ex1, ex2));
 		}
-		if (op.contains("CONST")) {
-			int valPos = op.lastIndexOf("_");
-			String val = op.substring(valPos + 1);
+		if (opCode.contains("CONST")) {
+			int valPos = opCode.lastIndexOf("_");
+			String val = opCode.substring(valPos + 1);
 			mStack.push(new PrimaryExpression(val.toLowerCase()));
 		}
-		if (op.contains("RETURN")) {
+		if (opCode.contains("RETURN")) {
 			if (mStack.size() == 1) mStatements.add(new ReturnStatement(mStack.pop()));
 		}
 	}
 
-//	BIPUSH, SIPUSH or NEWARRAY
+	//	BIPUSH, SIPUSH or NEWARRAY
 	private void visitIntInsnNode(IntInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
 	private void visitVarInsnNode(VarInsnNode node) {
-		int opCode;
-		opCode = node.getOpcode();
-		if (opCode > -1) {
-			String op = Printer.OPCODES[opCode];
-			buf.append(op);
-			if (op.endsWith("LOAD"))
+		String opCode = getOpcodeString(node.getOpcode());
+		if (opCode.endsWith("LOAD")) {
+			if (mMethod.localVariables.size() > node.var) //todo here can by index out of bounds sometimes, why??!?!
 				mStack.push(new PrimaryExpression(mMethod.localVariables.get(node.var)));
-			if (op.endsWith("STORE")) {
-				if (node instanceof VarInsnNode) {
-					Object localVar = mMethod.localVariables.get(node.var);
-					PrimaryExpression leftSide = new PrimaryExpression(localVar);
-					mStatements.add(new Statement(new AssignmentExpression(node, leftSide, mStack.pop())));
-				} else {
-					mStatements.add(new Statement(new AssignmentExpression(node, mStack.pop())));
-				}
-			}
+		}
+		if (opCode.endsWith("STORE")) {
+			Object localVar = mMethod.localVariables.get(node.var);
+			PrimaryExpression leftSide = new PrimaryExpression(localVar);
+			mStatements.add(new Statement(new AssignmentExpression(node, leftSide, mStack.pop())));
+
 		}
 	}
 
 //	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
 	private void visitTypeInsnNode(TypeInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
 	private void visitFieldInsnNode(FieldInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
 	private void visitMethodInsnNode(MethodInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	INVOKEDYNAMIC
 	private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 	/**
@@ -180,41 +166,64 @@ public class InstructionTranslator {
 	 * IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL.
 	 */
 	private void visitJumpInsnNode(JumpInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 	private void visitLabelNode(LabelNode node) {
+		methodNotImplemented(node);
 	}
 	// LDC
 	private void visitLdcInsnNode(LdcInsnNode node) {
-		int opCode;
-		opCode = node.getOpcode();
-		if (opCode > -1) {
-			buf.append(Printer.OPCODES[opCode]);
-		}
 		buf.append(" ").append(node.cst);
 		mStack.push(new PrimaryExpression(node.cst));
 	}
 
 	private void visitIincInsnNode(IincInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	TABLESWITCH
 	private void visitTableSwitchInsnNode(TableSwitchInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 //	MULTIANEWARRAY
 	private void visitMultiANewArrayInsnNode(MultiANewArrayInsnNode node) {
-
+		methodNotImplemented(node);
 	}
 
 	private void visitFrameNode(FrameNode node) {
-
+		methodNotImplemented(node);
 	}
 
 	private void visitLineNumberNode(LineNumberNode node) {
+		methodNotImplemented(node);
+	}
 
+	private static String getOpcodeString(int opCode) {
+		String op = "";
+		if (opCode > -1) {
+			op = Printer.OPCODES[opCode];
+		}
+		return op;
+	}
+
+	private void methodNotImplemented(AbstractInsnNode node) {
+		String opCode = getOpcodeString(node.getOpcode());
+		if (opCode.isEmpty()) return;
+		String fields = "";
+		for (Field field : node.getClass().getFields()) {
+			if (!(field.getName().contains("INSN") || field.getName().contains("LABEL")|| field.getName().contains("FRAME") || field.getName().contains("LINE"))) {
+				try {
+					fields += field.getName() + "= " + field.get(node);
+					fields += "; ";
+				} catch (IllegalAccessException e) {
+					System.out.println(field.getName() + " is inaccessible");
+				}
+			}
+
+		}
+		String result = "code: " + opCode + " " + fields;
+		System.out.println(result);
 	}
 }
