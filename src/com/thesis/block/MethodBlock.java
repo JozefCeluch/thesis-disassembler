@@ -229,12 +229,15 @@ public class MethodBlock extends Block {
 		printList(writer, text);
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			writer.write(BLOCK_START);
-			//todo print children
-//			writer.write(buf.toString());
 			for(Block child : children) {
+				if (isConstructor() && child instanceof ReturnStatement) continue; // todo constructor returns this
 				child.write(writer);
 			}
 			writer.write(BLOCK_END);
 		}
+	}
+
+	private boolean isConstructor() {
+		return mMethodNode.name.equals("<init>");
 	}
 }
