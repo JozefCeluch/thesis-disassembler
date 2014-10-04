@@ -10,11 +10,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-public class FieldBlock extends StatementBlock {
+public class Field extends Statement {
 
 	private FieldNode mFieldNode;
 
-	public FieldBlock(FieldNode fieldNode, Block parent) {
+	public Field(FieldNode fieldNode, Block parent) {
 		mFieldNode = fieldNode;
 		mParent = parent;
 	}

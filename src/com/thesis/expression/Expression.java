@@ -10,6 +10,9 @@ public abstract class Expression implements Writable {
 
 	protected AbstractInsnNode mInstruction;
 
+	protected Expression() {
+	}
+
 	protected Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
 	}
