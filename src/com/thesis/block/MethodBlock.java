@@ -1,6 +1,7 @@
 package com.thesis.block;
 
 import com.thesis.InstructionTranslator;
+import com.thesis.LocalVariable;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.ArithmeticExpression;
@@ -14,18 +15,18 @@ import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class MethodBlock extends Block {
 	MethodNode mMethodNode;
 	private String mClassName;
 	private int mClassAccess;
+	private Map<Integer, LocalVariable> mArguments;
 
 	public MethodBlock(MethodNode methodNode, Block parent) {
 		mMethodNode = methodNode;
 		mParent = parent;
+		mArguments = new HashMap<>();
 	}
 
 	public void setClassAccess(int classAccess) {
@@ -53,7 +54,7 @@ public class MethodBlock extends Block {
 	private void disassembleCodeBlock(MethodNode method) {
 		clearBuffer();
 		if (!Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
-			InstructionTranslator translator = new InstructionTranslator(mMethodNode, children);
+			InstructionTranslator translator = new InstructionTranslator(mMethodNode, children, mArguments);
 			translator.addCode();
 		}
 	}
@@ -135,6 +136,8 @@ public class MethodBlock extends Block {
 	}
 
 	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs) {
+		mArguments.put(0, new LocalVariable("this", mClassName, 0, true));
+
 		if (genericDecl != null && !genericDecl.isEmpty()) {
 			buf.append(genericDecl);
 		} else {
@@ -147,8 +150,10 @@ public class MethodBlock extends Block {
 					addComma(i);
 					addParameterAnnotations(method.invisibleParameterAnnotations, i);
 					addParameterAnnotations(method.visibleParameterAnnotations, i);
-					addType(splitArgs[i]);
-					buf.append("arg").append(i);
+					String type = Util.getType(splitArgs[i]); //todo use local variables if possible
+					String name = "arg" + i;
+					buf.append(type).append(" ").append(name);
+					mArguments.put(++i, new LocalVariable(name, type, ++i, true));
 				}
 			}
 			buf.append(")");
