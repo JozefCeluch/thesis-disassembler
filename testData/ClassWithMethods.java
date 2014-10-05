@@ -24,8 +24,6 @@ public <T> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T arg
 return null;
 }
 public int calculations(int arg0, int arg1, int arg2) {
-arg0 = arg1 + arg2 + arg0 * arg2 / arg1;
-arg1 = 223321;
 return arg1;
 }
 }
