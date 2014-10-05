@@ -17,13 +17,7 @@ public abstract class Expression implements Writable {
 		mInstruction = instruction;
 	}
 
-	public AbstractInsnNode getInstruction() {
-		return mInstruction;
-	}
-
-	public void setInstruction(AbstractInsnNode instruction) {
-		mInstruction = instruction;
-	}
+	abstract public String getType();
 
 	@Override
 	public String toString() {

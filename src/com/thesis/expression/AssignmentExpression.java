@@ -29,4 +29,9 @@ public class AssignmentExpression extends  Expression{
 		writer.append(" = ");
 		mRightSide.write(writer);
 	}
+
+	@Override
+	public String getType() {
+		return mRightSide.getType();
+	}
 }

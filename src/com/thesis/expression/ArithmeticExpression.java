@@ -43,4 +43,9 @@ public class ArithmeticExpression extends Expression {
 		writer.append(" ").append(makeOperand()).append(" ");
 		mRightSide.write(writer);
 	}
+
+	@Override
+	public String getType() {
+		return mLeftSide.getType();
+	}
 }
