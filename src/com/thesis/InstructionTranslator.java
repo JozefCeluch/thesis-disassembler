@@ -3,15 +3,15 @@ package com.thesis;
 import com.thesis.block.Block;
 import com.thesis.block.ReturnStatement;
 import com.thesis.block.Statement;
+import com.thesis.common.Util;
 import com.thesis.expression.*;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Printer;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InstructionTranslator {
 
@@ -94,11 +94,16 @@ public class InstructionTranslator {
 			}
 			node = node.getNext();
 		}
-		for (LocalVariable variable : mLocalVariables.values()) {
-			if (!variable.isArgument()) {
-				mStatements.add(0, new Statement(new VariableDeclarationExpression(variable)));
-			}
-		}
+		addLocalVariablesAssignments();
+	}
+
+	private void addLocalVariablesAssignments() {
+		List<Block> localVars = mLocalVariables.values()
+				.stream()
+				.filter(variable -> !variable.isArgument())
+				.map(variable -> new Statement(new VariableDeclarationExpression(variable)))
+				.collect(Collectors.toList());
+		mStatements.addAll(0, localVars);
 	}
 
 	/**
@@ -151,12 +156,13 @@ public class InstructionTranslator {
 		switch(opCode) {
 			case "BIPUSH":
 				mStack.push(new PrimaryExpression(node.operand,"int"));
+				break;
 			case "SIPUSH":
 				mStack.push(new PrimaryExpression(node.operand,"short"));
 				break;
 			case "NEWARRAY":
-				Expression length = mStack.pop();
-				//todo new array for numbers or booleans
+				Expression lengthExp = mStack.pop();
+				mStack.push(new ArrayCreationExpression(lengthExp, node.operand));
 				break;
 		}
 	}
@@ -174,8 +180,14 @@ public class InstructionTranslator {
 				mLocalVariables.put(node.var, new LocalVariable("var"+node.var, node.var));
 			}
 			LocalVariable localVar = mLocalVariables.get(node.var);
-			Expression rightSide =  mStack.pop();
-			PrimaryExpression leftSide = new PrimaryExpression(localVar, rightSide.getType());
+			Expression rightSide =  mStack.pop(); // todo array assignment and type
+			if (!localVar.hasType()) {
+				localVar.setType(rightSide.getType());
+			}
+			if (localVar.hasDebugType()) {
+				rightSide.setType(localVar.getType());
+			}
+			LeftHandSide leftSide = new LeftHandSide(localVar, rightSide.getType());
 			mStatements.add(new Statement(new AssignmentExpression(node, leftSide, rightSide)));
 		}
 	}
@@ -216,7 +228,21 @@ public class InstructionTranslator {
 	private void visitLdcInsnNode(LdcInsnNode node) {
 		printNodeInfo(node);
 		buf.append(" ").append(node.cst);
-		mStack.push(new PrimaryExpression(node.cst));
+		String type;
+		if (node.cst instanceof Integer) {
+			mStack.push(new PrimaryExpression(node.cst, "int"));
+		} else if (node.cst instanceof Float) {
+			mStack.push(new PrimaryExpression(node.cst, "float"));
+		} else if (node.cst instanceof Double) {
+			mStack.push(new PrimaryExpression(node.cst, "double"));
+		} else if (node.cst instanceof Long) {
+			mStack.push(new PrimaryExpression(node.cst, "long"));
+		} else if (node.cst instanceof String) {
+			mStack.push(new PrimaryExpression((String)node.cst, "String"));
+		} else {
+			mStack.push(new PrimaryExpression(node.cst, Util.getType(((Type) node.cst).getDescriptor())));
+		}
+
 	}
 
 	private void visitIincInsnNode(IincInsnNode node) {
