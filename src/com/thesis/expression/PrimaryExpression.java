@@ -7,18 +7,21 @@ import java.io.Writer;
 
 public class PrimaryExpression extends Expression {
 
-	private String mType;
+	private static final String QUOTE = "\"";
+
 	private Object mValue;
 
 	public PrimaryExpression(Object value) {
-		super();
 		mValue = value;
-		mType = value.getClass().getSimpleName();
 	}
 
 	public PrimaryExpression(Object value, String type) {
-		super();
 		mValue = value;
+		mType = type;
+	}
+
+	public PrimaryExpression(String value, String type) {
+		mValue = QUOTE + value + QUOTE;
 		mType = type;
 	}
 
