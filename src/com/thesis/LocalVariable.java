@@ -13,8 +13,11 @@ public class LocalVariable {
 
 	private boolean mIsArgument;
 
+	private boolean mDebugType;
+
 	public LocalVariable(int index) {
 		this.mIndex = index;
+		mDebugType = false;
 	}
 
 	public LocalVariable(String name, int index) {
@@ -26,6 +29,7 @@ public class LocalVariable {
 		mName = variableNode.name;
 		mIndex = variableNode.index;
 		mType = Util.getType(variableNode.desc); //todo use signature for more complex types
+		mDebugType = true;
 	}
 
 	public LocalVariable(String name, String type, int index, boolean isArgument) {
@@ -33,14 +37,11 @@ public class LocalVariable {
 		mType = type;
 		mIndex = index;
 		mIsArgument = isArgument;
+		mDebugType = false;
 	}
 
 	public String getName() {
 		return mName;
-	}
-
-	public void setName(String name) {
-		this.mName = name;
 	}
 
 	public String getType() {
@@ -63,4 +64,11 @@ public class LocalVariable {
 		return mIsArgument;
 	}
 
+	public boolean hasType() {
+		return mType != null && !mType.isEmpty();
+	}
+
+	public boolean hasDebugType(){
+		return mDebugType;
+	}
 }

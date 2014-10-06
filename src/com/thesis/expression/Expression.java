@@ -9,6 +9,7 @@ import java.io.StringWriter;
 public abstract class Expression implements Writable {
 
 	protected AbstractInsnNode mInstruction;
+	protected String mType;
 
 	protected Expression() {
 	}
@@ -18,6 +19,14 @@ public abstract class Expression implements Writable {
 	}
 
 	abstract public String getType();
+
+	public void setType(String type){
+		mType = type;
+	}
+
+	public boolean hasType() {
+		return mType != null && !mType.isEmpty();
+	}
 
 	@Override
 	public String toString() {
