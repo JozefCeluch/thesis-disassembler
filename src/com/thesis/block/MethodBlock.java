@@ -80,12 +80,13 @@ public class MethodBlock extends Block {
 	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
 		if (method.signature != null) {
 			SignatureVisitor v = new SignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
+			v.setLocalVariableNodes(method.localVariables);
 			SignatureReader r = new SignatureReader(method.signature);
 			r.accept(v);
 			if (v.getDeclaration() != null) genericDecl.append(v.getDeclaration());
 			if (v.getReturnType() != null) genericReturn.append(v.getReturnType());
 			if (v.getExceptions() != null) genericExceptions.append(v.getExceptions());
-
+			mArguments.putAll(v.getArguments());
 			if (genericDecl.indexOf("<") == 0) {
 				int gtPosition = genericDecl.indexOf(">") + 1;
 				genericReturn.insert(0, " ");
@@ -165,29 +166,19 @@ public class MethodBlock extends Block {
 	}
 
 	private LocalVariable addArgument(String splitArg, int i) {
-		LocalVariableNode variableNode = variableAtIndex(++i);
+		LocalVariableNode variableNode = Util.variableAtIndex(i+1, mMethodNode.localVariables);
 		LocalVariable variable;
 		if (variableNode == null) {
 			String type = Util.getType(splitArg);
 			String name = ARGUMENT_NAME_BASE + i;
 			buf.append(type).append(" ").append(name);
-			variable =  new LocalVariable(name, type, ++i);
+			variable =  new LocalVariable(name, type, i+1);
 		} else {
 			variable = new LocalVariable(variableNode);
 			buf.append(variable.getType()).append(" ").append(variable.getName());
 		}
 		variable.setIsArgument(true);
 		return variable;
-	}
-
-	private LocalVariableNode variableAtIndex(int index) {
-		List localVariables = mMethodNode.localVariables;
-		for (Object o: localVariables ) {
-			LocalVariableNode variable = (LocalVariableNode) o;
-			if (variable.index == index)
-				return variable;
-		}
-		return null;
 	}
 
 	private void addAnnotations(MethodNode method, int i) {

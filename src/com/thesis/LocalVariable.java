@@ -51,14 +51,22 @@ public class LocalVariable {
 		this.mType = type;
 	}
 
+	public void setName(String name) {
+		mName = name;
+	}
+
 	public int getIndex() {
 		return mIndex;
+	}
+
+	public void setIndex(int index) {
+		mIndex = index;
 	}
 
 	public void setIsArgument(boolean isArgument) {
 		mIsArgument = isArgument;
 	}
-	
+
 	public boolean isArgument() {
 		return mIsArgument;
 	}

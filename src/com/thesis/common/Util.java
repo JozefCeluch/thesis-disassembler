@@ -1,5 +1,7 @@
 package com.thesis.common;
 
+import org.objectweb.asm.tree.LocalVariableNode;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -88,5 +90,14 @@ public class Util {
 
 	public static boolean isNotEmpty(String string) {
 		return string != null && !string.isEmpty();
+	}
+
+	public static LocalVariableNode variableAtIndex(int index, List localVariables) {
+		for (Object o: localVariables ) {
+			LocalVariableNode variable = (LocalVariableNode) o;
+			if (variable.index == index)
+				return variable;
+		}
+		return null;
 	}
 }

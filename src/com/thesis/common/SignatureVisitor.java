@@ -1,8 +1,14 @@
 package com.thesis.common;
 
+import com.thesis.LocalVariable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link org.objectweb.asm.signature.SignatureVisitor} that prints a disassembled view of the signature
@@ -56,6 +62,12 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	private AnnotationParser annotationParser;
 
+	private List mLocalVariableNodes;
+
+	private Map<Integer,LocalVariable> mLocalVariables;
+
+	private LocalVariable currentArgument;
+
 	public SignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
 		super(Opcodes.ASM5);
 		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
@@ -64,17 +76,25 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		this.invisibleParamAnnotations = invisibleParameterAnnotations;
 		annotationParser = new AnnotationParser();
 		annotations = new StringBuffer();
+		mLocalVariableNodes = null;
+		mLocalVariables = new HashMap<>();
 	}
 
 	public SignatureVisitor(final int access) {
 		super(Opcodes.ASM5);
 		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
 		this.declaration = new StringBuffer();
+		mLocalVariableNodes = null;
 	}
 
 	private SignatureVisitor(final StringBuffer buf) {
 		super(Opcodes.ASM5);
 		this.declaration = buf;
+		mLocalVariableNodes = null;
+	}
+
+	public void setLocalVariableNodes(List localVariableNodes) {
+		mLocalVariableNodes = localVariableNodes;
 	}
 
 	@Override
@@ -157,41 +177,47 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	@Override
 	public void visitBaseType(final char descriptor) {
 		declaration.append(getCurrentArgAnnotations());
+		String type;
 		switch (descriptor) {
 			case 'V':
-				declaration.append("void");
+				type = "void";
 				break;
 			case 'B':
-				declaration.append("byte");
+				type = "byte";
 				break;
 			case 'J':
-				declaration.append("long");
+				type = "long";
 				break;
 			case 'Z':
-				declaration.append("boolean");
+				type = "boolean";
 				break;
 			case 'I':
-				declaration.append("int");
+				type = "int";
 				break;
 			case 'S':
-				declaration.append("short");
+				type = "short";
 				break;
 			case 'C':
-				declaration.append("char");
+				type = "char";
 				break;
 			case 'F':
-				declaration.append("float");
+				type = "float";
 				break;
 			// case 'D':
 			default:
-				declaration.append("double");
+				type = "double";
 				break;
 		}
+		declaration.append(type);
+		currentArgument.setType(type);
 		endType();
 	}
 
 	private String getCurrentArgAnnotations() {
-		if (annotations == null || argumentStack % 2 != 0 || arrayStack % 2 != 0) return "";
+		if (argumentStack % 2 != 0 || arrayStack % 2 != 0) return "";
+
+		createVariable();
+		if (annotations == null) return "";
 
 		annotations.setLength(0);
 		if (visibleParamAnnotations != null) {
@@ -213,6 +239,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	public void visitTypeVariable(final String name) {
 		declaration.append(getCurrentArgAnnotations());
 		declaration.append(name);
+		currentArgument.setType(name);
 		endType();
 	}
 
@@ -308,6 +335,10 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		return exceptions == null ? null : exceptions.toString();
 	}
 
+	public Map<Integer,LocalVariable>  getArguments() {
+		return mLocalVariables;
+	}
+
 	// -----------------------------------------------
 
 	private void endFormals() {
@@ -331,7 +362,28 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			}
 		}
 		if (seenParameter && argumentStack == 0){
-			declaration.append(" arg").append(argCount);
+			int index = argCount+1; //TODO index is address on the stack so LONG or DOUBLE have 2 bytes
+			currentArgument.setIndex(index);
+			String name = getArgumentName(index);
+			currentArgument.setName(name);
+			mLocalVariables.put(currentArgument.getIndex(), currentArgument);
+			declaration.append(" ").append(name);
 		}
+	}
+
+	private String getArgumentName(int index) {
+		String name;
+		if (mLocalVariableNodes != null && !mLocalVariableNodes.isEmpty()) {
+			LocalVariableNode node = Util.variableAtIndex(index, mLocalVariableNodes);
+			name = node.name;
+		} else {
+			name = "arg" + argCount;
+		}
+		return name;
+	}
+
+	private void createVariable() {
+		currentArgument = new LocalVariable(argCount);
+		currentArgument.setIsArgument(true);
 	}
 }

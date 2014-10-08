@@ -14,13 +14,13 @@ private void voidMethodWithVarArgs(int... arg0) {
 private int intMethodWithExceptions() throws java.lang.NullPointerException, java.lang.Exception {
 return 0;
 }
-public <T> T genericMethod(T arg0) {
-return arg0;
+public <T> T genericMethod(T genericArg) {
+return genericArg;
 }
 public java.util.Map<java.lang.Integer, java.lang.Float>[] crazyReturn() {
 return null;
 }
-public <T> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T arg0) {
+public <T> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T anotherGenericArg) {
 return null;
 }
 public int calculations(int arg0, int arg1, int arg2) {
