@@ -32,11 +32,10 @@ public class LocalVariable {
 		mDebugType = true;
 	}
 
-	public LocalVariable(String name, String type, int index, boolean isArgument) {
+	public LocalVariable(String name, String type, int index) {
 		mName = name;
 		mType = type;
 		mIndex = index;
-		mIsArgument = isArgument;
 		mDebugType = false;
 	}
 
@@ -56,10 +55,10 @@ public class LocalVariable {
 		return mIndex;
 	}
 
-	public void setIndex(int index) {
-		this.mIndex = index;
+	public void setIsArgument(boolean isArgument) {
+		mIsArgument = isArgument;
 	}
-
+	
 	public boolean isArgument() {
 		return mIsArgument;
 	}

@@ -4,20 +4,16 @@ import com.thesis.InstructionTranslator;
 import com.thesis.LocalVariable;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
-import com.thesis.expression.ArithmeticExpression;
-import com.thesis.expression.AssignmentExpression;
-import com.thesis.expression.Expression;
-import com.thesis.expression.PrimaryExpression;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
 public class MethodBlock extends Block {
+	private static final String ARGUMENT_NAME_BASE = "arg";
 	MethodNode mMethodNode;
 	private String mClassName;
 	private int mClassAccess;
@@ -127,7 +123,7 @@ public class MethodBlock extends Block {
 	}
 
 	private void addMethodReturnType(String desc, String genericReturn) {
-		if (genericReturn != null && !genericReturn.isEmpty()){
+		if (Util.isNotEmpty(genericReturn)){
 			buf.append(genericReturn).append(" ");
 		} else {
 			int closingBracketPosition = desc.lastIndexOf(')');
@@ -136,32 +132,67 @@ public class MethodBlock extends Block {
 	}
 
 	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs) {
-		mArguments.put(0, new LocalVariable("this", mClassName, 0, true));
+		LocalVariable thisArgument = new LocalVariable("this", mClassName, 0);
+		thisArgument.setIsArgument(true);
+		mArguments.put(0, thisArgument);
 
-		if (genericDecl != null && !genericDecl.isEmpty()) {
+		if (Util.isNotEmpty(genericDecl)) {
 			buf.append(genericDecl);
 		} else {
 			buf.append("(");
-			int closingBracketPosition = method.desc.lastIndexOf(')');
-			String args = method.desc.substring(1, closingBracketPosition);
-			String[] splitArgs = splitMethodArguments(args);
-			for (int i = 0; i < splitArgs.length; i++) {
-				if (!splitArgs[i].isEmpty()) {
-					addComma(i);
-					addParameterAnnotations(method.invisibleParameterAnnotations, i);
-					addParameterAnnotations(method.visibleParameterAnnotations, i);
-					String type = Util.getType(splitArgs[i]); //todo use local variables if possible
-					String name = "arg" + i;
-					buf.append(type).append(" ").append(name);
-					mArguments.put(++i, new LocalVariable(name, type, ++i, true));
-				}
-			}
+			addGeneratedArguments(method);
 			buf.append(")");
 		}
 		if (hasVarargs) {
 			int lastBrackets = buf.lastIndexOf("[]");
 			buf.replace(lastBrackets, lastBrackets+2, "...");
 		}
+	}
+
+	private void addGeneratedArguments(MethodNode method) {
+		int closingBracketPosition = method.desc.lastIndexOf(')');
+		String args = method.desc.substring(1, closingBracketPosition);
+		String[] splitArgs = splitMethodArguments(args);
+
+		for (int i = 0; i < splitArgs.length; i++) {
+			if (!splitArgs[i].isEmpty()) {
+				addComma(i);
+				addAnnotations(method, i);
+				LocalVariable argument = addArgument(splitArgs[i], i);
+				mArguments.put(argument.getIndex(), argument);
+			}
+		}
+	}
+
+	private LocalVariable addArgument(String splitArg, int i) {
+		LocalVariableNode variableNode = variableAtIndex(++i);
+		LocalVariable variable;
+		if (variableNode == null) {
+			String type = Util.getType(splitArg);
+			String name = ARGUMENT_NAME_BASE + i;
+			buf.append(type).append(" ").append(name);
+			variable =  new LocalVariable(name, type, ++i);
+		} else {
+			variable = new LocalVariable(variableNode);
+			buf.append(variable.getType()).append(" ").append(variable.getName());
+		}
+		variable.setIsArgument(true);
+		return variable;
+	}
+
+	private LocalVariableNode variableAtIndex(int index) {
+		List localVariables = mMethodNode.localVariables;
+		for (Object o: localVariables ) {
+			LocalVariableNode variable = (LocalVariableNode) o;
+			if (variable.index == index)
+				return variable;
+		}
+		return null;
+	}
+
+	private void addAnnotations(MethodNode method, int i) {
+		addParameterAnnotations(method.invisibleParameterAnnotations, i);
+		addParameterAnnotations(method.visibleParameterAnnotations, i);
 	}
 
 	private void addParameterAnnotations(List[] parameterAnnotationsList, int currentParameter) {
@@ -178,7 +209,7 @@ public class MethodBlock extends Block {
 	}
 
 	private void addExceptions(List exceptions, String genericExceptions) {
-		if (genericExceptions != null && !genericExceptions.isEmpty()) {
+		if (Util.isNotEmpty(genericExceptions)) {
 			buf.append(genericExceptions);
 		} else {
 			if (exceptions != null && exceptions.size() > 0) {

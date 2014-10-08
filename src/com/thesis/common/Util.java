@@ -86,4 +86,7 @@ public class Util {
 		return (value & flag) != 0;
 	}
 
+	public static boolean isNotEmpty(String string) {
+		return string != null && !string.isEmpty();
+	}
 }
