@@ -13,7 +13,6 @@ import java.io.Writer;
 import java.util.*;
 
 public class MethodBlock extends Block {
-	private static final String ARGUMENT_NAME_BASE = "arg";
 	MethodNode mMethodNode;
 	private String mClassName;
 	private int mClassAccess;
@@ -170,7 +169,7 @@ public class MethodBlock extends Block {
 		LocalVariable variable;
 		if (variableNode == null) {
 			String type = Util.getType(splitArg);
-			String name = ARGUMENT_NAME_BASE + i;
+			String name = Util.ARGUMENT_NAME_BASE + i;
 			buf.append(type).append(" ").append(name);
 			variable =  new LocalVariable(name, type, i+1);
 		} else {

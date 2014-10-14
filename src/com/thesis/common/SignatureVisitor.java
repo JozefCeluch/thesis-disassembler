@@ -382,7 +382,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			LocalVariableNode node = Util.variableAtIndex(index, mLocalVariableNodes);
 			name = node.name;
 		} else {
-			name = "arg" + argCount;
+			name = Util.ARGUMENT_NAME_BASE + argCount;
 		}
 		return name;
 	}

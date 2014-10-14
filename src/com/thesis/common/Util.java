@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Util {
 
+	public static final String ARGUMENT_NAME_BASE = "arg";
+
 	public static String getType(String desc){
 		String type;
 		if (desc.startsWith("L")) {
