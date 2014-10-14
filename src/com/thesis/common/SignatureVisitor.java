@@ -67,6 +67,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	private Map<Integer,LocalVariable> mLocalVariables;
 
 	private LocalVariable currentArgument;
+	private int mIndex = 1;
 
 	public SignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
 		super(Opcodes.ASM5);
@@ -362,12 +363,16 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			}
 		}
 		if (seenParameter && argumentStack == 0){
-			int index = argCount+1; //TODO index is address on the stack so LONG or DOUBLE have 2 bytes
-			currentArgument.setIndex(index);
-			String name = getArgumentName(index);
+			currentArgument.setIndex(mIndex);
+			String name = getArgumentName(mIndex);
 			currentArgument.setName(name);
 			mLocalVariables.put(currentArgument.getIndex(), currentArgument);
 			declaration.append(" ").append(name);
+			if (currentArgument.getType()!= null && (currentArgument.getType().equals("double") || currentArgument.getType().equals("long"))) {
+				mIndex += 2;
+			} else {
+				mIndex += 1;
+			}
 		}
 	}
 
