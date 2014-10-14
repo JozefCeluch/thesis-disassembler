@@ -65,6 +65,9 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	private Map<Integer,LocalVariable> mLocalVariables;
 
 	private LocalVariable currentArgument;
+
+	private StringBuffer currentArgType;
+
 	private int mIndex = 1;
 
 	public SignatureVisitor(final int access, List[] visibleParameterAnnotations, List[] invisibleParameterAnnotations) {
@@ -244,9 +247,11 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			boolean needObjectClass = argumentStack % 2 != 0 || seenParameter;
 			if (needObjectClass) {
 				declaration.append(separator).append(name.replace('/', '.'));
+				currentArgType.append(separator).append(name.replace('/', '.'));
 			}
 		} else {
 			declaration.append(separator).append(name.replace('/', '.'));
+			currentArgType.append(separator).append(name.replace('/', '.'));
 		}
 		separator = "";
 		argumentStack *= 2;
@@ -258,10 +263,13 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		declaration.append(getCurrentArgAnnotations());
 		if (argumentStack % 2 != 0) {
 			declaration.append('>');
+			currentArgType.append('>');
 		}
 		argumentStack /= 2;
 		declaration.append('.');
 		declaration.append(separator).append(name.replace('/', '.'));
+		currentArgType.append('.');
+		currentArgType.append(separator).append(name.replace('/', '.'));
 		separator = "";
 		argumentStack *= 2;
 	}
@@ -271,10 +279,13 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		if (argumentStack % 2 == 0) {
 			++argumentStack;
 			declaration.append('<');
+			currentArgType.append('<');
 		} else {
 			declaration.append(", ");
+			currentArgType.append(", ");
 		}
 		declaration.append('?');
+		currentArgType.append('?');
 	}
 
 	@Override
@@ -282,8 +293,10 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		if (argumentStack % 2 == 0) {
 			++argumentStack;
 			declaration.append('<');
+			currentArgType.append('<');
 		} else {
 			declaration.append(", ");
+			currentArgType.append(", ");
 		}
 
 		if (tag == EXTENDS) {
@@ -330,6 +343,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	private void startType() {
 		arrayStack *= 2;
+		currentArgType = new StringBuffer();
 	}
 
 	private void endType() {
@@ -339,6 +353,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			while (arrayStack % 2 != 0) {
 				arrayStack /= 2;
 				declaration.append("[]");
+				currentArgType.append("[]");
 			}
 		}
 		if (seenParameter && argumentStack == 0){
@@ -346,6 +361,10 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			String name = getArgumentName(mIndex);
 			currentArgument.setName(name);
 			increaseIndex();
+			if (currentArgument.getType() == null) {
+				currentArgument.setType(currentArgType.toString());
+			}
+
 			declaration.append(" ").append(name);
 			mLocalVariables.put(currentArgument.getIndex(), currentArgument);
 
