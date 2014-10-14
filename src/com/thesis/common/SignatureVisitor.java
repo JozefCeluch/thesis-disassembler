@@ -3,9 +3,7 @@ package com.thesis.common;
 import com.thesis.LocalVariable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +175,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	@Override
 	public void visitBaseType(final char descriptor) {
+		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		String type;
 		switch (descriptor) {
@@ -214,30 +213,9 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		endType();
 	}
 
-	private String getCurrentArgAnnotations() {
-		if (argumentStack % 2 != 0 || arrayStack % 2 != 0) return "";
-
-		createVariable();
-		if (annotations == null) return "";
-
-		annotations.setLength(0);
-		if (visibleParamAnnotations != null) {
-			if(visibleParamAnnotations[argCount] != null) {
-				annotations.append(annotationParser.getAnnotations(visibleParamAnnotations[argCount], " "));
-			}
-		}
-
-		if (invisibleParamAnnotations != null) {
-			if(invisibleParamAnnotations[argCount] != null) {
-				annotations.append(annotationParser.getAnnotations(invisibleParamAnnotations[argCount], " "));
-			}
-		}
-
-		return annotations.toString();
-	}
-
 	@Override
 	public void visitTypeVariable(final String name) {
+		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		declaration.append(name);
 		currentArgument.setType(name);
@@ -246,6 +224,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	@Override
 	public org.objectweb.asm.signature.SignatureVisitor visitArrayType() {
+		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		startType();
 		arrayStack |= 1;
@@ -254,6 +233,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	@Override
 	public void visitClassType(final String name) {
+		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		if ("java/lang/Object".equals(name)) {
 			// Map<java.lang.Object,java.util.List>
@@ -274,6 +254,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 
 	@Override
 	public void visitInnerClassType(final String name) {
+		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		if (argumentStack % 2 != 0) {
 			declaration.append('>');
@@ -340,8 +321,6 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		return mLocalVariables;
 	}
 
-	// -----------------------------------------------
-
 	private void endFormals() {
 		if (seenFormalParameter) {
 			declaration.append('>');
@@ -366,13 +345,46 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			currentArgument.setIndex(mIndex);
 			String name = getArgumentName(mIndex);
 			currentArgument.setName(name);
-			mLocalVariables.put(currentArgument.getIndex(), currentArgument);
+			increaseIndex();
 			declaration.append(" ").append(name);
-			if (currentArgument.getType()!= null && (currentArgument.getType().equals("double") || currentArgument.getType().equals("long"))) {
-				mIndex += 2;
-			} else {
-				mIndex += 1;
+			mLocalVariables.put(currentArgument.getIndex(), currentArgument);
+
+		}
+	}
+
+	private String getCurrentArgAnnotations() {
+		if (isVisitingComplexParameter() || annotations == null) return "";
+
+		annotations.setLength(0);
+		if (visibleParamAnnotations != null) {
+			if(visibleParamAnnotations[argCount] != null) {
+				annotations.append(annotationParser.getAnnotations(visibleParamAnnotations[argCount], " "));
 			}
+		}
+
+		if (invisibleParamAnnotations != null) {
+			if(invisibleParamAnnotations[argCount] != null) {
+				annotations.append(annotationParser.getAnnotations(invisibleParamAnnotations[argCount], " "));
+			}
+		}
+
+		return annotations.toString();
+	}
+
+	private boolean isVisitingComplexParameter() {
+		return argumentStack % 2 != 0 || arrayStack % 2 != 0;
+	}
+
+	private void createVariable() {
+		currentArgument = new LocalVariable(argCount);
+		currentArgument.setIsArgument(true);
+	}
+
+	private void increaseIndex() {
+		if ( ("double".equals(currentArgument.getType()) || "long".equals(currentArgument.getType()))) {
+			mIndex += 2;
+		} else {
+			mIndex += 1;
 		}
 	}
 
@@ -385,10 +397,5 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			name = Util.ARGUMENT_NAME_BASE + argCount;
 		}
 		return name;
-	}
-
-	private void createVariable() {
-		currentArgument = new LocalVariable(argCount);
-		currentArgument.setIsArgument(true);
 	}
 }
