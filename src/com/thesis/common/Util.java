@@ -1,6 +1,7 @@
 package com.thesis.common;
 
 import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -101,5 +102,13 @@ public class Util {
 				return variable;
 		}
 		return null;
+	}
+
+	public static String getOpcodeString(int opCode) {
+		String op = "";
+		if (opCode > -1) {
+			op = Printer.OPCODES[opCode];
+		}
+		return op;
 	}
 }

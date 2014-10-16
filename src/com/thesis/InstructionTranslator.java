@@ -7,7 +7,6 @@ import com.thesis.common.Util;
 import com.thesis.expression.*;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.Printer;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -156,7 +155,7 @@ public class InstructionTranslator {
 	//	BIPUSH, SIPUSH or NEWARRAY
 	private void visitIntInsnNode(IntInsnNode node) {
 		printNodeInfo(node);
-		String opCode = getOpcodeString(node.getOpcode());
+		String opCode = Util.getOpcodeString(node.getOpcode());
 		switch(opCode) {
 			case "BIPUSH":
 				mStack.push(new PrimaryExpression(node.operand,"int"));
@@ -174,7 +173,7 @@ public class InstructionTranslator {
 //	ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
 	private void visitVarInsnNode(VarInsnNode node) {
 		printNodeInfo(node);
-		String opCode = getOpcodeString(node.getOpcode());
+		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.endsWith("LOAD")) {
 			LocalVariable var = mLocalVariables.get(node.var);
 			mStack.push(new PrimaryExpression(var, var.getType()));
@@ -271,16 +270,8 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 	}
 
-	private static String getOpcodeString(int opCode) {
-		String op = "";
-		if (opCode > -1) {
-			op = Printer.OPCODES[opCode];
-		}
-		return op;
-	}
-
 	private void printNodeInfo(AbstractInsnNode node) {
-		String opCode = getOpcodeString(node.getOpcode());
+		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.isEmpty()) return;
 		String fields = "";
 		for (Field field : node.getClass().getFields()) {
