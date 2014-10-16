@@ -9,8 +9,10 @@ public enum Operand {
 	BITWISE_OR("|"),
 	BITWISE_AND("&"),
 	BITWISE_XOR("^"),
-	SHIFT_LEFT("<<"),
-	SHIFT_RIGHT(">>")
+	ARITHMETIC_SHIFT_LEFT("<<"),
+	ARITHMETIC_SHIFT_RIGHT(">>"),
+	LOGICAL_SHIFT_RIGHT(">>>")
+
 	;
 
 	private String mOperation;
