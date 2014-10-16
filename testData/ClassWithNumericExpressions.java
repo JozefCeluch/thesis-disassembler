@@ -15,5 +15,6 @@ anotherIntVar = 6666666;
 intVar = anotherIntVar + 873;
 str = "some random string literal";
 array = new int[14];
+param1 = array[3];
 }
 }
