@@ -69,6 +69,9 @@ public class MethodBlock extends Block {
 			removeFromBuffer("transient ");
 			hasVarargs = true;
 		}
+
+		generateArguments(method);
+
 		addMethodArgs(method, genericDecl.toString(), hasVarargs);
 		addExceptions(method.exceptions, genericExceptions.toString());
 		addAbstractMethodDeclarationEnding(method);
@@ -132,15 +135,16 @@ public class MethodBlock extends Block {
 	}
 
 	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs) {
-		LocalVariable thisArgument = new LocalVariable("this", mClassName, 0);
-		thisArgument.setIsArgument(true);
-		mArguments.put(0, thisArgument);
-
 		if (Util.isNotEmpty(genericDecl)) {
 			buf.append(genericDecl);
 		} else {
 			buf.append("(");
-			addGeneratedArguments(method);
+			for(int i = 0; i < mArguments.size()-1; i++) {
+				addComma(i);
+				addAnnotations(method, i);
+				LocalVariable variable = mArguments.get(i+1);
+				buf.append(variable.getType()).append(" ").append(variable.getName());
+			}
 			buf.append(")");
 		}
 		if (hasVarargs) {
@@ -149,32 +153,35 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void addGeneratedArguments(MethodNode method) {
+	private void generateArguments(MethodNode method) {
+		LocalVariable thisArgument = new LocalVariable("this", mClassName, 0);
+		thisArgument.setIsArgument(true);
+		mArguments.put(0, thisArgument);
+		generateMethodArgumentsFromDescriptor(method);
+	}
+
+	private void generateMethodArgumentsFromDescriptor(MethodNode method) {
 		int closingBracketPosition = method.desc.lastIndexOf(')');
 		String args = method.desc.substring(1, closingBracketPosition);
 		String[] splitArgs = splitMethodArguments(args);
 
 		for (int i = 0; i < splitArgs.length; i++) {
 			if (!splitArgs[i].isEmpty()) {
-				addComma(i);
-				addAnnotations(method, i);
-				LocalVariable argument = addArgument(splitArgs[i], i);
+				LocalVariable argument = addArgument(splitArgs[i], i, method.localVariables);
 				mArguments.put(argument.getIndex(), argument);
 			}
 		}
 	}
 
-	private LocalVariable addArgument(String splitArg, int i) {
-		LocalVariableNode variableNode = Util.variableAtIndex(i+1, mMethodNode.localVariables);
+	private LocalVariable addArgument(String typeCode, int i, List<LocalVariableNode> localVariables) {
+		LocalVariableNode variableNode = Util.variableAtIndex(i+1, localVariables);
 		LocalVariable variable;
 		if (variableNode == null) {
-			String type = Util.getType(splitArg);
+			String type = Util.getType(typeCode);
 			String name = Util.ARGUMENT_NAME_BASE + i;
-			buf.append(type).append(" ").append(name);
 			variable =  new LocalVariable(name, type, i+1);
 		} else {
 			variable = new LocalVariable(variableNode);
-			buf.append(variable.getType()).append(" ").append(variable.getName());
 		}
 		variable.setIsArgument(true);
 		return variable;
