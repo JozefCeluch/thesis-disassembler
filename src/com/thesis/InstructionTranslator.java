@@ -129,18 +129,7 @@ public class InstructionTranslator {
 			mStack.push(new ArrayAccessExpression(index, arrayRef));
 		}
 		if (opCode.contains("CONST")) {
-			int valPos = opCode.lastIndexOf("_");
-			String val = opCode.substring(valPos + 1);
-			switch (val) {
-				case "M1":
-					mStack.push(new PrimaryExpression(-1, "int"));
-					break;
-				case "NULL":
-					mStack.push(new PrimaryExpression("null")); //todo type
-					break;
-				default:
-					mStack.push(new PrimaryExpression(Integer.valueOf(val), "int"));
-			}
+			mStack.push(new PrimaryExpression(node));
 		}
 		if (opCode.contains("RETURN")) {
 			if (mStack.size() == 1) mStatements.add(new ReturnStatement(mStack.pop()));
@@ -250,6 +239,10 @@ public class InstructionTranslator {
 
 	private void visitIincInsnNode(IincInsnNode node) {
 		printNodeInfo(node);
+//		LocalVariable variable = mLocalVariables.get(node.getType());
+//		Expression rightSide = new ArithmeticExpression(new PrimaryExpression(variable,variable.getType()))
+//		node.var
+//		mStatements.add();
 	}
 
 //	TABLESWITCH
