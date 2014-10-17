@@ -216,25 +216,26 @@ public class InstructionTranslator {
 	private void visitLabelNode(LabelNode node) {
 		printNodeInfo(node);
 	}
+
 	// LDC
 	private void visitLdcInsnNode(LdcInsnNode node) {
 		printNodeInfo(node);
 		buf.append(" ").append(node.cst);
 		String type;
 		if (node.cst instanceof Integer) {
-			mStack.push(new PrimaryExpression(node.cst, "int"));
+			type = "int";
 		} else if (node.cst instanceof Float) {
-			mStack.push(new PrimaryExpression(node.cst, "float"));
+			type = "float";
 		} else if (node.cst instanceof Double) {
-			mStack.push(new PrimaryExpression(node.cst, "double"));
+			type = "double";
 		} else if (node.cst instanceof Long) {
-			mStack.push(new PrimaryExpression(node.cst, "long"));
+			type = "long";
 		} else if (node.cst instanceof String) {
-			mStack.push(new PrimaryExpression((String)node.cst, "String"));
+			type = "String";
 		} else {
-			mStack.push(new PrimaryExpression(node.cst, Util.getType(((Type) node.cst).getDescriptor())));
+			type = Util.getType(((Type) node.cst).getDescriptor());
 		}
-
+		mStack.push(new PrimaryExpression(node.cst, type));
 	}
 
 	private void visitIincInsnNode(IincInsnNode node) {

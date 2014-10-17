@@ -14,19 +14,17 @@ public class PrimaryExpression extends Expression {
 	private Object mValue;
 
 	public PrimaryExpression(Object value, String type) {
-		mValue = value;
-		mType = type;
-	}
-
-	public PrimaryExpression(String value, String type) {
-		mValue = QUOTE + value + QUOTE;
+		if ("String".equals(type) || "java.lang.String".equals(type)) {
+			mValue = QUOTE + value + QUOTE;
+		} else {
+			mValue = value;
+		}
 		mType = type;
 	}
 
 	public PrimaryExpression(LocalVariable value, String type) {
 		super();
 		mValue = value;
-		value.setType(type);
 		mType = type;
 	}
 
