@@ -74,7 +74,8 @@ public class InstructionTranslator {
 					visitLdcInsnNode((LdcInsnNode) node);
 					break;
 				case AbstractInsnNode.IINC_INSN:
-					visitIincInsnNode((IincInsnNode) node);
+					if (visitIincInsnNode((IincInsnNode) node))
+						node = node.getNext(); //skip the following load instruction
 					break;
 				case AbstractInsnNode.TABLESWITCH_INSN:
 					visitTableSwitchInsnNode((TableSwitchInsnNode) node);
@@ -238,12 +239,24 @@ public class InstructionTranslator {
 		mStack.push(new PrimaryExpression(node.cst, type));
 	}
 
-	private void visitIincInsnNode(IincInsnNode node) {
+	private boolean visitIincInsnNode(IincInsnNode node) {
 		printNodeInfo(node);
-//		LocalVariable variable = mLocalVariables.get(node.getType());
-//		Expression rightSide = new ArithmeticExpression(new PrimaryExpression(variable,variable.getType()))
-//		node.var
-//		mStatements.add();
+		LocalVariable variable = mLocalVariables.get(node.var);
+
+		if (node.getPrevious() != null && node.getPrevious().getOpcode() == 21 ) {
+			UnaryExpression unaryExpression = new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.POSTFIX);
+			mStack.pop(); // remove loaded var from stack
+			mStack.push(unaryExpression);
+			return false;
+		}
+		if (node.getNext() != null && node.getNext().getOpcode() == 21 ) {
+			UnaryExpression unaryExpression = new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX);
+			mStack.push(unaryExpression);
+			return true;
+		}
+		AssignmentExpression expression = new AssignmentExpression(node, new LeftHandSide(variable, "int"), new PrimaryExpression(node.incr, "int"));
+		mStatements.add(new Statement(expression));
+		return false;
 	}
 
 //	TABLESWITCH

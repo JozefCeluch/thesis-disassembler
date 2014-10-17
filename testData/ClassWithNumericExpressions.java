@@ -28,7 +28,14 @@ param1 = param1 >> 6;
 param1 = param1 >>> 7;
 param1 = param1 << 9;
 floatVar = 1;
-doubleVar = 2D;
+doubleVar = 2.0;
 param1 = array[3];
+v2 = v2++;
+param1 = ++param1 * v2++;
+intVar++;
+++intVar;
+param1 += 5;
+param1 += -5;
+v2 = ~v2;
 }
 }

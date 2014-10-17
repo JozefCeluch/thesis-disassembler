@@ -34,11 +34,11 @@ public class ArithmeticExpression extends Expression {
 		if (opcode.endsWith("REM")){
 			return Operand.REMAINDER.toString();
 		}
-		if (opcode.endsWith("OR")){
-			return Operand.BITWISE_OR.toString();
-		}
 		if (opcode.endsWith("XOR")){
 			return Operand.BITWISE_XOR.toString();
+		}
+		if (opcode.endsWith("OR")){
+			return Operand.BITWISE_OR.toString();
 		}
 		if (opcode.endsWith("AND")){
 			return Operand.BITWISE_AND.toString();
