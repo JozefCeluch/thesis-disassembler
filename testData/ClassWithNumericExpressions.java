@@ -38,7 +38,7 @@ param1 += 5;
 param1 += -5;
 v2 = ~v2;
 }
-public void boolExpressions(){
+public int boolExpressions(){
 boolean boolOne;
 boolean boolTwo;
 int firstInt;
@@ -46,5 +46,14 @@ int secondInt;
 firstInt = 5;
 secondInt = 90000;
 boolOne = firstInt < secondInt;
+boolOne = (secondInt >= firstInt)
+		&& (secondInt > 0);
+if (secondInt > firstInt){
+	boolTwo = false;
+	return 7;
+} else {
+	boolTwo = true;
+	return 8;
+}
 }
 }
