@@ -1,6 +1,5 @@
 package com.thesis.block;
 
-import com.thesis.block.Block;
 import com.thesis.expression.Expression;
 
 import java.io.IOException;
