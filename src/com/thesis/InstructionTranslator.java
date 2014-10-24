@@ -215,12 +215,38 @@ public class InstructionTranslator {
 	}
 
 	/**
-	 * IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ,
-	 * IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE,
-	 * IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL.
+	 * IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IFNULL or IFNONNULL
+	 * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
+	 * GOTO, JSR.
 	 */
-	private void visitJumpInsnNode(JumpInsnNode node) {
+	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node) {
 		printNodeInfo(node);
+		AbstractInsnNode nextNode = node;
+		int opcode = node.getOpcode();
+		if (opcode >= 159 && opcode <= 166) { //between IF_ICMPEQ and IF_ACMPNE
+			Expression rightSide = mStack.pop();
+			Expression leftSide = mStack.pop();
+			mStack.push(new LogicalExpression(node, leftSide, rightSide));
+			nextNode = node.getNext();
+		}
+
+		if (opcode >= 153 && opcode <= 158) { // between IFEQ and IFLE
+			Expression leftSide = mStack.pop();
+			Expression rightSide = new PrimaryExpression(0, "int");
+			mStack.push(new LogicalExpression(node, leftSide, rightSide));
+			nextNode = node.getNext();
+		}
+
+		if (Util.getOpcodeString(opcode).equals("GOTO")) {
+//			mStack.pop();
+			Label label = node.label.getLabel();
+			do {
+				nextNode = nextNode.getNext();
+			} while (!(nextNode instanceof LabelNode) || !((LabelNode) nextNode).getLabel().equals(label));
+		}
+
+		System.out.println(node.label.getLabel());
+		return nextNode;
 	}
 
 	private void visitLabelNode(LabelNode node) {
