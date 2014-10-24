@@ -5,6 +5,7 @@ import com.thesis.block.ReturnStatement;
 import com.thesis.block.Statement;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
@@ -19,6 +20,7 @@ public class InstructionTranslator {
 	Stack<Expression> mStack;
 	List<Block> mStatements;
 	StringBuffer buf;
+	int mCurrentLine;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		buf = new StringBuffer();
@@ -40,61 +42,68 @@ public class InstructionTranslator {
 	}
 
 	public void addCode() {
+		System.out.println("METHOD: " + mMethod.name);
+		System.out.println(" ");
 		AbstractInsnNode node = mMethod.instructions.getFirst();
 		while (node != null) {
-			switch (node.getType()) {
-				case AbstractInsnNode.INSN:
-					visitInsnNode((InsnNode) node);
-					break;
-				case AbstractInsnNode.INT_INSN:
-					visitIntInsnNode((IntInsnNode) node);
-					break;
-				case AbstractInsnNode.VAR_INSN:
-					visitVarInsnNode((VarInsnNode) node);
-					break;
-				case AbstractInsnNode.TYPE_INSN:
-					visitTypeInsnNode((TypeInsnNode) node);
-					break;
-				case AbstractInsnNode.FIELD_INSN:
-					visitFieldInsnNode((FieldInsnNode) node);
-					break;
-				case AbstractInsnNode.METHOD_INSN:
-					visitMethodInsnNode((MethodInsnNode) node);
-					break;
-				case AbstractInsnNode.INVOKE_DYNAMIC_INSN:
-					visitInvokeDynamicInsnNode((InvokeDynamicInsnNode) node);
-					break;
-				case AbstractInsnNode.JUMP_INSN:
-					visitJumpInsnNode((JumpInsnNode) node);
-					break;
-				case AbstractInsnNode.LABEL:
-					visitLabelNode((LabelNode) node);
-					break;
-				case AbstractInsnNode.LDC_INSN:
-					visitLdcInsnNode((LdcInsnNode) node);
-					break;
-				case AbstractInsnNode.IINC_INSN:
-					if (visitIincInsnNode((IincInsnNode) node))
-						node = node.getNext(); //skip the following load instruction
-					break;
-				case AbstractInsnNode.TABLESWITCH_INSN:
-					visitTableSwitchInsnNode((TableSwitchInsnNode) node);
-					break;
-				case AbstractInsnNode.MULTIANEWARRAY_INSN:
-					visitMultiANewArrayInsnNode((MultiANewArrayInsnNode) node);
-					break;
-				case AbstractInsnNode.FRAME:
-					visitFrameNode((FrameNode) node);
-					break;
-				case AbstractInsnNode.LINE:
-					visitLineNumberNode((LineNumberNode) node);
-					break;
-				default:
-					printNodeInfo(node);
-			}
+			node = visitCorrectNode(node);
 			node = node.getNext();
 		}
 		addLocalVariablesAssignments();
+	}
+
+	private AbstractInsnNode visitCorrectNode(AbstractInsnNode node) {
+		switch (node.getType()) {
+			case AbstractInsnNode.INSN:
+				visitInsnNode((InsnNode) node);
+				break;
+			case AbstractInsnNode.INT_INSN:
+				visitIntInsnNode((IntInsnNode) node);
+				break;
+			case AbstractInsnNode.VAR_INSN:
+				visitVarInsnNode((VarInsnNode) node);
+				break;
+			case AbstractInsnNode.TYPE_INSN:
+				visitTypeInsnNode((TypeInsnNode) node);
+				break;
+			case AbstractInsnNode.FIELD_INSN:
+				visitFieldInsnNode((FieldInsnNode) node);
+				break;
+			case AbstractInsnNode.METHOD_INSN:
+				visitMethodInsnNode((MethodInsnNode) node);
+				break;
+			case AbstractInsnNode.INVOKE_DYNAMIC_INSN:
+				visitInvokeDynamicInsnNode((InvokeDynamicInsnNode) node);
+				break;
+			case AbstractInsnNode.JUMP_INSN:
+				node = visitJumpInsnNode((JumpInsnNode) node);
+				break;
+			case AbstractInsnNode.LABEL:
+				visitLabelNode((LabelNode) node);
+				break;
+			case AbstractInsnNode.LDC_INSN:
+				visitLdcInsnNode((LdcInsnNode) node);
+				break;
+			case AbstractInsnNode.IINC_INSN:
+				if (visitIincInsnNode((IincInsnNode) node))
+					node = node.getNext(); //skip the following load instruction
+				break;
+			case AbstractInsnNode.TABLESWITCH_INSN:
+				visitTableSwitchInsnNode((TableSwitchInsnNode) node);
+				break;
+			case AbstractInsnNode.MULTIANEWARRAY_INSN:
+				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode) node);
+				break;
+			case AbstractInsnNode.FRAME:
+				visitFrameNode((FrameNode) node);
+				break;
+			case AbstractInsnNode.LINE:
+				visitLineNumberNode((LineNumberNode) node);
+				break;
+			default:
+				printNodeInfo(node);
+		}
+		return node;
 	}
 
 	private void addLocalVariablesAssignments() {
@@ -216,6 +225,17 @@ public class InstructionTranslator {
 
 	private void visitLabelNode(LabelNode node) {
 		printNodeInfo(node);
+		Label l = node.getLabel();
+		if (l != null) {
+			System.out.println("Label: " + l);
+//			try {
+//				System.out.println("offset: " + l.getOffset());
+//			} catch (IllegalStateException e) {
+//				System.out.println("offset not resolved");
+//			}
+//			if (l.info != null)
+//				System.out.println("info: " + l.info.toString());
+		}
 	}
 
 	// LDC
@@ -270,11 +290,17 @@ public class InstructionTranslator {
 	}
 
 	private void visitFrameNode(FrameNode node) {
+		System.out.println("FRAME:");
 		printNodeInfo(node);
+		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
+		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
 	}
 
 	private void visitLineNumberNode(LineNumberNode node) {
 		printNodeInfo(node);
+		mCurrentLine = node.line;
+		System.out.println("line: " + mCurrentLine + ", " + node.start.getLabel());
+
 	}
 
 	private void printNodeInfo(AbstractInsnNode node) {
