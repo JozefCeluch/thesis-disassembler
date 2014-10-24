@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -25,32 +26,31 @@ public class LogicalExpression extends Expression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		mLeftSide.write(writer);
-		writer.append(" ").append(String.valueOf(mInstruction.getOpcode())).append(" ");
+		writer.append(" ").append(makeOperand().neg().toString()).append(" ");
 		mRightSide.write(writer);
 	}
 
-	/**
-	 *
-	 if_acmpeq
-	 if_acmpne
-	 if_icmpeq
-	 if_icmpge
-	 if_icmpgt
-	 if_icmple
-	 if_icmplt
-	 if_icmpne
+	private Operand makeOperand() {
+		String opcode = Printer.OPCODES[mInstruction.getOpcode()];
+		if (opcode.endsWith("EQ")) {
+			return Operand.EQUAL;
+		}
+		if (opcode.endsWith("NE")){
+			return Operand.NOT_EQUAL;
+		}
+		if (opcode.endsWith("GE")){
+			return Operand.GREATER_EQUAL;
+		}
+		if (opcode.endsWith("GT")){
+			return Operand.GREATER_THAN;
+		}
+		if (opcode.endsWith("LE")){
+			return Operand.LESS_EQUAL;
+		}
+		if (opcode.endsWith("LT")){
+			return Operand.LESS_THAN;
+		}
 
-	 ifeq
-	 ifge
-	 ifgt
-	 ifle
-	 iflt
-	 ifne
-
-	 ifnonnull
-	 ifnull
-	 */
-	private String makeOperand() {
-		return null;
+		return Operand.ERR;
 	}
 }

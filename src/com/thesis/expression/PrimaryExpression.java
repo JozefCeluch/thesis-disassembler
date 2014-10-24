@@ -54,7 +54,10 @@ public class PrimaryExpression extends Expression {
 		String output = mValue.toString();
 		if (mValue instanceof LocalVariable) {
 			output = ((LocalVariable)mValue).getName();
+		} else if ("boolean".equals(mType)){
+			output = (int)mValue == 0 ? "false" : "true";
 		}
+
 		writer.write(output);
 	}
 
