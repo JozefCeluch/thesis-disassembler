@@ -11,8 +11,8 @@ public enum Operand {
 	BITWISE_XOR("^"),
 	ARITHMETIC_SHIFT_LEFT("<<"),
 	ARITHMETIC_SHIFT_RIGHT(">>"),
-	LOGICAL_SHIFT_RIGHT(">>>")
-
+	LOGICAL_SHIFT_RIGHT(">>>"),
+	ERR("ERR")
 	;
 
 	private String mOperation;

@@ -17,53 +17,66 @@ public class ArithmeticExpression extends Expression {
 		mRightSide = rightSide;
 	}
 
-	private String makeOperand(){
+	private Operand makeOperand(){
 		String opcode = Printer.OPCODES[mInstruction.getOpcode()];
 		if (opcode.endsWith("MUL")){
-			return Operand.MULTIPLY.toString();
+			return Operand.MULTIPLY;
 		}
 		if (opcode.endsWith("DIV")){
-			return Operand.DIVIDE.toString();
+			return Operand.DIVIDE;
 		}
 		if (opcode.endsWith("ADD")){
-			return Operand.ADD.toString();
+			return Operand.ADD;
 		}
 		if (opcode.endsWith("SUB")){
-			return Operand.SUBTRACT.toString();
+			return Operand.SUBTRACT;
 		}
 		if (opcode.endsWith("REM")){
-			return Operand.REMAINDER.toString();
+			return Operand.REMAINDER;
 		}
 		if (opcode.endsWith("XOR")){
-			return Operand.BITWISE_XOR.toString();
+			return Operand.BITWISE_XOR;
 		}
 		if (opcode.endsWith("OR")){
-			return Operand.BITWISE_OR.toString();
+			return Operand.BITWISE_OR;
 		}
 		if (opcode.endsWith("AND")){
-			return Operand.BITWISE_AND.toString();
+			return Operand.BITWISE_AND;
 		}
 		if (opcode.endsWith("USHR")){
-			return Operand.LOGICAL_SHIFT_RIGHT.toString();
+			return Operand.LOGICAL_SHIFT_RIGHT;
 		}
 		if (opcode.endsWith("SHR")){
-			return Operand.ARITHMETIC_SHIFT_RIGHT.toString();
+			return Operand.ARITHMETIC_SHIFT_RIGHT;
 		}
 		if (opcode.endsWith("SHL")){
-			return Operand.ARITHMETIC_SHIFT_LEFT.toString();
+			return Operand.ARITHMETIC_SHIFT_LEFT;
 		}
-		return "UNKNOWN";
+		return Operand.ERR;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		mLeftSide.write(writer);
-		writer.append(" ").append(makeOperand()).append(" ");
-		mRightSide.write(writer);
+		Operand op = makeOperand();
+		writeSubExpression(mLeftSide, writer, op);
+
+		writer.append(" ").append(op.toString()).append(" ");
+
+		writeSubExpression(mRightSide, writer, op);
+	}
+
+	private void writeSubExpression(Expression exp, Writer writer, Operand op) throws IOException {
+		if ((op == Operand.MULTIPLY || op == Operand.DIVIDE) && !(exp instanceof PrimaryExpression)) {
+			writer.append('(');
+			exp.write(writer);
+			writer.append(')');
+		} else {
+			exp.write(writer);
+		}
 	}
 
 	@Override
 	public String getType() {
-		return mLeftSide.getType();
+		return mLeftSide.getType(); //todo think why?
 	}
 }
