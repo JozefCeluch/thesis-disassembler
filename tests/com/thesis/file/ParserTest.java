@@ -118,6 +118,13 @@ public class ParserTest {
 		assertEquals(expected, result);
 	}
 
+	@Test
+	public void testParseClassWithBoolExpressions() throws Exception {
+		String result = mParser.parseClassFile("ClassWithBoolExpressions.class");
+		String expected = javaClassText("ClassWithBoolExpressions.java");
+		assertEquals(expected, result);
+	}
+
     private static String javaClassText(String fileName) throws IOException {
         byte[] fileContents = Files.readAllBytes(Paths.get(TEST_FOLDER + fileName));
         return new String(fileContents);
