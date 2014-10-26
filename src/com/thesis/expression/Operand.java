@@ -40,13 +40,11 @@ public enum Operand {
 	}
 
 	public Operand neg() {
-		if (mOpposite != null) {
-			return getOperand(this.mOpposite);
-		}
-		return this;
+		return getOpposite();
 	}
 
-	private Operand getOperand(String op){
+	private Operand getOpposite(){
+		String op = mOpposite;
 		switch (op){
 			case "==":
 				return EQUAL;
@@ -61,6 +59,6 @@ public enum Operand {
 			case "<":
 				return LESS_THAN;
 		}
-		return ERR;
+		return this;
 	}
 }
