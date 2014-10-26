@@ -14,7 +14,7 @@ public abstract class Expression implements Writable {
 	protected Expression() {
 	}
 
-	protected Expression(AbstractInsnNode instruction) {
+	public Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
 	}
 

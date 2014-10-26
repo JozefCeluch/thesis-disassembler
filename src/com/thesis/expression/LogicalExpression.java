@@ -6,13 +6,13 @@ import org.objectweb.asm.util.Printer;
 import java.io.IOException;
 import java.io.Writer;
 
-public class LogicalExpression extends Expression {
+public class LogicalExpression extends JumpExpression {
 
 	private Expression mLeftSide;
 	private Expression mRightSide;
 
-	public LogicalExpression(AbstractInsnNode instruction, Expression leftSide, Expression rightSide) {
-		super(instruction);
+	public LogicalExpression(AbstractInsnNode instruction, int jumpLocation,  Expression leftSide, Expression rightSide) {
+		super(instruction, jumpLocation);
 		mLeftSide = leftSide;
 		mRightSide = rightSide;
 		mType = "boolean";
