@@ -4,6 +4,7 @@ import com.thesis.InstructionTranslator;
 import com.thesis.LocalVariable;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import com.thesis.expression.ReturnExpression;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
@@ -263,7 +264,7 @@ public class MethodBlock extends Block {
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			writer.write(BLOCK_START);
 			for(Block child : children) {
-				if (isConstructor() && child instanceof ReturnStatement) continue; // todo constructor returns this
+				if (isConstructor() && child instanceof Statement && ((Statement) child).mExpression instanceof ReturnExpression) continue; // todo constructor return statement
 				child.write(writer);
 			}
 			writer.write(BLOCK_END);

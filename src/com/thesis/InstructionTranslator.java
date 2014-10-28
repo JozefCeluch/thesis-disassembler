@@ -1,7 +1,7 @@
 package com.thesis;
 
 import com.thesis.block.Block;
-import com.thesis.block.ReturnStatement;
+import com.thesis.expression.ReturnExpression;
 import com.thesis.block.Statement;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
@@ -160,7 +160,11 @@ public class InstructionTranslator {
 			mStack.push(exp);
 		}
 		if (opCode.contains("RETURN")) {
-			if (mStack.size() == 1) mStatements.add(new ReturnStatement(mStack.pop().expression));
+			StackExpression stackExp = prepareStackExpression();
+			if (mStack.size() >= 1) {
+				stackExp.expression = new ReturnExpression(mStack.pop().expression);
+				mStack.push(stackExp);
+			}
 		}
 		if (mStack.size() >= 2 && node.getOpcode() <= 131 && node.getOpcode() >= 96 ) {
 			StackExpression exp = mStack.pop();
