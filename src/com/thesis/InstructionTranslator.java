@@ -56,8 +56,8 @@ public class InstructionTranslator {
 	}
 
 	public void addCode() {
-		System.out.println("METHOD: " + mMethod.name);
 		System.out.println(" ");
+		System.out.println("METHOD: " + mMethod.name);
 		AbstractInsnNode node = mMethod.instructions.getFirst();
 		while (node != null) {
 			node = visitCorrectNode(node);
@@ -148,16 +148,14 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.contains("LOAD")) {
-			StackExpression exp = mStack.pop();
-			Expression index = exp.expression;
+			StackExpression stackExp = prepareStackExpression();
+			Expression index = mStack.pop().expression;
 			Expression arrayRef = mStack.pop().expression;
-			exp.expression = new ArrayAccessExpression(index, arrayRef);
-			mStack.push(exp);
+			stackExp.expression = new ArrayAccessExpression(index, arrayRef);
+			mStack.push(stackExp);
 		}
 		if (opCode.contains("CONST")) {
-			StackExpression exp = prepareStackExpression();
-			exp.expression = new PrimaryExpression(node);
-			mStack.push(exp);
+			putSimpleStackExpression(new PrimaryExpression(node));
 		}
 		if (opCode.contains("RETURN")) {
 			StackExpression stackExp = prepareStackExpression();
@@ -167,11 +165,11 @@ public class InstructionTranslator {
 			}
 		}
 		if (mStack.size() >= 2 && node.getOpcode() <= 131 && node.getOpcode() >= 96 ) {
-			StackExpression exp = mStack.pop();
-			Expression ex2 = exp.expression;
+			StackExpression stackExp = prepareStackExpression();
+			Expression ex2 = mStack.pop().expression;
 			Expression ex1 = mStack.pop().expression;
-			exp.expression = new ArithmeticExpression(node, ex1, ex2);
-			mStack.push(exp);
+			stackExp.expression = new ArithmeticExpression(node, ex1, ex2);
+			mStack.push(stackExp);
 		}
 	}
 
@@ -206,14 +204,13 @@ public class InstructionTranslator {
 		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.endsWith("LOAD")) {
 			LocalVariable var = mLocalVariables.get(node.var);
-			StackExpression exp = prepareStackExpression();
-			exp.expression = new PrimaryExpression(var, var.getType());
-			mStack.push(exp);
+			putSimpleStackExpression(new PrimaryExpression(var, var.getType()));
 		}
 		if (opCode.endsWith("STORE")) {
 			if (!mLocalVariables.containsKey(node.var)) {
 				mLocalVariables.put(node.var, new LocalVariable("var"+node.var, node.var));
 			}
+			StackExpression exp = prepareStackExpression();
 			LocalVariable localVar = mLocalVariables.get(node.var);
 			Expression rightSide =  mStack.pop().expression; // todo array assignment and type
 			if (!localVar.hasType()) {
@@ -223,7 +220,8 @@ public class InstructionTranslator {
 				rightSide.setType(localVar.getType());
 			}
 			LeftHandSide leftSide = new LeftHandSide(localVar, rightSide.getType());
-			mStatements.add(new Statement(new AssignmentExpression(node, leftSide, rightSide)));
+			exp.expression = new AssignmentExpression(node, leftSide, rightSide);
+			mStack.push(exp);
 		}
 	}
 
@@ -255,38 +253,45 @@ public class InstructionTranslator {
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node) {
 		printNodeInfo(node);
 		AbstractInsnNode nextNode = node;
+		int jumpDestination = getLabelId(node.label.getLabel());
 		int opcode = node.getOpcode();
 		if (opcode >= 159 && opcode <= 166) { //between IF_ICMPEQ and IF_ACMPNE
-			StackExpression exp = prepareStackExpression();
+			StackExpression stackExp = prepareStackExpression();
 			Expression rightSide = mStack.pop().expression;
 			Expression leftSide = mStack.pop().expression;
-			exp.expression = new LogicalExpression(node, leftSide, rightSide);
-			mStack.push(exp);
+			stackExp.expression = new LogicalExpression(node, jumpDestination, leftSide, rightSide);
+			mStack.push(stackExp);
 		}
 
 		if (opcode >= 153 && opcode <= 158) { // between IFEQ and IFLE
-			StackExpression exp = mStack.pop();
-			Expression leftSide = exp.expression;
+			StackExpression stackExp = prepareStackExpression();
+			Expression leftSide = mStack.pop().expression;
 			Expression rightSide = new PrimaryExpression(0, "int");
-			exp.expression = new LogicalExpression(node, leftSide, rightSide);
-			mStack.push(exp);
+			stackExp.expression = new LogicalExpression(node, jumpDestination, leftSide, rightSide);
+			mStack.push(stackExp);
 		}
 
 		if (Util.getOpcodeString(opcode).equals("GOTO")) {
-//			mStack.pop();
-			Label label = node.label.getLabel();
+			putSimpleStackExpression(new UnconditionalJump(node, jumpDestination));
 //			do {
 //				nextNode = nextNode.getNext();
 //			} while (!(nextNode instanceof LabelNode) || !((LabelNode) nextNode).getLabel().equals(label));
 		}
 
-		System.out.println("L" + getLabelId(node.label.getLabel()));
+		System.out.println("L" + jumpDestination);
 		return nextNode;
 	}
 
 	private void visitLabelNode(LabelNode node) {
 		printNodeInfo(node);
 		System.out.println("Label: L" + getLabelId(node.getLabel()));
+		if (!mStack.isEmpty()) {
+			StackExpression stackTop = mStack.peek();
+			if (stackTop.expression instanceof AssignmentExpression || stackTop.expression instanceof ReturnExpression) {
+				mStack.pop();
+				mStatements.add(new Statement(stackTop.expression));
+			}
+		}
 		mStack.push(new StackExpression(getLabelId(node.getLabel())));
 	}
 
@@ -308,9 +313,7 @@ public class InstructionTranslator {
 		} else {
 			type = Util.getType(((Type) node.cst).getDescriptor());
 		}
-		StackExpression exp = prepareStackExpression();
-		exp.expression = new PrimaryExpression(node.cst, type);
-		mStack.push(exp);
+		putSimpleStackExpression(new PrimaryExpression(node.cst, type));
 	}
 
 	private boolean visitIincInsnNode(IincInsnNode node) {
@@ -326,13 +329,11 @@ public class InstructionTranslator {
 		}
 		if (node.getNext() != null && node.getNext().getOpcode() == 21 ) {
 			UnaryExpression unaryExpression = new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX);
-			StackExpression exp = prepareStackExpression();
-			exp.expression = unaryExpression;
-			mStack.push(exp);
+			putSimpleStackExpression(unaryExpression);
 			return true;
 		}
 		AssignmentExpression expression = new AssignmentExpression(node, new LeftHandSide(variable, "int"), new PrimaryExpression(node.incr, "int"));
-		mStatements.add(new Statement(expression));
+		putSimpleStackExpression(expression);
 		return false;
 	}
 
@@ -399,6 +400,12 @@ public class InstructionTranslator {
 			mLabels.put(l, labelId);
 		}
 		return labelId;
+	}
+
+	private void putSimpleStackExpression(Expression expression) {
+		StackExpression exp = prepareStackExpression();
+		exp.expression = expression;
+		mStack.push(exp);
 	}
 
 	private StackExpression prepareStackExpression() {
