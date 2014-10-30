@@ -3,10 +3,11 @@ ClassWithBoolExpressions(){
 }
 public void simpleBoolExpressions(){
 		boolean boolOne;
-		boolean boolTwo;
-		boolOne = true;
-		boolTwo = false;
-		boolOne = (!boolOne) && (!boolTwo);
+		int intOne;
+		int intTwo;
+		intOne = 6;
+		intTwo = 8728;
+		boolOne = intOne >= intTwo;
 	}
 
 	public void iflExpression(){

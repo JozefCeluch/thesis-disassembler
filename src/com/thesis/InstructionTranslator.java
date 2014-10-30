@@ -90,7 +90,7 @@ public class InstructionTranslator {
 				visitInvokeDynamicInsnNode((InvokeDynamicInsnNode) node);
 				break;
 			case AbstractInsnNode.JUMP_INSN:
-				node = visitJumpInsnNode((JumpInsnNode) node);
+				visitJumpInsnNode((JumpInsnNode) node);
 				break;
 			case AbstractInsnNode.LABEL:
 				visitLabelNode((LabelNode) node);
@@ -273,15 +273,25 @@ public class InstructionTranslator {
 
 		if (Util.getOpcodeString(opcode).equals("GOTO")) {
 			putSimpleStackExpression(new UnconditionalJump(node, jumpDestination));
-//			do {
-//				nextNode = nextNode.getNext();
-//			} while (!(nextNode instanceof LabelNode) || !((LabelNode) nextNode).getLabel().equals(label));
 		}
-
+		// todo ifnull, innonnull, jsr
+		if (conditionalExpressionsAreOnTop(mStack)) {
+			StackExpression result = prepareStackExpression();
+			StackExpression right = mStack.pop();
+			StackExpression left = mStack.pop();
+			LogicGateOperand operand;
+			if (left.labelId == right.labelId) {
+				operand = LogicGateOperand.AND;
+			} else {
+				operand = LogicGateOperand.OR;
+			}
+			result.expression = new LogicGateExpression(operand, (ConditionalExpression)left.expression, (ConditionalExpression)right.expression);
+			mStack.push(result);
+		}
 		System.out.println("L" + jumpDestination);
-		return nextNode;
 	}
 
+	//todo handle stack here
 	private void visitLabelNode(LabelNode node) {
 		printNodeInfo(node);
 		System.out.println("Label: L" + getLabelId(node.getLabel()));
@@ -291,8 +301,24 @@ public class InstructionTranslator {
 				mStack.pop();
 				mStatements.add(new Statement(stackTop.expression));
 			}
+			if (mStack.size() >= 2 && stackTop.expression instanceof UnconditionalJump) { //todo now handles only logical expressions
+				mStack.pop();
+				mStack.pop();
+			}
 		}
 		mStack.push(new StackExpression(getLabelId(node.getLabel())));
+	}
+
+	private boolean conditionalExpressionsAreOnTop(Stack<StackExpression> stack) {
+		if (stack.size() >= 2) {
+			StackExpression first = stack.pop();
+			StackExpression second = stack.pop();
+			stack.push(second);
+			stack.push(first);
+			return (first.expression != null && (first.expression instanceof ConditionalExpression))
+					&& (second.expression != null && (second.expression instanceof ConditionalExpression));
+		}
+		return false;
 	}
 
 	// LDC
