@@ -2,6 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.LocalVariable;
 import com.thesis.common.Util;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnNode;
 
 import java.io.IOException;
@@ -13,7 +14,8 @@ public class PrimaryExpression extends Expression {
 
 	private Object mValue;
 
-	public PrimaryExpression(Object value, String type) {
+	public PrimaryExpression(AbstractInsnNode node, Object value, String type) {
+		super(node);
 		if ("String".equals(type) || "java.lang.String".equals(type)) {
 			mValue = QUOTE + value + QUOTE;
 		} else {
@@ -22,14 +24,16 @@ public class PrimaryExpression extends Expression {
 		mType = type;
 	}
 
-	public PrimaryExpression(LocalVariable value, String type) {
-		super();
+	public PrimaryExpression(AbstractInsnNode node, LocalVariable value, String type) {
+		super(node);
 		mValue = value;
 		mType = type;
 	}
 
 	public PrimaryExpression(InsnNode instruction) {
+		super(instruction);
 		String opCode = Util.getOpcodeString(instruction.getOpcode());
+
 		if (opCode.contains("CONST")) {
 			int valPos = opCode.lastIndexOf("_");
 			String val = opCode.substring(valPos + 1);

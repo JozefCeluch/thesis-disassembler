@@ -1,12 +1,19 @@
 package com.thesis.expression;
 
+import org.objectweb.asm.tree.InsnNode;
+
 import java.io.IOException;
 import java.io.Writer;
 
 public class ReturnExpression extends Expression {
+
 	Expression mExpression;
 
-	public ReturnExpression(Expression expression) {
+	public ReturnExpression(InsnNode node) {
+		super(node);
+	}
+
+	public void setExpression(Expression expression) {
 		mExpression = expression;
 	}
 

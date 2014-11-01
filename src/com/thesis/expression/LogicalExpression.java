@@ -11,8 +11,8 @@ public class LogicalExpression extends ConditionalExpression {
 	private Expression mLeftSide;
 	private Expression mRightSide;
 
-	public LogicalExpression(AbstractInsnNode instruction, Expression leftSide, Expression rightSide) {
-		super(instruction);
+	public LogicalExpression(AbstractInsnNode instruction, Expression leftSide, Expression rightSide, int jumpDestination) {
+		super(instruction, jumpDestination);
 		mLeftSide = leftSide;
 		mRightSide = rightSide;
 	}
@@ -20,31 +20,8 @@ public class LogicalExpression extends ConditionalExpression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		mLeftSide.write(writer);
-		writer.append(" ").append(makeOperand().neg().toString()).append(" ");
+		writer.append(" ").append(makeOperand().neg().toString()).append(" "); //todo NEG
 		mRightSide.write(writer);
 	}
 
-	private Operand makeOperand() {
-		String opcode = Printer.OPCODES[mInstruction.getOpcode()];
-		if (opcode.endsWith("EQ")) {
-			return Operand.EQUAL;
-		}
-		if (opcode.endsWith("NE")){
-			return Operand.NOT_EQUAL;
-		}
-		if (opcode.endsWith("GE")){
-			return Operand.GREATER_EQUAL;
-		}
-		if (opcode.endsWith("GT")){
-			return Operand.GREATER_THAN;
-		}
-		if (opcode.endsWith("LE")){
-			return Operand.LESS_EQUAL;
-		}
-		if (opcode.endsWith("LT")){
-			return Operand.LESS_THAN;
-		}
-
-		return Operand.ERR;
-	}
 }

@@ -11,9 +11,6 @@ public abstract class Expression implements Writable {
 	protected AbstractInsnNode mInstruction;
 	protected String mType;
 
-	protected Expression() {
-	}
-
 	public Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
 	}

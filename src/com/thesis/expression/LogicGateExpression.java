@@ -9,7 +9,8 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mLeft;
 	private ConditionalExpression  mRight;
 
-	public LogicGateExpression(LogicGateOperand operand, ConditionalExpression left, ConditionalExpression right) {
+	public LogicGateExpression(LogicGateOperand operand, ConditionalExpression left, ConditionalExpression right, int jumpDestination) {
+		super(jumpDestination);
 		mOperand = operand;
 		mLeft = left;
 		mRight = right;

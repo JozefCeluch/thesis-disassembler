@@ -9,11 +9,19 @@ import java.io.Writer;
 public class AssignmentExpression extends  Expression{
 
 	private Expression mRightSide;
-	private Expression mLeftSide;
+	private LeftHandSide mLeftSide;
 
-	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide, Expression rightSide) {
+	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide) {
 		super(instruction);
 		mLeftSide = leftSide;
+	}
+
+	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide, Expression rightSide) {
+		this(instruction, leftSide);
+		mRightSide = rightSide;
+	}
+
+	public void setRightSide(Expression rightSide) {
 		mRightSide = rightSide;
 	}
 
@@ -26,7 +34,7 @@ public class AssignmentExpression extends  Expression{
 
 	@Override
 	public String getType() {
-		return mRightSide.getType();
+		return mLeftSide.getType();
 	}
 
 	private String makeCorrectOperator() {

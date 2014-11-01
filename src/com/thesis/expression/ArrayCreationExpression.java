@@ -1,5 +1,7 @@
 package com.thesis.expression;
 
+import org.objectweb.asm.tree.IntInsnNode;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -7,12 +9,13 @@ public class ArrayCreationExpression extends Expression {
 
 	private Expression mLength;
 
-	public ArrayCreationExpression(Expression length, int typeCode) {
-		mLength = length;
-		mType = convertTypeCodeToString(typeCode);
+	public ArrayCreationExpression(IntInsnNode node) {
+		super(node);
+		mType = convertTypeCodeToString(node.operand);
 	}
 
-	public void setType(String type) {
+	public void setLength(Expression length) {
+		mLength = length;
 	}
 
 	@Override

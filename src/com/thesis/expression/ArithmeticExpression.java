@@ -11,9 +11,15 @@ public class ArithmeticExpression extends Expression {
 	private Expression mLeftSide;
 	private Expression mRightSide;
 
-	public ArithmeticExpression(AbstractInsnNode instruction, Expression leftSide, Expression rightSide) {
+	public ArithmeticExpression(AbstractInsnNode instruction) {
 		super(instruction);
+	}
+
+	public void setLeftSide(Expression leftSide) {
 		mLeftSide = leftSide;
+	}
+
+	public void setRightSide(Expression rightSide) {
 		mRightSide = rightSide;
 	}
 
