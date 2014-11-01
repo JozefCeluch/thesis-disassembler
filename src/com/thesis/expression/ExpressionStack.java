@@ -2,7 +2,9 @@ package com.thesis.expression;
 
 import org.objectweb.asm.Label;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 public class ExpressionStack {
@@ -12,8 +14,9 @@ public class ExpressionStack {
 	private HashMap<Label, Integer> mLabels;
 	private int mLabel;
 
-	public ExpressionStack() {
+	public ExpressionStack(HashMap<Label, Integer> labels) {
 		mStack = new Stack<>();
+		mLabels = labels;
 	}
 
 	public void push(Expression expression) {
@@ -29,9 +32,9 @@ public class ExpressionStack {
 	}
 
 	public void push(ReturnExpression expression) {
-		if (mStack.size() >= 1) {
-			expression.setExpression(mStack.pop().expression);
-		}
+//		if (mStack.size() >= 1) {
+//			expression.setExpression(mStack.pop().expression);
+//		}
 		pushCompleteExp(expression);
 	}
 
@@ -50,12 +53,13 @@ public class ExpressionStack {
 	}
 
 	public void push(AssignmentExpression expression) {
-		Expression rightSide =  mStack.pop().expression; // todo array assignment and type
+		if (!mStack.isEmpty() && mStack.peek().labelId == mLabel) {
+			Expression rightSide = mStack.pop().expression; // todo array assignment and type
 //			if (localVar.hasDebugType()) {
 //				rightSide.setType(localVar.getType());
 //			}
-		expression.getType();
-		expression.setRightSide(rightSide);
+			expression.setRightSide(rightSide);
+		}
 		pushCompleteExp(expression);
 	}
 
@@ -70,14 +74,25 @@ public class ExpressionStack {
 		expression.setLeft(leftSide);
 		expression.setRight(rightSide);
 
-		pushLogicGateExpIfPossible(expression);
+//		pushLogicGateExpIfPossible(expression);
+		pushCompleteExp(expression);
 	}
 
 	public void push(SingleConditional expression) {
 		Expression left = mStack.pop().expression;
 		expression.setLeft(left);
 
-		pushLogicGateExpIfPossible(expression);
+//		pushLogicGateExpIfPossible(expression);
+		pushCompleteExp(expression);
+	}
+
+	public void push(UnconditionalJump expression) {
+		pushCompleteExp(expression);
+	}
+
+	public Expression peek() {
+		if (mStack.isEmpty()) return null;
+		return mStack.peek().expression;
 	}
 
 	private void pushLogicGateExpIfPossible(ConditionalExpression expression) {
@@ -140,9 +155,6 @@ public class ExpressionStack {
 	}
 
 	public int getLabelId(final Label l) {
-		if (mLabels == null) {
-			mLabels = new HashMap<>();
-		}
 		Integer labelId = mLabels.get(l);
 		if (labelId == null) {
 			labelId = mLabels.size();

@@ -3,12 +3,17 @@ package com.thesis.expression;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
 
+import java.util.Stack;
+
 public abstract class ConditionalExpression extends Expression {
 
 	private int mDestination;
+	public ExpressionStack thenBranch;
+	public ExpressionStack elseBranch;
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
+		mType = "boolean";
 		mDestination = jumpDestination;
 	}
 
@@ -23,7 +28,7 @@ public abstract class ConditionalExpression extends Expression {
 
 	@Override
 	public String getType() {
-		return "boolean";
+		return mType;
 	}
 
 	protected Operand makeOperand() {
