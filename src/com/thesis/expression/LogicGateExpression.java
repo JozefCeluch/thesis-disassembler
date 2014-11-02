@@ -9,11 +9,14 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mLeft;
 	private ConditionalExpression  mRight;
 
-	public LogicGateExpression(LogicGateOperand operand, ConditionalExpression right, int jumpDestination) {
-		super(jumpDestination);
-		mOperand = operand;
+	public LogicGateExpression(ConditionalExpression right) {
+		super(right.getDestination());
 		mRight = right;
 		mType = "boolean";
+	}
+
+	public void setOperand(LogicGateOperand operand) {
+		mOperand = operand;
 	}
 
 	public void setLeft(ConditionalExpression left){

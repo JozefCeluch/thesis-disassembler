@@ -9,8 +9,9 @@ public class SingleConditional extends ConditionalExpression {
 
 	private Expression left;
 
-	public SingleConditional(AbstractInsnNode instruction, int jumpDestination) {
+	public SingleConditional(AbstractInsnNode instruction, int jumpDestination, ExpressionStack then) {
 		super(instruction, jumpDestination);
+		super.thenBranch = then;
 	}
 
 	public void setLeft(Expression left) {

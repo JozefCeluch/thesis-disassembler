@@ -8,7 +8,6 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.Printer;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -48,7 +47,7 @@ public class InstructionTranslator {
 		System.out.println("METHOD: " + mMethod.name);
 		AbstractInsnNode node = mMethod.instructions.getFirst();
 		while (node != null) {
-			node = visitCorrectNode(node, mStack);
+			node = pushNodeToStackAsExpression(node, mStack);
 			node = node.getNext();
 		}
 		addLocalVariablesAssignments();
@@ -56,7 +55,7 @@ public class InstructionTranslator {
 		mStatements.addAll(mStack.getStatements());
 	}
 
-	private AbstractInsnNode visitCorrectNode(AbstractInsnNode node, ExpressionStack stack) {
+	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
 		switch (node.getType()) {
 			case AbstractInsnNode.INSN:
 				visitInsnNode((InsnNode) node, stack);
@@ -213,51 +212,60 @@ public class InstructionTranslator {
 	 */
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		int jumpDestination = stack.getLabelId(node.label.getLabel());
+		int elseBranchStart = stack.getLabelId(node.label.getLabel());
 		int opCode = node.getOpcode();
 		AbstractInsnNode movedNode = node;
 		ConditionalExpression exp = null;
 
 		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
+			exp = new MultiConditional(node, elseBranchStart, new ExpressionStack(mLabels));
 			stack.push((MultiConditional)exp);
+			System.out.println("CREATED CONDITIONAL EXP");
+
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
+			exp = new SingleConditional(node, elseBranchStart, new ExpressionStack(mLabels));
 			stack.push((SingleConditional)exp);
+			System.out.println("CREATED CONDITIONAL EXP");
+
 		} else if (opCode == Opcodes.GOTO) {
-			stack.push(new UnconditionalJump(node, jumpDestination));
+			stack.push(new UnconditionalJump(node, elseBranchStart));
 		}
 		// todo ifnull, innonnull, jsr
-
-		int elseEndLabel = 0;
-		while(movedNode.getOpcode() != Opcodes.GOTO && exp != null) {
+		int elseBranchEnd = 0;
+		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO) {
 			movedNode = movedNode.getNext();
-			movedNode = visitCorrectNode(movedNode, exp.thenBranch);
-			if((movedNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) movedNode).getLabel())) break;
+			movedNode = pushNodeToStackAsExpression(movedNode, exp.thenBranch);
+
+//			if(movedNode instanceof LabelNode && elseBranchStart == stack.getLabelId(((LabelNode) movedNode).getLabel())) break;
+			if (stack.getLabelId(mLabel) == elseBranchStart) break;
+
 			if (movedNode instanceof JumpInsnNode) {
-				elseEndLabel = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
+				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
 				movedNode = movedNode.getNext();
 				break;
 			}
 			if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && stack.peek() instanceof ConditionalExpression) {
-
-
 				stack.push(new LogicGateExpression((ConditionalExpression) exp.thenBranch.pop()));
 				break;
 			}
 		}
 
-		if (exp != null && elseEndLabel > jumpDestination) {
+		if (exp != null) {
+			System.out.println("ADDED THEN BRANCH");
+		}
+
+		if (exp != null && elseBranchEnd > elseBranchStart) {
 			exp.elseBranch = new ExpressionStack(mLabels);
 			while(true){
 				if ( movedNode instanceof LabelNode ){
-					int label = stack.getLabelId(((LabelNode) movedNode).getLabel());
-					if (label >= elseEndLabel) break;
+					if (stack.getLabelId(mLabel) >= elseBranchEnd) break;
 				}
 				movedNode = movedNode.getNext();
-				visitCorrectNode(movedNode, exp.elseBranch);
+				pushNodeToStackAsExpression(movedNode, exp.elseBranch);
 			}
+			System.out.println("ELSE BRANCH");
 		}
-
-		System.out.println("L" + jumpDestination);
+		System.out.println("L" + elseBranchStart);
 		return movedNode;
 	}
 

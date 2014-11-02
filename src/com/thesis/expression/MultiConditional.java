@@ -10,8 +10,9 @@ public class MultiConditional extends ConditionalExpression {
 	private Expression left;
 	private Expression right;
 
-	public MultiConditional(AbstractInsnNode instruction, int jumpDestination) {
+	public MultiConditional(AbstractInsnNode instruction, int jumpDestination, ExpressionStack then) {
 		super(instruction, jumpDestination);
+		super.thenBranch = then;
 	}
 
 	public void setLeft(Expression left) {

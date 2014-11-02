@@ -90,8 +90,11 @@ public class ExpressionStack {
 	}
 
 	public void push(LogicGateExpression expression) {
+		LogicGateOperand operand;
+		operand = LogicGateOperand.AND;
 		Expression left = mStack.pop().expression;
 		expression.setLeft((ConditionalExpression)left);
+		expression.setOperand(operand);
 		expression.updateBranches();
 		pushCompleteExp(expression);
 	}
