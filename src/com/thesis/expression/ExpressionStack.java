@@ -1,11 +1,10 @@
 package com.thesis.expression;
 
+import com.thesis.block.Block;
+import com.thesis.block.Statement;
 import org.objectweb.asm.Label;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class ExpressionStack {
 
@@ -90,25 +89,53 @@ public class ExpressionStack {
 		pushCompleteExp(expression);
 	}
 
+	public void push(LogicGateExpression expression) {
+		Expression left = mStack.pop().expression;
+		expression.setLeft((ConditionalExpression)left);
+		expression.updateBranches();
+		pushCompleteExp(expression);
+	}
+
 	public Expression peek() {
 		if (mStack.isEmpty()) return null;
 		return mStack.peek().expression;
 	}
 
-	private void pushLogicGateExpIfPossible(ConditionalExpression expression) {
-		if (conditionalExpressionsAreOnTop(mStack)) {
-			StackExpression right = mStack.pop();
-			LogicGateOperand operand;
-			if (expression.getDestination() == right.labelId) {
-				operand = LogicGateOperand.AND;
-			} else {
-				operand = LogicGateOperand.OR;
-			}
-			pushCompleteExp(new LogicGateExpression(operand, expression, (ConditionalExpression)right.expression, expression.getDestination()));
-		} else {
-			pushCompleteExp(expression);
+	public Expression pop() {
+		if (mStack.isEmpty()) return null;
+		return mStack.pop().expression;
+	}
+
+	private List<StackExpression> getAll() {
+		List<StackExpression> result = new ArrayList<>();
+		for(StackExpression item : mStack) {
+			result.add(item);
+		}
+
+		return result;
+	}
+
+	public void addAll(ExpressionStack stack){
+		if (stack == null) return;
+		for(StackExpression exp : stack.getAll()){
+			mStack.push(exp);
 		}
 	}
+
+//	private void pushLogicGateExpIfPossible(ConditionalExpression expression) {
+//		if (conditionalExpressionsAreOnTop(mStack)) {
+//			StackExpression right = mStack.pop();
+//			LogicGateOperand operand;
+//			if (expression.getDestination() == right.labelId) {
+//				operand = LogicGateOperand.AND;
+//			} else {
+//				operand = LogicGateOperand.OR;
+//			}
+//			pushCompleteExp(new LogicGateExpression(operand, expression, (ConditionalExpression)right.expression, expression.getDestination()));
+//		} else {
+//			pushCompleteExp(expression);
+//		}
+//	}
 
 	private void pushCompleteExp(Expression expression) {
 		mStack.push(new StackExpression(expression, mLabel, mLineNum));
@@ -161,6 +188,18 @@ public class ExpressionStack {
 			mLabels.put(l, labelId);
 		}
 		return labelId;
+	}
+
+	public boolean isEmpty() {
+		return mStack.isEmpty();
+	}
+
+	public Collection<? extends Block> getStatements() {
+		List<Block> statements = new ArrayList<>();
+		for (StackExpression item : mStack) {
+			statements.add(new Statement(item.expression));
+		}
+		return statements;
 	}
 
 	private class StackExpression {

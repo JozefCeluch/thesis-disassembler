@@ -21,6 +21,8 @@ public class InstructionTranslator {
 	private StringBuffer buf;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private Stack<ExpressionStack> mActiveStacks;
+	private int mLine;
+	private Label mLabel;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		buf = new StringBuffer();
@@ -51,6 +53,8 @@ public class InstructionTranslator {
 			node = node.getNext();
 		}
 		addLocalVariablesAssignments();
+		//todo do some improvements of the expressions on the expression stack here
+		mStatements.addAll(mStack.getStatements());
 	}
 
 	private AbstractInsnNode visitCorrectNode(AbstractInsnNode node, ExpressionStack stack) {
@@ -103,6 +107,8 @@ public class InstructionTranslator {
 			default:
 				printNodeInfo(node);
 		}
+		stack.setLineNumber(mLine);
+		stack.addLabel(mLabel);
 		return node;
 	}
 
@@ -222,9 +228,17 @@ public class InstructionTranslator {
 			int elseEndLabel = 0;
 			while(branchNode.getOpcode() != 167) {
 				branchNode = branchNode.getNext();
+				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
 				if((branchNode instanceof LabelNode) && jumpDestination == mStack.getLabelId(((LabelNode) branchNode).getLabel())) break;
-				visitCorrectNode(branchNode, exp.thenBranch);
-				if (branchNode instanceof JumpInsnNode) elseEndLabel = mStack.getLabelId(((JumpInsnNode) branchNode).label.getLabel());
+				if (branchNode instanceof JumpInsnNode) {
+					elseEndLabel = mStack.getLabelId(((JumpInsnNode) branchNode).label.getLabel());
+					branchNode = branchNode.getNext();
+					break;
+				}
+				if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && mStack.peek() instanceof ConditionalExpression) {
+					pushLogicGateExpression((ConditionalExpression)exp.thenBranch.pop(), mStack);
+					break;
+				}
 			}
 			if (elseEndLabel > jumpDestination) {
 				exp.elseBranch = new ExpressionStack(mLabels);
@@ -250,8 +264,8 @@ public class InstructionTranslator {
 			AbstractInsnNode branchNode = node;
 			while(branchNode.getOpcode() != 167) {
 				branchNode = branchNode.getNext();
+				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
 				if((branchNode instanceof LabelNode) && jumpDestination == mStack.getLabelId(((LabelNode) branchNode).getLabel())) break;
-				visitCorrectNode(branchNode, exp.thenBranch);
 			}
 			return branchNode;
 //			mActiveStacks.push(mStack);
@@ -265,6 +279,13 @@ public class InstructionTranslator {
 
 		System.out.println("L" + jumpDestination);
 		return node;
+	}
+
+	private void pushLogicGateExpression(ConditionalExpression right, ExpressionStack stack) {
+			LogicGateOperand operand;
+			operand = LogicGateOperand.AND;
+
+			stack.push(new LogicGateExpression(operand, right, right.getDestination()));
 	}
 
 	private void visitLabelNode(LabelNode node, ExpressionStack mStack) {
@@ -282,7 +303,7 @@ public class InstructionTranslator {
 //			}
 //		}
 //		mStack.push(new StackExpression(getLabelId(node.getLabel())));
-		mStack.addLabel(node.getLabel());
+		mLabel = node.getLabel();
 	}
 
 	// LDC
@@ -358,7 +379,7 @@ public class InstructionTranslator {
 //			exp.line = mCurrentLine;
 //			mStack.push(exp);
 //		}
-		mStack.setLineNumber(node.line);
+		mLine = node.line;
 
 	}
 

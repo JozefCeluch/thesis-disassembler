@@ -9,11 +9,27 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mLeft;
 	private ConditionalExpression  mRight;
 
-	public LogicGateExpression(LogicGateOperand operand, ConditionalExpression left, ConditionalExpression right, int jumpDestination) {
+	public LogicGateExpression(LogicGateOperand operand, ConditionalExpression right, int jumpDestination) {
 		super(jumpDestination);
 		mOperand = operand;
-		mLeft = left;
 		mRight = right;
+		mType = "boolean";
+	}
+
+	public void setLeft(ConditionalExpression left){
+		mLeft = left;
+	}
+
+	public void updateBranches(){
+		mLeft.thenBranch.addAll(mRight.thenBranch);
+		if (mLeft.elseBranch != null) {
+			mLeft.elseBranch.addAll(mRight.elseBranch);
+		} else {
+			mLeft.elseBranch = mRight.elseBranch;
+		}
+		thenBranch = mLeft.thenBranch;
+		elseBranch = mLeft.elseBranch;
+		mLeft.thenBranch = mLeft.elseBranch = mRight.thenBranch = mRight.elseBranch = null;
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public void simpleBoolExpressions(){
 		intOne = 5;
 		intTwo = 45;
 		if (intOne > intTwo && intOne > 433) {
-			intOne = 88;
+				intOne = 88;
 		} else {
 			intTwo = 99;
 		}
