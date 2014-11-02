@@ -5,8 +5,10 @@ import com.thesis.block.Statement;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.Printer;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -135,49 +137,45 @@ public class InstructionTranslator {
 	 */
 	private void visitInsnNode(InsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		String opCode = Util.getOpcodeString(node.getOpcode());
-		if (opCode.contains("LOAD")) {
+		int opCode = node.getOpcode();
+		if (isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
 			stack.push(new ArrayAccessExpression(node));
-		}
-		if (opCode.contains("CONST")) {
+		} else if (isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
 			stack.push(new PrimaryExpression(node));
-		}
-		if (opCode.contains("RETURN")) {
+		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
 			stack.push(new ReturnExpression(node));
-		}
-		if (node.getOpcode() <= 131 && node.getOpcode() >= 96) {
+		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		}
+		//todo to add missing
 	}
 
 	//	BIPUSH, SIPUSH or NEWARRAY
 	private void visitIntInsnNode(IntInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		String opCode = Util.getOpcodeString(node.getOpcode());
+		int opCode = node.getOpcode();
 		switch (opCode) {
-			case "BIPUSH":
+			case Opcodes.BIPUSH:
 				stack.push(new PrimaryExpression(node, node.operand, "int"));
 				break;
-			case "SIPUSH":
+			case Opcodes.SIPUSH:
 				stack.push(new PrimaryExpression(node, node.operand, "short"));
 				break;
-			case "NEWARRAY":
+			case Opcodes.NEWARRAY:
 				stack.push(new ArrayCreationExpression(node));
 				break;
-			default:
-				throw new IllegalStateException("Unexpected OpCode");
 		}
 	}
 
 	//	ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
 	private void visitVarInsnNode(VarInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		String opCode = Util.getOpcodeString(node.getOpcode());
-		if (opCode.endsWith("LOAD")) {
+		int opCode = node.getOpcode();
+		if (isBetween(opCode, Opcodes.ILOAD, Opcodes.DLOAD)) {
 			LocalVariable var = mLocalVariables.get(node.var);
 			stack.push(new PrimaryExpression(node, var, var.getType()));
 		}
-		if (opCode.endsWith("STORE")) {
+		if (isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
 			if (!mLocalVariables.containsKey(node.var)) {
 				mLocalVariables.put(node.var, new LocalVariable("var" + node.var, node.var));
 			}
@@ -185,6 +183,7 @@ public class InstructionTranslator {
 			stack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
 			//todo assignment to fields and static variables
 		}
+		//todo add RET
 	}
 
 	//	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
@@ -215,69 +214,51 @@ public class InstructionTranslator {
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		int jumpDestination = stack.getLabelId(node.label.getLabel());
-		int opcode = node.getOpcode();
-		if (opcode >= 159 && opcode <= 166) { //between IF_ICMPEQ and IF_ACMPNE
-			MultiConditional exp = new MultiConditional(node, jumpDestination);
-			exp.thenBranch = new ExpressionStack(mLabels);
-			AbstractInsnNode branchNode = node;
-			stack.push(exp);
-			int elseEndLabel = 0;
-			while(branchNode.getOpcode() != 167) {
-				branchNode = branchNode.getNext();
-				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
-				if((branchNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) branchNode).getLabel())) break;
-				if (branchNode instanceof JumpInsnNode) {
-					elseEndLabel = stack.getLabelId(((JumpInsnNode) branchNode).label.getLabel());
-					branchNode = branchNode.getNext();
-					break;
-				}
-				if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && stack.peek() instanceof ConditionalExpression) {
-					pushLogicGateExpression((ConditionalExpression)exp.thenBranch.pop(), stack);
-					break;
-				}
-			}
-			if (elseEndLabel > jumpDestination) {
-				exp.elseBranch = new ExpressionStack(mLabels);
-				while(true){
-					if ( branchNode instanceof LabelNode ){
-						int label = stack.getLabelId(((LabelNode) branchNode).getLabel());
-						if (label >= elseEndLabel) break;
-					}
-					branchNode = branchNode.getNext();
-					visitCorrectNode(branchNode, exp.elseBranch);
-				}
-			}
-			return branchNode;
-		}
+		int opCode = node.getOpcode();
+		AbstractInsnNode movedNode = node;
+		ConditionalExpression exp = null;
 
-		if (opcode >= 153 && opcode <= 158) { // between IFEQ and IFLE
-			SingleConditional exp = new SingleConditional(node, jumpDestination);
-			exp.thenBranch = new ExpressionStack(mLabels);
-			stack.push(exp);
-
-			AbstractInsnNode branchNode = node;
-			while(branchNode.getOpcode() != 167) {
-				branchNode = branchNode.getNext();
-				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
-				if((branchNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) branchNode).getLabel())) break;
-			}
-			return branchNode;
-		}
-
-		if (Util.getOpcodeString(opcode).equals("GOTO")) {
+		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
+			stack.push((MultiConditional)exp);
+		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
+			stack.push((SingleConditional)exp);
+		} else if (opCode == Opcodes.GOTO) {
 			stack.push(new UnconditionalJump(node, jumpDestination));
 		}
 		// todo ifnull, innonnull, jsr
 
+		int elseEndLabel = 0;
+		while(movedNode.getOpcode() != Opcodes.GOTO && exp != null) {
+			movedNode = movedNode.getNext();
+			movedNode = visitCorrectNode(movedNode, exp.thenBranch);
+			if((movedNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) movedNode).getLabel())) break;
+			if (movedNode instanceof JumpInsnNode) {
+				elseEndLabel = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
+				movedNode = movedNode.getNext();
+				break;
+			}
+			if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && stack.peek() instanceof ConditionalExpression) {
+
+
+				stack.push(new LogicGateExpression((ConditionalExpression) exp.thenBranch.pop()));
+				break;
+			}
+		}
+
+		if (exp != null && elseEndLabel > jumpDestination) {
+			exp.elseBranch = new ExpressionStack(mLabels);
+			while(true){
+				if ( movedNode instanceof LabelNode ){
+					int label = stack.getLabelId(((LabelNode) movedNode).getLabel());
+					if (label >= elseEndLabel) break;
+				}
+				movedNode = movedNode.getNext();
+				visitCorrectNode(movedNode, exp.elseBranch);
+			}
+		}
+
 		System.out.println("L" + jumpDestination);
-		return node;
-	}
-
-	private void pushLogicGateExpression(ConditionalExpression right, ExpressionStack stack) {
-			LogicGateOperand operand;
-			operand = LogicGateOperand.AND;
-
-			stack.push(new LogicGateExpression(operand, right, right.getDestination()));
+		return movedNode;
 	}
 
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
@@ -308,11 +289,11 @@ public class InstructionTranslator {
 	private void visitIincInsnNode(IincInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		LocalVariable variable = mLocalVariables.get(node.var);
-		if (node.getPrevious() != null && node.getPrevious().getOpcode() == 21) {
+		if (node.getPrevious() != null && node.getPrevious().getOpcode() == Opcodes.ILOAD) {
 			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.POSTFIX));
 			return;
 		}
-		if (node.getNext() != null && node.getNext().getOpcode() == 21) {
+		if (node.getNext() != null && node.getNext().getOpcode() == Opcodes.ILOAD) {
 			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX));
 			return;
 		}
@@ -360,6 +341,14 @@ public class InstructionTranslator {
 		String result = "code: " + opCode + " " + fields;
 		System.out.println(result);
 		System.out.println("STACK: " + mStack.size());
+	}
+
+	/**
+	 * min and max are inclusive
+	 * @return true if num is between min and max
+	 */
+	private static boolean isBetween(int num, int min, int max) {
+		return num >= min && num <= max;
 	}
 
 }
