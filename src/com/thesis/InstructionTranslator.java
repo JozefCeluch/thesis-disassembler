@@ -18,14 +18,11 @@ public class InstructionTranslator {
 	private ExpressionStack mStack;
 	private HashMap<Label, Integer> mLabels;
 	private List<Block> mStatements;
-	private StringBuffer buf;
 	private Map<Integer, LocalVariable> mLocalVariables;
-	private Stack<ExpressionStack> mActiveStacks;
 	private int mLine;
 	private Label mLabel;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
-		buf = new StringBuffer();
 		mStatements = statements;
 		mLabels = new HashMap<>();
 		mStack = new ExpressionStack(mLabels);
@@ -136,36 +133,36 @@ public class InstructionTranslator {
 	 * IRETURN, LRETURN, FRETURN, DRETURN, ARETURN, RETURN,
 	 * ARRAYLENGTH, ATHROW, MONITORENTER, or MONITOREXIT.
 	 */
-	private void visitInsnNode(InsnNode node, ExpressionStack mStack) {
+	private void visitInsnNode(InsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.contains("LOAD")) {
-			mStack.push(new ArrayAccessExpression(node));
+			stack.push(new ArrayAccessExpression(node));
 		}
 		if (opCode.contains("CONST")) {
-			mStack.push(new PrimaryExpression(node));
+			stack.push(new PrimaryExpression(node));
 		}
 		if (opCode.contains("RETURN")) {
-			mStack.push(new ReturnExpression(node));
+			stack.push(new ReturnExpression(node));
 		}
 		if (node.getOpcode() <= 131 && node.getOpcode() >= 96) {
-			mStack.push(new ArithmeticExpression(node));
+			stack.push(new ArithmeticExpression(node));
 		}
 	}
 
 	//	BIPUSH, SIPUSH or NEWARRAY
-	private void visitIntInsnNode(IntInsnNode node, ExpressionStack mStack) {
+	private void visitIntInsnNode(IntInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		String opCode = Util.getOpcodeString(node.getOpcode());
 		switch (opCode) {
 			case "BIPUSH":
-				mStack.push(new PrimaryExpression(node, node.operand, "int"));
+				stack.push(new PrimaryExpression(node, node.operand, "int"));
 				break;
 			case "SIPUSH":
-				mStack.push(new PrimaryExpression(node, node.operand, "short"));
+				stack.push(new PrimaryExpression(node, node.operand, "short"));
 				break;
 			case "NEWARRAY":
-				mStack.push(new ArrayCreationExpression(node));
+				stack.push(new ArrayCreationExpression(node));
 				break;
 			default:
 				throw new IllegalStateException("Unexpected OpCode");
@@ -173,40 +170,40 @@ public class InstructionTranslator {
 	}
 
 	//	ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
-	private void visitVarInsnNode(VarInsnNode node, ExpressionStack mStack) {
+	private void visitVarInsnNode(VarInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		String opCode = Util.getOpcodeString(node.getOpcode());
 		if (opCode.endsWith("LOAD")) {
 			LocalVariable var = mLocalVariables.get(node.var);
-			mStack.push(new PrimaryExpression(node, var, var.getType()));
+			stack.push(new PrimaryExpression(node, var, var.getType()));
 		}
 		if (opCode.endsWith("STORE")) {
 			if (!mLocalVariables.containsKey(node.var)) {
 				mLocalVariables.put(node.var, new LocalVariable("var" + node.var, node.var));
 			}
 			LocalVariable localVar = mLocalVariables.get(node.var);
-			mStack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
+			stack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
 			//todo assignment to fields and static variables
 		}
 	}
 
 	//	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
-	private void visitTypeInsnNode(TypeInsnNode node, ExpressionStack mStack) {
+	private void visitTypeInsnNode(TypeInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
 	//	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
-	private void visitFieldInsnNode(FieldInsnNode node, ExpressionStack mStack) {
+	private void visitFieldInsnNode(FieldInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
-	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack mStack) {
+	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
 	//	INVOKEDYNAMIC
-	private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode node, ExpressionStack mStack) {
+	private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
@@ -215,28 +212,27 @@ public class InstructionTranslator {
 	 * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
 	 * GOTO, JSR.
 	 */
-	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack mStack) {
-		if (mActiveStacks == null) mActiveStacks = new Stack<>();
+	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		int jumpDestination = mStack.getLabelId(node.label.getLabel());
+		int jumpDestination = stack.getLabelId(node.label.getLabel());
 		int opcode = node.getOpcode();
 		if (opcode >= 159 && opcode <= 166) { //between IF_ICMPEQ and IF_ACMPNE
 			MultiConditional exp = new MultiConditional(node, jumpDestination);
 			exp.thenBranch = new ExpressionStack(mLabels);
 			AbstractInsnNode branchNode = node;
-			mStack.push(exp);
+			stack.push(exp);
 			int elseEndLabel = 0;
 			while(branchNode.getOpcode() != 167) {
 				branchNode = branchNode.getNext();
 				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
-				if((branchNode instanceof LabelNode) && jumpDestination == mStack.getLabelId(((LabelNode) branchNode).getLabel())) break;
+				if((branchNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) branchNode).getLabel())) break;
 				if (branchNode instanceof JumpInsnNode) {
-					elseEndLabel = mStack.getLabelId(((JumpInsnNode) branchNode).label.getLabel());
+					elseEndLabel = stack.getLabelId(((JumpInsnNode) branchNode).label.getLabel());
 					branchNode = branchNode.getNext();
 					break;
 				}
-				if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && mStack.peek() instanceof ConditionalExpression) {
-					pushLogicGateExpression((ConditionalExpression)exp.thenBranch.pop(), mStack);
+				if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && stack.peek() instanceof ConditionalExpression) {
+					pushLogicGateExpression((ConditionalExpression)exp.thenBranch.pop(), stack);
 					break;
 				}
 			}
@@ -244,7 +240,7 @@ public class InstructionTranslator {
 				exp.elseBranch = new ExpressionStack(mLabels);
 				while(true){
 					if ( branchNode instanceof LabelNode ){
-						int label = mStack.getLabelId(((LabelNode) branchNode).getLabel());
+						int label = stack.getLabelId(((LabelNode) branchNode).getLabel());
 						if (label >= elseEndLabel) break;
 					}
 					branchNode = branchNode.getNext();
@@ -252,28 +248,24 @@ public class InstructionTranslator {
 				}
 			}
 			return branchNode;
-//			mActiveStacks.push(mStack);
-//			mStack = exp.thenBranch;
 		}
 
 		if (opcode >= 153 && opcode <= 158) { // between IFEQ and IFLE
 			SingleConditional exp = new SingleConditional(node, jumpDestination);
 			exp.thenBranch = new ExpressionStack(mLabels);
-			mStack.push(exp);
+			stack.push(exp);
 
 			AbstractInsnNode branchNode = node;
 			while(branchNode.getOpcode() != 167) {
 				branchNode = branchNode.getNext();
 				branchNode = visitCorrectNode(branchNode, exp.thenBranch);
-				if((branchNode instanceof LabelNode) && jumpDestination == mStack.getLabelId(((LabelNode) branchNode).getLabel())) break;
+				if((branchNode instanceof LabelNode) && jumpDestination == stack.getLabelId(((LabelNode) branchNode).getLabel())) break;
 			}
 			return branchNode;
-//			mActiveStacks.push(mStack);
-//			mStack = exp.thenBranch;
 		}
 
 		if (Util.getOpcodeString(opcode).equals("GOTO")) {
-			mStack.push(new UnconditionalJump(node, jumpDestination));
+			stack.push(new UnconditionalJump(node, jumpDestination));
 		}
 		// todo ifnull, innonnull, jsr
 
@@ -288,28 +280,14 @@ public class InstructionTranslator {
 			stack.push(new LogicGateExpression(operand, right, right.getDestination()));
 	}
 
-	private void visitLabelNode(LabelNode node, ExpressionStack mStack) {
+	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-
-//		if (!mStack.isEmpty()) {
-//			StackExpression stackTop = mStack.peek();
-//			if (stackTop.expression instanceof AssignmentExpression || stackTop.expression instanceof ReturnExpression) {
-//				mStack.pop();
-//				mStatements.add(new Statement(stackTop.expression));
-//			}
-//			if (mStack.size() >= 2 && stackTop.expression instanceof UnconditionalJump) { //todo now handles only logical expressions
-//				mStack.pop();
-//				mStack.pop();
-//			}
-//		}
-//		mStack.push(new StackExpression(getLabelId(node.getLabel())));
 		mLabel = node.getLabel();
 	}
 
 	// LDC
-	private void visitLdcInsnNode(LdcInsnNode node, ExpressionStack mStack) {
+	private void visitLdcInsnNode(LdcInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		buf.append(" ").append(node.cst);
 		String type;
 		if (node.cst instanceof Integer) {
 			type = "int";
@@ -324,61 +302,42 @@ public class InstructionTranslator {
 		} else {
 			type = Util.getType(((Type) node.cst).getDescriptor());
 		}
-		mStack.push(new PrimaryExpression(node, node.cst, type));
+		stack.push(new PrimaryExpression(node, node.cst, type));
 	}
 
-	private void visitIincInsnNode(IincInsnNode node, ExpressionStack mStack) {
+	private void visitIincInsnNode(IincInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		LocalVariable variable = mLocalVariables.get(node.var);
 		if (node.getPrevious() != null && node.getPrevious().getOpcode() == 21) {
-			mStack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.POSTFIX));
+			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.POSTFIX));
 			return;
 		}
 		if (node.getNext() != null && node.getNext().getOpcode() == 21) {
-			mStack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX));
+			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX));
 			return;
 		}
-		mStack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, "int")));
+		stack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, "int")));
 	}
 
 	//	TABLESWITCH
-	private void visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack mStack) {
+	private void visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
 	//	MULTIANEWARRAY
-	private void visitMultiANewArrayInsnNode(MultiANewArrayInsnNode node, ExpressionStack mStack) {
+	private void visitMultiANewArrayInsnNode(MultiANewArrayInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
-	private void visitFrameNode(FrameNode node, ExpressionStack mStack) {
-//		if (mActiveStacks != null && !mActiveStacks.isEmpty()) {
-//			if (mStack.peek() != null && mStack.peek() instanceof UnconditionalJump) {
-//				mStack = new ExpressionStack(mLabels);
-//				((ConditionalExpression)mActiveStacks.peek().peek()).elseBranch = mStack;
-//			} else {
-//				mStack = mActiveStacks.pop();
-//			}
-//		}
+	private void visitFrameNode(FrameNode node, ExpressionStack stack) {
 		System.out.println("FRAME:");
 		printNodeInfo(node);
 		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
 		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
 	}
 
-	private void visitLineNumberNode(LineNumberNode node, ExpressionStack mStack) {
+	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-//		mCurrentLine = node.line;
-//		int labelId = getLabelId(node.start.getLabel());
-//		System.out.println("line: " + mCurrentLine + ", L" + labelId);
-//		StackExpression top = mStack.peek();
-//		if (top != null && top.labelId == labelId) {
-//			top.line = mCurrentLine;
-//		} else {
-//			StackExpression exp = new StackExpression(labelId); //todo probably not needed
-//			exp.line = mCurrentLine;
-//			mStack.push(exp);
-//		}
 		mLine = node.line;
 
 	}
