@@ -1,6 +1,8 @@
 package com.thesis.expression;
 
 import com.thesis.block.Block;
+import com.thesis.block.BlockStatement;
+import com.thesis.block.IfThenElseStatement;
 import com.thesis.block.Statement;
 import org.objectweb.asm.Label;
 
@@ -52,7 +54,7 @@ public class ExpressionStack {
 	}
 
 	public void push(AssignmentExpression expression) {
-		if (!mStack.isEmpty() && mStack.peek().labelId == mLabel) {
+		if (!mStack.isEmpty()) { //&& mStack.peek().labelId == mLabel
 			Expression rightSide = mStack.pop().expression; // todo array assignment and type
 //			if (localVar.hasDebugType()) {
 //				rightSide.setType(localVar.getType());
@@ -73,7 +75,6 @@ public class ExpressionStack {
 		expression.setLeft(leftSide);
 		expression.setRight(rightSide);
 
-//		pushLogicGateExpIfPossible(expression);
 		pushCompleteExp(expression);
 	}
 
@@ -81,7 +82,6 @@ public class ExpressionStack {
 		Expression left = mStack.pop().expression;
 		expression.setLeft(left);
 
-//		pushLogicGateExpIfPossible(expression);
 		pushCompleteExp(expression);
 	}
 
@@ -150,7 +150,6 @@ public class ExpressionStack {
 
 	public void addLabel(Label label) {
 		mLabel = getLabelId(label);
-		System.out.println("Label: L" + mLabel);
 	}
 
 	public int size() {
@@ -197,10 +196,34 @@ public class ExpressionStack {
 		return mStack.isEmpty();
 	}
 
-	public Collection<? extends Block> getStatements() {
-		List<Block> statements = new ArrayList<>();
+	public List<Statement> getStatements() {
+		List<Statement> statements = new ArrayList<>();
 		for (StackExpression item : mStack) {
-			statements.add(new Statement(item.expression));
+			//TODO this beauty probably does what it should, but WTF!! REFACTOR
+			if (item.expression instanceof ConditionalExpression && ((ConditionalExpression) item.expression).thenBranch != null && ((ConditionalExpression) item.expression).elseBranch != null) {
+				if (((ConditionalExpression) item.expression).thenBranch.size() == 1
+						&& ((ConditionalExpression) item.expression).elseBranch.size() == 1
+						&& ((ConditionalExpression) item.expression).thenBranch.peek() instanceof PrimaryExpression
+						&& ((ConditionalExpression) item.expression).elseBranch.peek() instanceof PrimaryExpression) {
+					statements.add(new Statement(item.expression));
+				} else {
+					IfThenElseStatement ifThenElseStatement = new IfThenElseStatement((ConditionalExpression)item.expression);
+					List<Statement> thenStatements = ((ConditionalExpression) item.expression).thenBranch.getStatements();
+					BlockStatement thenBlock = new BlockStatement();
+					for(Statement statement : thenStatements) {
+						thenBlock.addStatement(statement);
+					}
+					List<Statement> elseStatements = ((ConditionalExpression) item.expression).elseBranch.getStatements();
+					BlockStatement elseBlock = new BlockStatement();
+					for(Statement statement : elseStatements) {
+						elseBlock.addStatement(statement);
+					}
+					ifThenElseStatement.setThenStatement(thenBlock);
+					ifThenElseStatement.setElseStatement(elseBlock);
+					statements.add(ifThenElseStatement);
+				}
+			} else
+				statements.add(new Statement(item.expression));
 		}
 		return statements;
 	}

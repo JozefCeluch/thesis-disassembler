@@ -1,20 +1,29 @@
 package com.thesis.block;
 
+import com.thesis.expression.ConditionalExpression;
 import com.thesis.expression.Expression;
 
+import javax.swing.plaf.nimbus.State;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-public class IfThenElseStatement extends Block {
+public class IfThenElseStatement extends Statement {
 
-	Expression mCondition;
+	ConditionalExpression mCondition;
 	Statement mThenStatement;
 	Statement mElseStatement;
 
-	@Override
-	public Block disassemble() {
-		return this;
+	public IfThenElseStatement(ConditionalExpression condition){
+		mCondition = condition;
+	}
+
+	public void setThenStatement(Statement thenStatement) {
+		mThenStatement = thenStatement;
+	}
+
+	public void setElseStatement(Statement elseStatement) {
+		mElseStatement = elseStatement;
 	}
 
 	@Override
@@ -22,12 +31,13 @@ public class IfThenElseStatement extends Block {
 		StringWriter auxWriter = new StringWriter();
 		mCondition.write(auxWriter);
 		buf.setLength(0);
-		buf.append("if (").append(auxWriter.toString()).append(") then");
+		buf.append("if (").append(auxWriter.toString()).append(") ");
 		writer.write(buf.toString());
 		mThenStatement.write(writer);
 		if (mElseStatement != null) {
-			writer.write("else");
+			writer.write(" else ");
 			mElseStatement.write(writer);
+			writer.write("\n");
 		}
 	}
 }

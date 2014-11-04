@@ -12,11 +12,11 @@ import java.util.List;
 
 public abstract class Block implements Writable{
 	protected static final String NL = "\n";
-	protected static final String LEFT_BRACKET = "{";
-	protected static final String RIGHT_BRACKET = "}";
+	protected static final String OPENING_BRACKET = "{";
+	protected static final String CLOSING_BRACKET = "}";
 	protected static final String TAB = "\t";
-	protected static final String BLOCK_START = " " + LEFT_BRACKET + NL;
-	protected static final String BLOCK_END = RIGHT_BRACKET + NL;
+	protected static final String BLOCK_START = " " + OPENING_BRACKET + NL;
+	protected static final String BLOCK_END = CLOSING_BRACKET + NL;
 
 	protected StringBuffer buf;
 	protected List<Object> text;
@@ -114,11 +114,11 @@ public abstract class Block implements Writable{
 	}
 
 	private void addBlockBeginning() {
-		buf.append(" ").append(LEFT_BRACKET).append(NL);
+		buf.append(" ").append(OPENING_BRACKET).append(NL);
 	}
 
 	private void addBlockEnd(){
-		buf.append(RIGHT_BRACKET).append(NL);
+		buf.append(CLOSING_BRACKET).append(NL);
 	}
 
 	public boolean hasParent() {

@@ -20,7 +20,6 @@ public class SingleConditional extends ConditionalExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-//		Expression rightSide = new PrimaryExpression(node, 0, "int");
-
+		left.write(writer);
 	}
 }

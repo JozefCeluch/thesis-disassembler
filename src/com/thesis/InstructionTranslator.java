@@ -211,67 +211,63 @@ public class InstructionTranslator {
 	 * GOTO, JSR.
 	 */
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
+		//TODO REFACTOR AND GENERALISE THE WHOLE METHOD!!!
 		printNodeInfo(node);
-		int elseBranchStart = stack.getLabelId(node.label.getLabel());
+		int jumpDestination = stack.getLabelId(node.label.getLabel());
 		int opCode = node.getOpcode();
 		AbstractInsnNode movedNode = node;
 		ConditionalExpression exp = null;
+		System.out.println("L" + jumpDestination);
 
 		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(node, elseBranchStart, new ExpressionStack(mLabels));
+			exp = new MultiConditional(node, jumpDestination, new ExpressionStack(mLabels));
 			stack.push((MultiConditional)exp);
 			System.out.println("CREATED CONDITIONAL EXP");
 
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
-			exp = new SingleConditional(node, elseBranchStart, new ExpressionStack(mLabels));
+			exp = new SingleConditional(node, jumpDestination, new ExpressionStack(mLabels));
 			stack.push((SingleConditional)exp);
 			System.out.println("CREATED CONDITIONAL EXP");
 
 		} else if (opCode == Opcodes.GOTO) {
-			stack.push(new UnconditionalJump(node, elseBranchStart));
+			stack.push(new UnconditionalJump(node, jumpDestination));
 		}
 		// todo ifnull, innonnull, jsr
 		int elseBranchEnd = 0;
-		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO) {
+		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO && stack.getLabelId(mLabel) != jumpDestination) {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, exp.thenBranch);
-
-//			if(movedNode instanceof LabelNode && elseBranchStart == stack.getLabelId(((LabelNode) movedNode).getLabel())) break;
-			if (stack.getLabelId(mLabel) == elseBranchStart) break;
 
 			if (movedNode instanceof JumpInsnNode) {
 				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
 				movedNode = movedNode.getNext();
 				break;
 			}
-			if (!exp.thenBranch.isEmpty() && exp.thenBranch.peek() instanceof ConditionalExpression && stack.peek() instanceof ConditionalExpression) {
+			Expression branchTop = exp.thenBranch.peek();
+			Expression stackTop = stack.peek();
+			if (branchTop != null && branchTop instanceof ConditionalExpression && stackTop instanceof ConditionalExpression && ((ConditionalExpression) stackTop).getDestination() == ((ConditionalExpression) branchTop).getDestination()) {
 				stack.push(new LogicGateExpression((ConditionalExpression) exp.thenBranch.pop()));
 				break;
 			}
 		}
 
-		if (exp != null) {
-			System.out.println("ADDED THEN BRANCH");
-		}
-
-		if (exp != null && elseBranchEnd > elseBranchStart) {
+		if (exp != null && elseBranchEnd != 0 && elseBranchEnd != jumpDestination) {
+			exp.thenBranch.pop(); // pop GOTO instruction from then branch
 			exp.elseBranch = new ExpressionStack(mLabels);
-			while(true){
-				if ( movedNode instanceof LabelNode ){
-					if (stack.getLabelId(mLabel) >= elseBranchEnd) break;
-				}
+			while(stack.getLabelId(mLabel) != elseBranchEnd){
 				movedNode = movedNode.getNext();
-				pushNodeToStackAsExpression(movedNode, exp.elseBranch);
+				movedNode = pushNodeToStackAsExpression(movedNode, exp.elseBranch);
 			}
-			System.out.println("ELSE BRANCH");
 		}
-		System.out.println("L" + elseBranchStart);
 		return movedNode;
 	}
 
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		mLabel = node.getLabel();
+		if(mLabels.containsKey(mLabel)) {
+			System.out.println("LABEL: " + "L" + mLabels.get(mLabel));
+		}
 	}
 
 	// LDC
