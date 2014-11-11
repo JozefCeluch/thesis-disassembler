@@ -25,6 +25,10 @@ public abstract class Expression implements Writable {
 		return mType != null && !mType.isEmpty();
 	}
 
+	public boolean isVirtual() {
+		return false;
+	}
+
 	@Override
 	public String toString() {
 		StringWriter writer = new StringWriter();

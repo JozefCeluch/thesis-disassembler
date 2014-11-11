@@ -252,7 +252,7 @@ public class InstructionTranslator {
 		}
 
 		if (exp != null && elseBranchEnd != 0 && elseBranchEnd != jumpDestination) {
-			exp.thenBranch.pop(); // pop GOTO instruction from then branch
+//			exp.thenBranch.pop(); // pop GOTO instruction from then branch
 			exp.elseBranch = new ExpressionStack(mLabels);
 			while(stack.getLabelId(mLabel) != elseBranchEnd){
 				movedNode = movedNode.getNext();

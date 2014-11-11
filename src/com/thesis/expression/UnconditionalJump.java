@@ -18,6 +18,10 @@ public class UnconditionalJump extends JumpExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
+	}
 
+	@Override
+	public boolean isVirtual() {
+		return true;
 	}
 }

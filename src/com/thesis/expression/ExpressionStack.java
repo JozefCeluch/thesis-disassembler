@@ -200,7 +200,9 @@ public class ExpressionStack {
 		List<Statement> statements = new ArrayList<>();
 		for (StackExpression item : mStack) {
 			//TODO this beauty probably does what it should, but WTF!! REFACTOR
-			if (item.expression instanceof ConditionalExpression && ((ConditionalExpression) item.expression).thenBranch != null && ((ConditionalExpression) item.expression).elseBranch != null) {
+			if (item.expression instanceof ConditionalExpression
+					&& ((ConditionalExpression) item.expression).thenBranch != null
+					&& ((ConditionalExpression) item.expression).elseBranch != null) {
 				if (((ConditionalExpression) item.expression).thenBranch.size() == 1
 						&& ((ConditionalExpression) item.expression).elseBranch.size() == 1
 						&& ((ConditionalExpression) item.expression).thenBranch.peek() instanceof PrimaryExpression
@@ -222,8 +224,9 @@ public class ExpressionStack {
 					ifThenElseStatement.setElseStatement(elseBlock);
 					statements.add(ifThenElseStatement);
 				}
-			} else
+			} else if (!item.expression.isVirtual()) {
 				statements.add(new Statement(item.expression));
+			}
 		}
 		return statements;
 	}
