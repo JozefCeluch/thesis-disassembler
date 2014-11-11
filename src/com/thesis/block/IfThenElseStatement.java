@@ -31,11 +31,11 @@ public class IfThenElseStatement extends Statement {
 		StringWriter auxWriter = new StringWriter();
 		mCondition.write(auxWriter);
 		buf.setLength(0);
-		buf.append("if (").append(auxWriter.toString()).append(") ");
+		buf.append("if (").append(auxWriter.toString()).append(")");
 		writer.write(buf.toString());
 		mThenStatement.write(writer);
 		if (mElseStatement != null) {
-			writer.write(" else ");
+			writer.write(" else");
 			mElseStatement.write(writer);
 			writer.write("\n");
 		}

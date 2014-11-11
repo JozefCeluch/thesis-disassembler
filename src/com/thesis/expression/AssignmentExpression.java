@@ -8,8 +8,8 @@ import java.io.Writer;
 
 public class AssignmentExpression extends  Expression{
 
-	private Expression mRightSide;
 	private LeftHandSide mLeftSide;
+	private Expression mRightSide;
 
 	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide) {
 		super(instruction);
