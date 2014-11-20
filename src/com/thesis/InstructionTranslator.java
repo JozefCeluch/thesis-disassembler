@@ -17,7 +17,7 @@ public class InstructionTranslator {
 
 	private final MethodNode mMethod;
 	private ExpressionStack mStack;
-	private HashMap<Label, Integer> mLabels;
+	private static final HashMap<Label, Integer> mLabels = new HashMap<>();
 	private List<Block> mStatements;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private int mLine;
@@ -25,8 +25,7 @@ public class InstructionTranslator {
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		mStatements = statements;
-		mLabels = new HashMap<>();
-		mStack = new ExpressionStack(mLabels);
+		mStack = new ExpressionStack();
 		mMethod = method;
 		mLocalVariables = new HashMap<>();
 		copyLocalVariables();
@@ -40,6 +39,10 @@ public class InstructionTranslator {
 				mLocalVariables.put(variable.index, new LocalVariable(variable));
 			}
 		}
+	}
+
+	public static HashMap<Label, Integer> getLabels() {
+		return mLabels;
 	}
 
 	public void addCode() {
@@ -220,14 +223,14 @@ public class InstructionTranslator {
 		System.out.println("L" + jumpDestination);
 
 		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(node, jumpDestination, new ExpressionStack(mLabels));
+			exp = new MultiConditional(node, jumpDestination, new ExpressionStack());
 			stack.push((MultiConditional)exp);
-			System.out.println("CREATED CONDITIONAL EXP");
+			System.out.println("CREATED MultiConditional EXP");
 
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
-			exp = new SingleConditional(node, jumpDestination, new ExpressionStack(mLabels));
+			exp = new SingleConditional(node, jumpDestination, new ExpressionStack());
 			stack.push((SingleConditional)exp);
-			System.out.println("CREATED CONDITIONAL EXP");
+			System.out.println("CREATED SingleConditional EXP");
 
 		} else if (opCode == Opcodes.GOTO) {
 			stack.push(new UnconditionalJump(node, jumpDestination));
@@ -236,27 +239,26 @@ public class InstructionTranslator {
 		int elseBranchEnd = 0;
 		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO && stack.getLabelId(mLabel) != jumpDestination) {
 			movedNode = movedNode.getNext();
-			movedNode = pushNodeToStackAsExpression(movedNode, exp.thenBranch);
+			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
 
 			if (movedNode instanceof JumpInsnNode) {
 				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
+				exp.setGoToDest(elseBranchEnd);
 				movedNode = movedNode.getNext();
 				break;
 			}
-			Expression branchTop = exp.thenBranch.peek();
+			Expression branchTop = exp.getThenBranch().peek();
 			Expression stackTop = stack.peek();
-			if (branchTop != null && branchTop instanceof ConditionalExpression && stackTop instanceof ConditionalExpression && ((ConditionalExpression) stackTop).getDestination() == ((ConditionalExpression) branchTop).getDestination()) {
-				stack.push(new LogicGateExpression((ConditionalExpression) exp.thenBranch.pop()));
+			if (branchTop != null && branchTop instanceof ConditionalExpression && stackTop instanceof ConditionalExpression && ((ConditionalExpression) stackTop).getConditionalJumpDest() == ((ConditionalExpression) branchTop).getConditionalJumpDest()) {
+				stack.push(new LogicGateExpression((ConditionalExpression) exp.getThenBranch().pop()));
 				break;
 			}
 		}
 
 		if (exp != null && elseBranchEnd != 0 && elseBranchEnd != jumpDestination) {
-//			exp.thenBranch.pop(); // pop GOTO instruction from then branch
-			exp.elseBranch = new ExpressionStack(mLabels);
 			while(stack.getLabelId(mLabel) != elseBranchEnd){
 				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, exp.elseBranch);
+				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
 			}
 		}
 		return movedNode;

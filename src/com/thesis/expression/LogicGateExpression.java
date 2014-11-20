@@ -10,7 +10,7 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mRight;
 
 	public LogicGateExpression(ConditionalExpression right) {
-		super(right.getDestination());
+		super(right.getConditionalJumpDest());
 		mRight = right;
 		mType = "boolean";
 	}
@@ -25,14 +25,9 @@ public class LogicGateExpression extends ConditionalExpression {
 
 	public void updateBranches(){
 		mLeft.thenBranch.addAll(mRight.thenBranch);
-		if (mLeft.elseBranch != null) {
-			mLeft.elseBranch.addAll(mRight.elseBranch);
-		} else {
-			mLeft.elseBranch = mRight.elseBranch;
-		}
+		mLeft.elseBranch.addAll(mRight.elseBranch);
 		thenBranch = mLeft.thenBranch;
 		elseBranch = mLeft.elseBranch;
-		mLeft.thenBranch = mLeft.elseBranch = mRight.thenBranch = mRight.elseBranch = null;
 	}
 
 	@Override

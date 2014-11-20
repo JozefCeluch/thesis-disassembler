@@ -3,27 +3,47 @@ package com.thesis.expression;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
 
-import java.util.Stack;
-
 public abstract class ConditionalExpression extends Expression {
 
-	private int mDestination;
-	public ExpressionStack thenBranch;
-	public ExpressionStack elseBranch;
+	protected int mConditionalJumpDest = -1;
+	protected int mGoToDest = -1;
+	protected ExpressionStack thenBranch;
+	protected ExpressionStack elseBranch;
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
 		mType = "boolean";
-		mDestination = jumpDestination;
+		mConditionalJumpDest = jumpDestination;
+		thenBranch = new ExpressionStack();
+		elseBranch = new ExpressionStack();
 	}
 
 	public ConditionalExpression(int jumpDestination) {
-		super(null);
-		mDestination = jumpDestination;
+		this(null, jumpDestination);
 	}
 
-	public int getDestination() {
-		return mDestination;
+	public int getConditionalJumpDest() {
+		return mConditionalJumpDest;
+	}
+
+	public void setConditionalJumpDest(int conditionalJumpDest) {
+		mConditionalJumpDest = conditionalJumpDest;
+	}
+
+	public int getGoToDest() {
+		return mGoToDest;
+	}
+
+	public void setGoToDest(int goToDest) {
+		mGoToDest = goToDest;
+	}
+
+	public ExpressionStack getThenBranch() {
+		return thenBranch;
+	}
+
+	public ExpressionStack getElseBranch() {
+		return elseBranch;
 	}
 
 	@Override

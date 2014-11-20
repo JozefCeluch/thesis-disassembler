@@ -28,6 +28,14 @@ public void iflExpression(){
 			}
 			intTwo = 99;
 		}
+
+		if (intOne > 54) {
+			intTwo = 333;
+		} else if (intOne == 54) {
+			intTwo = 222;
+		} else {
+			intTwo = 111;
+		}
 		intThree = 55;
 	}
 }
