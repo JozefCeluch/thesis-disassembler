@@ -36,6 +36,15 @@ public class LogicGateExpression extends ConditionalExpression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		LogicGateOperand operand;
+		operand = LogicGateOperand.AND; //todo operand
+		mLeft = (ConditionalExpression)stack.pop();
+		mOperand = operand;
+		updateBranches();
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		mLeft.write(writer);
 		writer.append(" ").append(mOperand.toString()).append(" ");

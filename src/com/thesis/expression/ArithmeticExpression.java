@@ -85,4 +85,10 @@ public class ArithmeticExpression extends Expression {
 	public String getType() {
 		return mLeftSide.getType(); //todo think why?
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		mRightSide = stack.pop();
+		mLeftSide = stack.pop();
+	}
 }

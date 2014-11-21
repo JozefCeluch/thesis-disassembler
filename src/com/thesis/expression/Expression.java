@@ -29,6 +29,8 @@ public abstract class Expression implements Writable {
 		return false;
 	}
 
+	abstract public void prepareForStack(ExpressionStack stack);
+
 	@Override
 	public String toString() {
 		StringWriter writer = new StringWriter();

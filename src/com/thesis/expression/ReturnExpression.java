@@ -23,6 +23,13 @@ public class ReturnExpression extends Expression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+//		if (mStack.size() >= 1) { //todo handle return properly
+//			expression.setExpression(mStack.pop().expression);
+//		}
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write("return");
 		if (mExpression != null) {

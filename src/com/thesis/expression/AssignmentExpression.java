@@ -37,6 +37,18 @@ public class AssignmentExpression extends  Expression{
 		return mLeftSide.getType();
 	}
 
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		if (mRightSide != null) return;
+		if (!stack.isEmpty() ) { //&& stack.peek().labelId == mLabel
+			Expression rightSide = stack.pop(); // todo array assignment and type
+//			if (localVar.hasDebugType()) {
+//				rightSide.setType(localVar.getType());
+//			}
+			mRightSide = rightSide;
+		}
+	}
+
 	private String makeCorrectOperator() {
 		String op;
 		if (mInstruction instanceof IincInsnNode) {

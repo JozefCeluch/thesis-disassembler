@@ -24,4 +24,8 @@ public class LogicalExpression extends ConditionalExpression {
 		mRightSide.write(writer);
 	}
 
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+
+	}
 }

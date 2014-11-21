@@ -69,4 +69,9 @@ public class PrimaryExpression extends Expression {
 	public String getType() {
 		return mType;
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		// no preparation necessary
+	}
 }

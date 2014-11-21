@@ -29,4 +29,10 @@ public class MultiConditional extends ConditionalExpression {
 		writer.append(" ").append(makeOperand().neg().toString()).append(" "); //todo NEG
 		right.write(writer);
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		right = stack.pop();
+		left = stack.pop();
+	}
 }

@@ -173,7 +173,7 @@ public class InstructionTranslator {
 	private void visitVarInsnNode(VarInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
-		if (isBetween(opCode, Opcodes.ILOAD, Opcodes.DLOAD)) {
+		if (isBetween(opCode, Opcodes.ILOAD, Opcodes.ALOAD)) {
 			LocalVariable var = mLocalVariables.get(node.var);
 			stack.push(new PrimaryExpression(node, var, var.getType()));
 		}

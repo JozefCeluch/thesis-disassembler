@@ -21,6 +21,11 @@ public class LeftHandSide extends Expression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		//no preparation necessary
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write(mLocalVariable.getName());
 	}

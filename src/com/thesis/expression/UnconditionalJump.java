@@ -24,4 +24,9 @@ public class UnconditionalJump extends JumpExpression {
 	public boolean isVirtual() {
 		return true;
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		// no preparation needed
+	}
 }

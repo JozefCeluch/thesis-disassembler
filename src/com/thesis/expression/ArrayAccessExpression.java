@@ -28,6 +28,12 @@ public class ArrayAccessExpression extends Expression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		indexExpression = stack.pop();
+		arrayRef = stack.pop();
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		arrayRef.write(writer);
 		writer.write("[");

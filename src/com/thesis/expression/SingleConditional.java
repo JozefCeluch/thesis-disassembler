@@ -22,4 +22,9 @@ public class SingleConditional extends ConditionalExpression {
 	public void write(Writer writer) throws IOException {
 		left.write(writer);
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		left = stack.pop();
+	}
 }

@@ -24,6 +24,12 @@ public class UnaryExpression extends Expression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		// no preparation needed
+		//todo remove previous if it's postfix, remove next if it's prefix
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write(mOpPosition == OpPosition.PREFIX ? "++" : mLocalVariable.getName());
 		writer.write(mOpPosition == OpPosition.PREFIX ? mLocalVariable.getName() : "++");

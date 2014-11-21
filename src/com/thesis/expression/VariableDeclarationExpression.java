@@ -24,4 +24,9 @@ public class VariableDeclarationExpression extends Expression {
 	public String getType() {
 		return mVariable.getType();
 	}
+
+	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		//no preparation needed
+	}
 }

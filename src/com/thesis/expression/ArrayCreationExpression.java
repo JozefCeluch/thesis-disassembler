@@ -24,6 +24,11 @@ public class ArrayCreationExpression extends Expression {
 	}
 
 	@Override
+	public void prepareForStack(ExpressionStack stack) {
+		mLength = stack.pop();
+	}
+
+	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write("new ");
 		writer.write(mType);
