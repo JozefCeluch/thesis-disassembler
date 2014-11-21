@@ -14,7 +14,8 @@ public class IfThenElseStatement extends Statement {
 	Statement mThenStatement;
 	Statement mElseStatement;
 
-	public IfThenElseStatement(ConditionalExpression condition){
+	public IfThenElseStatement(ConditionalExpression condition, int line){
+		super(line);
 		mCondition = condition;
 	}
 

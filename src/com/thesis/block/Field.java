@@ -15,6 +15,7 @@ public class Field extends Statement {
 	private FieldNode mFieldNode;
 
 	public Field(FieldNode fieldNode, Block parent) {
+		super(0); //todo line
 		mFieldNode = fieldNode;
 		mParent = parent;
 	}

@@ -8,12 +8,16 @@ import java.io.Writer;
 public class Statement extends Block {
 
 	protected static final String STATEMENT_END = ";\n";
-	Expression mExpression;
+	protected Expression mExpression;
+	protected int mLine;
 
-	protected Statement() {
+
+	protected Statement(int line) {
+		mLine = line;
 	}
 
-	public Statement(Expression expression) {
+	public Statement(Expression expression, int line) {
+		this(line);
 		mExpression = expression;
 	}
 

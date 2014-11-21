@@ -9,7 +9,8 @@ public class BlockStatement extends Statement {
 
 	private List<Statement> mStatements;
 
-	public BlockStatement(){
+	public BlockStatement(int line){
+		super(line);
 		mStatements = new ArrayList<>();
 	}
 

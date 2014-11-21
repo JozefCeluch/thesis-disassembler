@@ -111,12 +111,7 @@ public class ExpressionStack {
 	}
 
 	private List<StackExpression> getAll() {
-		List<StackExpression> result = new ArrayList<>();
-		for(StackExpression item : mStack) {
-			result.add(item);
-		}
-
-		return result;
+		return Arrays.asList(mStack.toArray(new StackExpression[mStack.size()]));
 	}
 
 	public void addAll(ExpressionStack stack){
@@ -210,16 +205,16 @@ public class ExpressionStack {
 						&& ((ConditionalExpression) item.expression).getElseBranch().size() == 1
 						&& ((ConditionalExpression) item.expression).getThenBranch().peek() instanceof PrimaryExpression
 						&& ((ConditionalExpression) item.expression).getElseBranch().peek() instanceof PrimaryExpression) {
-					statements.add(new Statement(item.expression));
+					statements.add(new Statement(item.expression, item.line));
 				} else if (!((ConditionalExpression) item.expression).getElseBranch().isEmpty() && !((ConditionalExpression) item.expression).getThenBranch().isEmpty()) {
-					IfThenElseStatement ifThenElseStatement = new IfThenElseStatement((ConditionalExpression)item.expression);
+					IfThenElseStatement ifThenElseStatement = new IfThenElseStatement((ConditionalExpression)item.expression, item.line);
 					List<Statement> thenStatements = ((ConditionalExpression) item.expression).getThenBranch().getStatements();
-					BlockStatement thenBlock = new BlockStatement();
+					BlockStatement thenBlock = new BlockStatement(item.line);
 					for(Statement statement : thenStatements) {
 						thenBlock.addStatement(statement);
 					}
 					List<Statement> elseStatements = ((ConditionalExpression) item.expression).getElseBranch().getStatements();
-					BlockStatement elseBlock = new BlockStatement();
+					BlockStatement elseBlock = new BlockStatement(item.line);
 					for(Statement statement : elseStatements) {
 						elseBlock.addStatement(statement);
 					}
@@ -228,7 +223,7 @@ public class ExpressionStack {
 					statements.add(ifThenElseStatement);
 				}
 			} else if (!item.expression.isVirtual()) {
-				statements.add(new Statement(item.expression));
+				statements.add(new Statement(item.expression, item.line));
 			}
 		}
 		return statements;
