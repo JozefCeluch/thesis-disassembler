@@ -7,10 +7,11 @@ import java.io.Writer;
 
 public class ReturnExpression extends Expression {
 
-	Expression mExpression;
+	private Expression mExpression;
 
-	public ReturnExpression(InsnNode node) {
+	public ReturnExpression(InsnNode node, String type) {
 		super(node);
+		mType = type;
 	}
 
 	public void setExpression(Expression expression) {
@@ -19,18 +20,28 @@ public class ReturnExpression extends Expression {
 
 	@Override
 	public String getType() {
-		return mExpression.getType();
+		return mType.equals("ref") ? mExpression.getType() : mType;
 	}
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-//		if (mStack.size() >= 1) { //todo handle return properly
-//			expression.setExpression(mStack.pop().expression);
-//		}
+		if (!mType.equals("void")) {
+			Expression expression = stack.pop();
+			if (expression instanceof ConditionalExpression && !getType().equals("boolean")) {
+				expression = new TernaryExpression((ConditionalExpression) expression);
+			}
+			mExpression = expression;
+		}
+	}
+
+	@Override
+	public boolean isVirtual() {
+		return mType.equals("void");
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
+		if (mType.equals("void")) return;
 		writer.write("return");
 		if (mExpression != null) {
 			writer.write(' ');

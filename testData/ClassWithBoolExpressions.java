@@ -1,17 +1,18 @@
 public class ClassWithBoolExpressions {
-ClassWithBoolExpressions(){
+ClassWithBoolExpressions() {
 }
-public void simpleBoolExpressions(){
+	public int simpleBoolExpressions() {
 		boolean boolOne;
 		int intOne;
 		int intTwo;
 		intOne = 6;
 		intTwo = 8728;
 		boolOne = intOne >= intTwo & (intTwo > 3 && intOne < 67);
-		intOne = intTwo > 34 ? 99:1;
+		intOne = intTwo > 34 ? 99 : 1;
+		return intTwo > 34 ? 99 : 1;
 	}
 
-public void ifExpression(){
+public void ifExpression() {
 		int intOne;
 		int intTwo;
 		int intThree;

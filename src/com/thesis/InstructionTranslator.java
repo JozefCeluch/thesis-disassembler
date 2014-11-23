@@ -147,11 +147,28 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
 			stack.push(new PrimaryExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
-			stack.push(new ReturnExpression(node));
+			stack.push(new ReturnExpression(node, getReturnType(opCode)));
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		}
 		//todo to add missing
+	}
+//todo create type enum?
+	private String getReturnType(int opcode) {
+		switch (opcode){
+			case Opcodes.IRETURN:
+				return "int";
+			case Opcodes.LRETURN:
+				return "long";
+			case Opcodes.FRETURN:
+				return "float";
+			case Opcodes.DRETURN:
+				return "double";
+			case Opcodes.ARETURN:
+				return "ref";
+			default:
+				return "void";
+		}
 	}
 
 	//	BIPUSH, SIPUSH or NEWARRAY
