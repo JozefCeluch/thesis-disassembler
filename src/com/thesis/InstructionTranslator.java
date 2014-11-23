@@ -55,7 +55,9 @@ public class InstructionTranslator {
 		}
 		addLocalVariablesAssignments();
 		//todo do some improvements of the expressions on the expression stack here
-		mStatements.addAll(mStack.getStatements());
+		StatementCreator sc = new StatementCreator(mStack);
+		sc.createStatements();
+		mStatements.addAll(sc.getStatements());
 	}
 
 	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
@@ -224,12 +226,12 @@ public class InstructionTranslator {
 
 		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
 			exp = new MultiConditional(node, jumpDestination, new ExpressionStack());
-			stack.push((MultiConditional)exp);
+			stack.push(exp);
 			System.out.println("CREATED MultiConditional EXP");
 
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
 			exp = new SingleConditional(node, jumpDestination, new ExpressionStack());
-			stack.push((SingleConditional)exp);
+			stack.push(exp);
 			System.out.println("CREATED SingleConditional EXP");
 
 		} else if (opCode == Opcodes.GOTO) {

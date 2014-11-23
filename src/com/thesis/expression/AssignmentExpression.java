@@ -45,6 +45,9 @@ public class AssignmentExpression extends  Expression{
 //			if (localVar.hasDebugType()) {
 //				rightSide.setType(localVar.getType());
 //			}
+			if (rightSide instanceof PrimaryExpression) {
+				rightSide.setType(mLeftSide.getType());
+			}
 			mRightSide = rightSide;
 		}
 	}

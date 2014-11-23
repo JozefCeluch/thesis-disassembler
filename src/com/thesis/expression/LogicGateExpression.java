@@ -11,6 +11,7 @@ public class LogicGateExpression extends ConditionalExpression {
 
 	public LogicGateExpression(ConditionalExpression right) {
 		super(right.getConditionalJumpDest());
+		setGoToDest(right.getGoToDest());
 		mRight = right;
 		mType = "boolean";
 	}

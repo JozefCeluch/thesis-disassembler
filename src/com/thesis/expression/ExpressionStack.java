@@ -61,7 +61,7 @@ public class ExpressionStack {
 		}
 	}
 
-	private List<StackItem> getAll() {
+	public List<StackItem> getAll() {
 		return Arrays.asList(mStack.toArray(new StackItem[mStack.size()]));
 	}
 
@@ -96,39 +96,6 @@ public class ExpressionStack {
 
 	public boolean isEmpty() {
 		return mStack.isEmpty();
-	}
-
-	public List<Statement> getStatements() {
-		List<Statement> statements = new ArrayList<>();
-		for (StackItem item : mStack) {
-			//TODO this beauty probably does what it should, but WTF!! REFACTOR
-			if (item.expression instanceof ConditionalExpression) {
-				if (((ConditionalExpression) item.expression).getThenBranch().size() == 1
-						&& ((ConditionalExpression) item.expression).getElseBranch().size() == 1
-						&& ((ConditionalExpression) item.expression).getThenBranch().peek() instanceof PrimaryExpression
-						&& ((ConditionalExpression) item.expression).getElseBranch().peek() instanceof PrimaryExpression) {
-					statements.add(new Statement(item.expression, item.line));
-				} else if (!((ConditionalExpression) item.expression).getElseBranch().isEmpty() && !((ConditionalExpression) item.expression).getThenBranch().isEmpty()) {
-					IfThenElseStatement ifThenElseStatement = new IfThenElseStatement((ConditionalExpression)item.expression, item.line);
-					List<Statement> thenStatements = ((ConditionalExpression) item.expression).getThenBranch().getStatements();
-					BlockStatement thenBlock = new BlockStatement(item.line);
-					for(Statement statement : thenStatements) {
-						thenBlock.addStatement(statement);
-					}
-					List<Statement> elseStatements = ((ConditionalExpression) item.expression).getElseBranch().getStatements();
-					BlockStatement elseBlock = new BlockStatement(item.line);
-					for(Statement statement : elseStatements) {
-						elseBlock.addStatement(statement);
-					}
-					ifThenElseStatement.setThenStatement(thenBlock);
-					ifThenElseStatement.setElseStatement(elseBlock);
-					statements.add(ifThenElseStatement);
-				}
-			} else if (!item.expression.isVirtual()) {
-				statements.add(new Statement(item.expression, item.line));
-			}
-		}
-		return statements;
 	}
 
 }
