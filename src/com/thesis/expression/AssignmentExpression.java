@@ -48,6 +48,9 @@ public class AssignmentExpression extends  Expression{
 			if (rightSide instanceof PrimaryExpression) {
 				rightSide.setType(mLeftSide.getType());
 			}
+			if (rightSide instanceof ConditionalExpression && !getType().equals("boolean")) {
+				rightSide = new TernaryExpression((ConditionalExpression) rightSide);
+			}
 			mRightSide = rightSide;
 		}
 	}

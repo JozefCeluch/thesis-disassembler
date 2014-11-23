@@ -25,6 +25,7 @@ public class ExpressionStack {
 		expression.prepareForStack(this);
 		pushCompleteExp(expression);
 		improveStack();
+
 	}
 
 	private void improveStack() {
@@ -39,7 +40,7 @@ public class ExpressionStack {
 					mLastImprovementPosition = i + 1;
 				}
 			} else {
-				mLastImprovementPosition = i;
+//				mLastImprovementPosition = i;
 			}
 		}
 	}
