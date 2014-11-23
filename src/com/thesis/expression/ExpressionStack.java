@@ -10,7 +10,7 @@ import java.util.*;
 
 public class ExpressionStack {
 
-	private final Stack<StackExpression> mStack;
+	private final Stack<StackItem> mStack;
 	private int mLineNum;
 	private HashMap<Label, Integer> mLabels;
 	private int mLabel;
@@ -56,13 +56,13 @@ public class ExpressionStack {
 
 	public void addAll(ExpressionStack stack){
 		if (stack == null) return;
-		for(StackExpression exp : stack.getAll()){
+		for(StackItem exp : stack.getAll()){
 			mStack.push(exp);
 		}
 	}
 
-	private List<StackExpression> getAll() {
-		return Arrays.asList(mStack.toArray(new StackExpression[mStack.size()]));
+	private List<StackItem> getAll() {
+		return Arrays.asList(mStack.toArray(new StackItem[mStack.size()]));
 	}
 
 	public void clear() {
@@ -70,7 +70,7 @@ public class ExpressionStack {
 	}
 
 	private void pushCompleteExp(Expression expression) {
-		mStack.push(new StackExpression(expression, mLabel, mLineNum));
+		mStack.push(new StackItem(expression, mLabel, mLineNum));
 	}
 
 	public void setLineNumber(int line) {
@@ -100,7 +100,7 @@ public class ExpressionStack {
 
 	public List<Statement> getStatements() {
 		List<Statement> statements = new ArrayList<>();
-		for (StackExpression item : mStack) {
+		for (StackItem item : mStack) {
 			//TODO this beauty probably does what it should, but WTF!! REFACTOR
 			if (item.expression instanceof ConditionalExpression) {
 				if (((ConditionalExpression) item.expression).getThenBranch().size() == 1
