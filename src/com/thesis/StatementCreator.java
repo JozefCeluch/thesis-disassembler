@@ -2,6 +2,7 @@ package com.thesis;
 
 import com.thesis.block.BlockStatement;
 import com.thesis.block.IfThenElseStatement;
+import com.thesis.block.IfThenStatement;
 import com.thesis.block.Statement;
 import com.thesis.expression.ConditionalExpression;
 import com.thesis.expression.ExpressionStack;
@@ -27,7 +28,7 @@ public class StatementCreator {
 	private List<Statement> createStatements(ExpressionStack expressions) {
 		List<Statement> statements = new ArrayList<>();
 		for (StackItem item : expressions.getAll()) {
-			if (item.expression.isVirtual()) continue;
+			if (item.expression.isVirtual() || item.expression instanceof PrimaryExpression) continue;
 
 			if (item.expression instanceof ConditionalExpression) {
 				statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
@@ -47,16 +48,30 @@ public class StatementCreator {
 			for(Statement statement : thenStatements) {
 				thenBlock.addStatement(statement);
 			}
+			ifThenElseStatement.setThenStatement(thenBlock);
+
 			List<Statement> elseStatements = createStatements(expression.getElseBranch());
 			BlockStatement elseBlock = new BlockStatement(line);
 			for(Statement statement : elseStatements) {
 				elseBlock.addStatement(statement);
 			}
-			ifThenElseStatement.setThenStatement(thenBlock);
 			ifThenElseStatement.setElseStatement(elseBlock);
 			return ifThenElseStatement;
+		} else if (isIfThenStatement(expression)){
+			IfThenStatement ifThenStatement = new IfThenStatement(expression, line);
+			List<Statement> thenStatements = createStatements(expression.getThenBranch());
+			BlockStatement thenBlock = new BlockStatement(line);
+			for(Statement statement : thenStatements) {
+				thenBlock.addStatement(statement);
+			}
+			ifThenStatement.setThenStatement(thenBlock);
+			return ifThenStatement;
 		}
 		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", "String"),0);
+	}
+
+	private boolean isIfThenStatement(ConditionalExpression expression) {
+		return !expression.getThenBranch().isEmpty() && expression.getElseBranch().isEmpty();
 	}
 
 	private boolean isIfThenElseStatement(ConditionalExpression expression) {

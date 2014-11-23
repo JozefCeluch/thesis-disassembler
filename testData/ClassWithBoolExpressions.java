@@ -8,9 +8,10 @@ public void simpleBoolExpressions(){
 		intOne = 6;
 		intTwo = 8728;
 		boolOne = intOne >= intTwo & (intTwo > 3 && intOne < 67);
+		intOne = intTwo > 34 ? 99:1;
 	}
 
-public void iflExpression(){
+public void ifExpression(){
 		int intOne;
 		int intTwo;
 		int intThree;
@@ -20,21 +21,22 @@ public void iflExpression(){
 		if (intOne > intTwo & intOne > 433 && intTwo > 46) {
 			boolOne = intOne > 56;
 			intThree = 324;
-		} else {
+		}
+		else {
 			if (intTwo >= 354) {
 				intTwo = 999;
-			} else {
-				intTwo = 888;
 			}
 			intTwo = 99;
 		}
 
-		if (intOne > 54) {
-			intTwo = 333;
-		} else if (intOne == 54) {
-			intTwo = 222;
-		} else {
-			intTwo = 111;
+		if (intOne > 1111) {
+			intTwo = 11;
+		}
+		else if (intOne == 2222) {
+			intTwo = 22;
+		}
+		else {
+			intTwo = 33;
 		}
 		intThree = 55;
 	}
