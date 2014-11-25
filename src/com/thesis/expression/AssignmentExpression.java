@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 
@@ -33,7 +34,7 @@ public class AssignmentExpression extends  Expression{
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mLeftSide.getType();
 	}
 
@@ -48,7 +49,7 @@ public class AssignmentExpression extends  Expression{
 			if (rightSide instanceof PrimaryExpression) {
 				rightSide.setType(mLeftSide.getType());
 			}
-			if (rightSide instanceof ConditionalExpression && !getType().equals("boolean")) {
+			if (rightSide instanceof ConditionalExpression && !getType().equals(DataType.BOOLEAN)) {
 				rightSide = new TernaryExpression((ConditionalExpression) rightSide);
 			}
 			mRightSide = rightSide;

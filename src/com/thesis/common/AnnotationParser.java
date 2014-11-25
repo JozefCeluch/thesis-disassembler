@@ -31,7 +31,7 @@ public class AnnotationParser {
 
 	private void addAnnotationNode(String desc, List values) {
 		if (desc != null) {
-			buf.append("@").append(Util.javaObjectName(Util.getType(desc))); //todo more complicated annotations?
+			buf.append("@").append(Util.javaObjectName(Util.getType(desc).toString())); //todo more complicated annotations?
 			if (values != null) {
 				buf.append("(");
 				for (int i = 0; i < values.size(); i += 2) {

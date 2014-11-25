@@ -12,8 +12,8 @@ public class Util {
 
 	public static final String ARGUMENT_NAME_BASE = "arg";
 
-	public static String getType(String desc){
-		String type;
+	public static DataType getType(String desc){
+		DataType type;
 		if (desc.startsWith("L")) {
 			type = getReferenceType(desc);
 		}else if (desc.startsWith("[")) {
@@ -21,7 +21,7 @@ public class Util {
 		} else {
 			type = getPrimitiveType(desc);
 		}
-		return removeOuterClasses(type);
+		return type;
 	}
 
 	public static String removeOuterClasses(String name) {
@@ -32,55 +32,47 @@ public class Util {
 		return name;
 	}
 
-	public static String getArrayReferenceType(String desc) {
+	public static DataType getArrayReferenceType(String desc) {
 		int dimensions = desc.lastIndexOf('[') + 1;
 		String type = desc.substring(dimensions);
-		String result = getType(type);
+		DataType arrayType = getType(type);
+		String typeString = removeOuterClasses(arrayType.toString());
 		for (int i = 0; i < dimensions; i++) {
-			result += "[]";
+			typeString += "[]";
 		}
-		return result;
+		return DataType.getType(typeString); //todo think if there should be a special array type
 	}
 
-	public static String getReferenceType(String desc) {
-		return javaObjectName(desc.substring(1));
+	public static DataType getReferenceType(String desc) {
+		return DataType.getType(removeOuterClasses(javaObjectName(desc.substring(1))));
 	}
 
-	public static String getPrimitiveType(String desc) {
-		String type;
+	//TODO convert to common.Type
+	public static DataType getPrimitiveType(String desc) {
+		DataType type;
 		switch (desc) {
 			case "B":
-				type = "byte";
-				break;
+				return DataType.BYTE;
 			case "C":
-				type = "char";
-				break;
+				return DataType.CHAR;
 			case "D":
-				type = "double";
-				break;
+				return DataType.DOUBLE;
 			case "F":
-				type = "float";
-				break;
+				return DataType.FLOAT;
 			case "I":
-				type = "int";
-				break;
+				return DataType.INT;
 			case "J":
-				type = "long";
-				break;
+				return DataType.LONG;
 			case "S":
-				type = "short";
-				break;
+				return DataType.SHORT;
 			case "V":
-				type = "void";
-				break;
+				return DataType.VOID;
 			case "Z":
-				type = "boolean";
-				break;
+				return DataType.BOOLEAN;
 			default:
 				System.out.println("type: " + desc);
 				throw new IllegalArgumentException("Unknown primitive type");
 		}
-		return type;
 	}
 
 	public static String javaObjectName(String objectName) {

@@ -4,6 +4,7 @@ import com.thesis.block.BlockStatement;
 import com.thesis.block.IfThenElseStatement;
 import com.thesis.block.IfThenStatement;
 import com.thesis.block.Statement;
+import com.thesis.common.DataType;
 import com.thesis.expression.ConditionalExpression;
 import com.thesis.expression.ExpressionStack;
 import com.thesis.expression.PrimaryExpression;
@@ -67,7 +68,7 @@ public class StatementCreator {
 			ifThenStatement.setThenStatement(thenBlock);
 			return ifThenStatement;
 		}
-		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", "String"),0);
+		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", DataType.getType("String")),0);
 	}
 
 	private boolean isIfThenStatement(ConditionalExpression expression) {

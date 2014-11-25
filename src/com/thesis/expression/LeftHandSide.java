@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.LocalVariable;
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class LeftHandSide extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mLocalVariable.getType();
 	}
 

@@ -1,9 +1,6 @@
 package com.thesis.expression;
 
 import com.thesis.InstructionTranslator;
-import com.thesis.block.BlockStatement;
-import com.thesis.block.IfThenElseStatement;
-import com.thesis.block.Statement;
 import org.objectweb.asm.Label;
 
 import java.util.*;

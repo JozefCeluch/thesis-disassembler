@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.InsnNode;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class ArrayAccessExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return arrayRef.getType();
 	}
 

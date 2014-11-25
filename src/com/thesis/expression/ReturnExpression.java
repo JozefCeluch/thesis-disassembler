@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.InsnNode;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ public class ReturnExpression extends Expression {
 
 	private Expression mExpression;
 
-	public ReturnExpression(InsnNode node, String type) {
+	public ReturnExpression(InsnNode node, DataType type) {
 		super(node);
 		mType = type;
 	}
@@ -19,15 +20,15 @@ public class ReturnExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
-		return mType.equals("ref") ? mExpression.getType() : mType;
+	public DataType getType() {
+		return mType.isReferenceType() ? mExpression.getType() : mType;
 	}
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		if (!mType.equals("void")) {
+		if (!mType.equals(DataType.VOID)) {
 			Expression expression = stack.pop();
-			if (expression instanceof ConditionalExpression && !getType().equals("boolean")) {
+			if (expression instanceof ConditionalExpression && !DataType.BOOLEAN.equals(getType())) {
 				expression = new TernaryExpression((ConditionalExpression) expression);
 			}
 			mExpression = expression;
@@ -36,12 +37,12 @@ public class ReturnExpression extends Expression {
 
 	@Override
 	public boolean isVirtual() {
-		return mType.equals("void");
+		return DataType.VOID.equals(mType);
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if (mType.equals("void")) return;
+		if (DataType.VOID.equals(mType)) return;
 		writer.write("return");
 		if (mExpression != null) {
 			writer.write(' ');

@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.LocalVariable;
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.IincInsnNode;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class UnaryExpression extends Expression {
 	LocalVariable mLocalVariable;
 	OpPosition mOpPosition;
 
-	public UnaryExpression(IincInsnNode node, LocalVariable variable, String type, OpPosition pos) {
+	public UnaryExpression(IincInsnNode node, LocalVariable variable, DataType type, OpPosition pos) {
 		super(node);
 		mType = type;
 		mLocalVariable = variable;
@@ -19,7 +20,7 @@ public class UnaryExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mType;
 	}
 

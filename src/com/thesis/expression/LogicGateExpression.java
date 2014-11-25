@@ -1,5 +1,7 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -13,7 +15,7 @@ public class LogicGateExpression extends ConditionalExpression {
 		super(right.getConditionalJumpDest());
 		setGoToDest(right.getGoToDest());
 		mRight = right;
-		mType = "boolean";
+		mType = DataType.BOOLEAN;
 	}
 
 	public void setOperand(LogicGateOperand operand) {
@@ -32,8 +34,8 @@ public class LogicGateExpression extends ConditionalExpression {
 	}
 
 	@Override
-	public String getType() {
-		return "boolean";
+	public DataType getType() {
+		return mType;
 	}
 
 	@Override

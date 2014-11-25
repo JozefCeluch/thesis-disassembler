@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
+import com.thesis.common.DataType;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -15,7 +15,7 @@ public class TernaryExpression extends ConditionalExpression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mExpression.getType();
 	}
 

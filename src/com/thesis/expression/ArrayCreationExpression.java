@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.IntInsnNode;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class ArrayCreationExpression extends Expression {
 
 	public ArrayCreationExpression(IntInsnNode node) {
 		super(node);
-		mType = convertTypeCodeToString(node.operand);
+		mType = convertTypeCodeToType(node.operand);
 	}
 
 	public void setLength(Expression length) {
@@ -19,7 +20,7 @@ public class ArrayCreationExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mType;
 	}
 
@@ -31,30 +32,30 @@ public class ArrayCreationExpression extends Expression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write("new ");
-		writer.write(mType);
+		writer.write(mType.toString());
 		writer.write("[");
 		mLength.write(writer);
 		writer.write("]");
 	}
 
-	private String convertTypeCodeToString(int code) {
+	private DataType convertTypeCodeToType(int code) {
 		switch (code) {
 			case 4:
-				return "boolean";
+				return DataType.BOOLEAN;
 			case 5:
-				return "char";
+				return DataType.CHAR;
 			case 6:
-				return "float";
+				return DataType.FLOAT;
 			case 7:
-				return "double";
+				return DataType.DOUBLE;
 			case 8:
-				return "byte";
+				return DataType.BYTE;
 			case 9:
-				return "short";
+				return DataType.SHORT;
 			case 10:
-				return "int";
+				return DataType.INT;
 			case 11:
-				return "long";
+				return DataType.LONG;
 		}
 		return null;
 	}

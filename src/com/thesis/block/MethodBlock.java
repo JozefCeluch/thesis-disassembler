@@ -2,6 +2,7 @@ package com.thesis.block;
 
 import com.thesis.InstructionTranslator;
 import com.thesis.LocalVariable;
+import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.ReturnExpression;
@@ -155,7 +156,7 @@ public class MethodBlock extends Block {
 	}
 
 	private void generateArguments(MethodNode method) {
-		LocalVariable thisArgument = new LocalVariable("this", mClassName, 0);
+		LocalVariable thisArgument = new LocalVariable("this", DataType.getType(mClassName), 0);
 		thisArgument.setIsArgument(true);
 		mArguments.put(0, thisArgument);
 		generateMethodArgumentsFromDescriptor(method);
@@ -178,7 +179,7 @@ public class MethodBlock extends Block {
 		LocalVariableNode variableNode = Util.variableAtIndex(i+1, localVariables);
 		LocalVariable variable;
 		if (variableNode == null) {
-			String type = Util.getType(typeCode);
+			DataType type = Util.getType(typeCode);
 			String name = Util.ARGUMENT_NAME_BASE + i;
 			variable =  new LocalVariable(name, type, i+1);
 		} else {

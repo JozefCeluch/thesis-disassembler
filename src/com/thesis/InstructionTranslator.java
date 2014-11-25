@@ -2,6 +2,7 @@ package com.thesis;
 
 import com.thesis.block.Block;
 import com.thesis.block.Statement;
+import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
 import org.objectweb.asm.Label;
@@ -154,20 +155,20 @@ public class InstructionTranslator {
 		//todo to add missing
 	}
 //todo create type enum?
-	private String getReturnType(int opcode) {
+	private DataType getReturnType(int opcode) {
 		switch (opcode){
 			case Opcodes.IRETURN:
-				return "int";
+				return DataType.INT;
 			case Opcodes.LRETURN:
-				return "long";
+				return DataType.LONG;
 			case Opcodes.FRETURN:
-				return "float";
+				return DataType.FLOAT;
 			case Opcodes.DRETURN:
-				return "double";
+				return DataType.DOUBLE;
 			case Opcodes.ARETURN:
-				return "ref";
+				return DataType.UNKNOWN;
 			default:
-				return "void";
+				return DataType.VOID;
 		}
 	}
 
@@ -177,10 +178,10 @@ public class InstructionTranslator {
 		int opCode = node.getOpcode();
 		switch (opCode) {
 			case Opcodes.BIPUSH:
-				stack.push(new PrimaryExpression(node, node.operand, "int"));
+				stack.push(new PrimaryExpression(node, node.operand, DataType.INT));
 				break;
 			case Opcodes.SIPUSH:
-				stack.push(new PrimaryExpression(node, node.operand, "short"));
+				stack.push(new PrimaryExpression(node, node.operand, DataType.SHORT));
 				break;
 			case Opcodes.NEWARRAY:
 				stack.push(new ArrayCreationExpression(node));
@@ -294,17 +295,17 @@ public class InstructionTranslator {
 	// LDC
 	private void visitLdcInsnNode(LdcInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		String type;
+		DataType type;
 		if (node.cst instanceof Integer) {
-			type = "int";
+			type = DataType.INT;
 		} else if (node.cst instanceof Float) {
-			type = "float";
+			type = DataType.FLOAT;
 		} else if (node.cst instanceof Double) {
-			type = "double";
+			type = DataType.DOUBLE;
 		} else if (node.cst instanceof Long) {
-			type = "long";
+			type = DataType.LONG;
 		} else if (node.cst instanceof String) {
-			type = "String";
+			type = DataType.getType("String");
 		} else {
 			type = Util.getType(((Type) node.cst).getDescriptor());
 		}
@@ -315,14 +316,14 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		LocalVariable variable = mLocalVariables.get(node.var);
 		if (node.getPrevious() != null && node.getPrevious().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.POSTFIX));
+			stack.push(new UnaryExpression(node, variable, DataType.INT, UnaryExpression.OpPosition.POSTFIX));
 			return;
 		}
 		if (node.getNext() != null && node.getNext().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node, variable, "int", UnaryExpression.OpPosition.PREFIX));
+			stack.push(new UnaryExpression(node, variable, DataType.INT, UnaryExpression.OpPosition.PREFIX));
 			return;
 		}
-		stack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, "int")));
+		stack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, DataType.INT)));
 	}
 
 	//	TABLESWITCH

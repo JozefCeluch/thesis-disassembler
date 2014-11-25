@@ -1,6 +1,7 @@
 package com.thesis.common;
 
 import com.thesis.LocalVariable;
+import jdk.internal.org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.LocalVariableNode;
 
@@ -180,38 +181,8 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	public void visitBaseType(final char descriptor) {
 		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
-		String type;
-		switch (descriptor) {
-			case 'V':
-				type = "void";
-				break;
-			case 'B':
-				type = "byte";
-				break;
-			case 'J':
-				type = "long";
-				break;
-			case 'Z':
-				type = "boolean";
-				break;
-			case 'I':
-				type = "int";
-				break;
-			case 'S':
-				type = "short";
-				break;
-			case 'C':
-				type = "char";
-				break;
-			case 'F':
-				type = "float";
-				break;
-			// case 'D':
-			default:
-				type = "double";
-				break;
-		}
-		declaration.append(type);
+		DataType type = Util.getType(String.valueOf(descriptor));
+		declaration.append(type.toString());
 		currentArgument.setType(type);
 		endType();
 	}
@@ -221,7 +192,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		declaration.append(name);
-		currentArgument.setType(name);
+		currentArgument.setType(DataType.getType(name));
 		endType();
 	}
 
@@ -362,7 +333,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			currentArgument.setName(name);
 			increaseIndex();
 			if (currentArgument.getType() == null) {
-				currentArgument.setType(currentArgType.toString());
+				currentArgument.setType(DataType.getType(currentArgType.toString()));
 			}
 
 			declaration.append(" ").append(name);
@@ -400,7 +371,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	private void increaseIndex() {
-		if ( ("double".equals(currentArgument.getType()) || "long".equals(currentArgument.getType()))) {
+		if ( (DataType.DOUBLE.equals(currentArgument.getType()) || DataType.LONG.equals(currentArgument.getType()))) {
 			mIndex += 2;
 		} else {
 			mIndex += 1;

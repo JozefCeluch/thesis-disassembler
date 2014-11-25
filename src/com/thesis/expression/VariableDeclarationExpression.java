@@ -1,7 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.LocalVariable;
-import org.objectweb.asm.tree.AbstractInsnNode;
+import com.thesis.common.DataType;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -21,7 +21,7 @@ public class VariableDeclarationExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mVariable.getType();
 	}
 

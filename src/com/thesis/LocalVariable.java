@@ -1,5 +1,6 @@
 package com.thesis;
 
+import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.tree.LocalVariableNode;
 
@@ -7,7 +8,7 @@ public class LocalVariable {
 
 	private String mName;
 
-	private String mType;
+	private DataType mType;
 
 	private int mIndex;
 
@@ -32,7 +33,7 @@ public class LocalVariable {
 		mDebugType = true;
 	}
 
-	public LocalVariable(String name, String type, int index) {
+	public LocalVariable(String name, DataType type, int index) {
 		mName = name;
 		mType = type;
 		mIndex = index;
@@ -43,11 +44,11 @@ public class LocalVariable {
 		return mName;
 	}
 
-	public String getType() {
+	public DataType getType() {
 		return mType;
 	}
 
-	public void setType(String type) {
+	public void setType(DataType type) {
 		this.mType = type;
 	}
 
@@ -72,7 +73,7 @@ public class LocalVariable {
 	}
 
 	public boolean hasType() {
-		return mType != null && !mType.isEmpty();
+		return mType != null;
 	}
 
 	public boolean hasDebugType(){

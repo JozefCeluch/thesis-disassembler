@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.LocalVariable;
+import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnNode;
@@ -14,9 +15,9 @@ public class PrimaryExpression extends Expression {
 
 	private Object mValue;
 
-	public PrimaryExpression(AbstractInsnNode node, Object value, String type) {
+	public PrimaryExpression(AbstractInsnNode node, Object value, DataType type) {
 		super(node);
-		if ("String".equals(type) || "java.lang.String".equals(type)) {
+		if (DataType.getType("String").equals(type) || DataType.getType("java.lang.String").equals(type)) {
 			mValue = QUOTE + value + QUOTE;
 		} else {
 			mValue = value;
@@ -24,7 +25,7 @@ public class PrimaryExpression extends Expression {
 		mType = type;
 	}
 
-	public PrimaryExpression(AbstractInsnNode node, LocalVariable value, String type) {
+	public PrimaryExpression(AbstractInsnNode node, LocalVariable value, DataType type) {
 		super(node);
 		mValue = value;
 		mType = type;
@@ -40,15 +41,15 @@ public class PrimaryExpression extends Expression {
 			switch (val) {
 				case "M1":
 					mValue = -1;
-					mType = "int";
+					mType = DataType.INT;
 					break;
 				case "NULL":
 					mValue = "null";
-					mType = "java.lang.Object";
+					mType = DataType.getType("java.lang.Object");
 					break;
 				default:
 					mValue = Integer.valueOf(val);
-					mType = Util.getPrimitiveType(opCode.substring(0,1));
+					mType = Util.getType(opCode.substring(0, 1));
 			}
 		}
 	}
@@ -58,7 +59,7 @@ public class PrimaryExpression extends Expression {
 		String output = mValue.toString();
 		if (mValue instanceof LocalVariable) {
 			output = ((LocalVariable)mValue).getName();
-		} else if ("boolean".equals(mType)){
+		} else if (DataType.BOOLEAN.equals(mType)){
 			output = (int)mValue == 0 ? "false" : "true";
 		}
 
@@ -66,7 +67,7 @@ public class PrimaryExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mType;
 	}
 

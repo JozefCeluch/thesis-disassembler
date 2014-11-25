@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
 
@@ -12,7 +13,7 @@ public abstract class ConditionalExpression extends Expression {
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
-		mType = "boolean";
+		mType = DataType.BOOLEAN;
 		mConditionalJumpDest = jumpDestination;
 		thenBranch = new ExpressionStack();
 		elseBranch = new ExpressionStack();
@@ -47,7 +48,7 @@ public abstract class ConditionalExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mType;
 	}
 

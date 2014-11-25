@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class UnconditionalJump extends JumpExpression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return null;
 	}
 

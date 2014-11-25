@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.Writable;
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.io.IOException;
@@ -9,20 +10,20 @@ import java.io.StringWriter;
 public abstract class Expression implements Writable {
 
 	protected AbstractInsnNode mInstruction;
-	protected String mType;
+	protected DataType mType;
 
 	public Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
 	}
 
-	abstract public String getType();
+	abstract public DataType getType();
 
-	public void setType(String type){
+	public void setType(DataType type){
 		mType = type;
 	}
 
 	public boolean hasType() {
-		return mType != null && !mType.isEmpty();
+		return mType != null && !mType.equals(DataType.UNKNOWN);
 	}
 
 	public boolean isVirtual() {

@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
 
@@ -82,7 +83,7 @@ public class ArithmeticExpression extends Expression {
 	}
 
 	@Override
-	public String getType() {
+	public DataType getType() {
 		return mLeftSide.getType(); //todo think why?
 	}
 
