@@ -1,161 +1,80 @@
 package com.thesis.file;
 
-import org.apache.bcel.classfile.JavaClass;
-import org.junit.Before;
-import org.junit.Ignore;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
+@RunWith(value = JUnitParamsRunner.class)
 public class ParserTest {
 
 	private static String TEST_FOLDER = "testData/";
-    Parser mParser;
-
-    @Before
-    public void setUp() throws Exception {
-        mParser = new Parser(TEST_FOLDER);
-    }
-
-    @Test(expected = FileNotFoundException.class)
-    public void testParseClassFile_incorrectInput() throws Exception {
-        mParser.parseClassFile("Atom");
-    }
-
-    @Test
-    public void testClassParsed() throws Exception {
-        String classText = mParser.parseClassFile("EmptyClass.class");
-        assertNotNull(classText);
-    }
-
-    @Test
-    public void testParseEmptyClass() throws Exception {
-		String className = "EmptyClass";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyInterface() throws Exception {
-		String className = "EmptyInterface";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyInterfaceAnnotation() throws Exception {
-		String className = "EmptyInterfaceAnnotation";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyDeprecatedClass() throws Exception {
-		String className = "EmptyDeprecatedClass";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyDeprecatedInterface() throws Exception {
-		String className = "EmptyDeprecatedInterface";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyEnum() throws Exception {
-		String className = "EmptyEnum";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseEmptyClassWithInterfaces() throws Exception {
-		String className = "EmptyClassWithInterfaces";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testParseClassWithFields() throws Exception {
-		String className = "ClassWithFields";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-        assertEquals(expected, result);
-    }
+	private static String RESULTS_FOLDER = "testData/expectedResults/";
+	private final static Parser PARSER = new Parser(TEST_FOLDER);
 
 	@Test
-	public void testParseClassWithMethods() throws Exception {
-		String className = "ClassWithMethods";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-		assertEquals(expected, result);
+	@Parameters(method = "getAllClasses")
+	public void testAll(String name, String expected, String generated){
+		// javaClassText(expected), compileAndParseClass(expected, mParser)
+		assertEquals("Classes do not equal", expected, generated);
 	}
 
-	@Test
-	public void testParseEmptyClassWithInnerClass() throws Exception {
-		String className = "EmptyClassWithInnerClass";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-		assertEquals(expected, result);
+	public List<Object[]> getAllClasses() {
+		File srcFolder = new File(TEST_FOLDER);
+		if (!srcFolder.isDirectory()) throw new RuntimeException("Not a folder");
+
+		File[] files = srcFolder.listFiles(pathname -> pathname.isFile() && pathname.getPath().endsWith(".java"));
+
+		return Arrays.asList(files).stream()
+				.map(f -> f.getName().replace(".java", ""))
+				.map(ParserTest::createData)
+				.collect(Collectors.toList());
 	}
 
-	@Test
-	public void testParseEmptyClassWithComplexAnnotation() throws Exception {
-		String className = "EmptyClassWithComplexAnnotation";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-		assertEquals(expected, result);
+	private static Object[] createData(String name) {
+		return new Object[] {name, javaClassText(name), compileAndParseClass(name, PARSER)};
 	}
 
-	@Test
-	public void testParseClassWithNumericExpressions() throws Exception {
-		String className = "ClassWithNumericExpressions";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-		assertEquals(expected, result);
+	private static String javaClassText(String fileName) {
+		byte[] fileContents = new byte[0];
+		try {
+			fileContents = Files.readAllBytes(Paths.get(RESULTS_FOLDER + fileName + ".java"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new String(fileContents);
 	}
 
-	@Test
-	public void testParseClassWithBoolExpressions() throws Exception {
-		String className = "ClassWithBoolExpressions";
-		compileClass(className);
-		String result = mParser.parseClassFile(className + ".class");
-		String expected = javaClassText(className + ".java");
-		assertEquals(expected, result);
+	private static String compileAndParseClass(String name, Parser parser) {
+		Process process;
+		try {
+			System.out.println("COMPILING: " + name);
+			process = Runtime.getRuntime().exec("javac -g " + TEST_FOLDER + name + ".java");
+			printLines(name + " stderr:", process.getErrorStream());
+			process.waitFor();
+		} catch (IOException | InterruptedException  e) {
+			System.out.println("Compilation unsuccessful");
+			return null;
+		}
+		if (process.exitValue() != 0) {
+			System.out.println("COMPILATION ERROR: " + name + ", " + process.exitValue());
+		} else {
+			System.out.println("COMPILATION SUCCESS: " + name);
+		}
+		System.out.println("PARSING: " + name);
+		return parser.parseClassFile(name + ".class");
 	}
 
-    private static String javaClassText(String fileName) throws IOException {
-        byte[] fileContents = Files.readAllBytes(Paths.get(TEST_FOLDER + fileName));
-        return new String(fileContents);
-    }
-
-	private static void printLines(String name, InputStream ins) throws Exception {
+	private static void printLines(String name, InputStream ins) throws IOException{
 		String line;
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(ins));
@@ -163,16 +82,4 @@ public class ParserTest {
 			System.out.println(name + " " + line);
 		}
 	}
-
-	private static void compileClass(String name) throws Exception {
-		Process process = Runtime.getRuntime().exec("javac -g " + TEST_FOLDER + name + ".java");
-		printLines(name + " stderr:", process.getErrorStream());
-		process.waitFor();
-		if (process.exitValue() != 0) {
-			System.out.println("COMPILATION ERROR: " + name + ", " + process.exitValue());
-		} else {
-			System.out.println("COMPILATION SUCCESS: " + name);
-		}
-	}
-
 }
