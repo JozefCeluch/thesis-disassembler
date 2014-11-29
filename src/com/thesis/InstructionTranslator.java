@@ -99,6 +99,8 @@ public class InstructionTranslator {
 			case AbstractInsnNode.TABLESWITCH_INSN:
 				visitTableSwitchInsnNode((TableSwitchInsnNode) node, stack);
 				break;
+			case AbstractInsnNode.LOOKUPSWITCH_INSN:
+				visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
 			case AbstractInsnNode.MULTIANEWARRAY_INSN:
 				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode) node, stack);
 				break;
@@ -328,6 +330,11 @@ public class InstructionTranslator {
 
 	//	TABLESWITCH
 	private void visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
+		printNodeInfo(node);
+	}
+
+	// LOOKUPSWITCH
+	private void visitLookupSwitchInsnNode(LookupSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 	}
 
