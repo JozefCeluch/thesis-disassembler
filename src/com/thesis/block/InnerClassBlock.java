@@ -29,12 +29,9 @@ public class InnerClassBlock extends Block {
 
 	private void appendInnerClassNode(String name) {
 		Parser p = new Parser("testData/"); //todo folder
-		try {
-			text.add(p.parseClassFile(name + ".class", getParent())); //todo make extension optional
-			text.add(NL);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+
+		text.add(p.parseClassFile(name + ".class", getParent())); //todo make extension optional
+		text.add(NL);
 	}
 
 	@Override

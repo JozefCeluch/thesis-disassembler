@@ -14,12 +14,17 @@ public class Parser {
         mReader = new Reader(directory);
     }
 
-    public String parseClassFile(String file) throws FileNotFoundException {
+    public String parseClassFile(String file) {
         return parseClassFile(file, null);
     }
 
-	public String parseClassFile(String file, Block parent) throws FileNotFoundException {
-		InputStream is = mReader.openClassFile(file);
+	public String parseClassFile(String file, Block parent) {
+		InputStream is = null;
+		try {
+			is = mReader.openClassFile(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace(); //TODO
+		}
 		try {
 			ClassReader classReader = new ClassReader(is);
 			ClassNode classNode = new ClassNode();
@@ -32,7 +37,7 @@ public class Parser {
 			disassembler.print();
 			return stringWriter.toString();
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(); //TODO
 			return null;
 		}
 	}
