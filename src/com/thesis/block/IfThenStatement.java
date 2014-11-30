@@ -22,12 +22,16 @@ public class IfThenStatement extends Statement {
 
 	@Override
 	public void write(Writer writer) throws IOException {
+		writeIfThenStatement(writer);
+		writer.write(NL);
+	}
+
+	protected void writeIfThenStatement(Writer writer) throws IOException {
 		StringWriter auxWriter = new StringWriter();
 		mCondition.write(auxWriter);
 		buf.setLength(0);
 		buf.append("if (").append(auxWriter.toString()).append(")");
 		writer.write(buf.toString());
 		mThenStatement.write(writer);
-		writer.write("\n");
 	}
 }

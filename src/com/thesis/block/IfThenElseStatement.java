@@ -20,8 +20,8 @@ public class IfThenElseStatement extends IfThenStatement {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		super.write(writer);
-		writer.write("else");
+		super.writeIfThenStatement(writer);
+		writer.write(" else");
 		mElseStatement.write(writer);
 		writer.write("\n");
 	}
