@@ -157,29 +157,18 @@ public class InstructionTranslator {
 			//TODO
 		} else if (opCode == Opcodes.SWAP) {
 			stack.swap();
-		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2S)) {
+		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
 			Expression top = stack.peek();
 			top.setType(DataType.INT);
-			switch (opCode) {
-				case Opcodes.I2B:
-					top.setCastType(DataType.BYTE);
-					break;
-				case Opcodes.I2C:
-					top.setCastType(DataType.CHAR);
-					break;
-				case Opcodes.I2D:
-					top.setCastType(DataType.DOUBLE);
-					break;
-				case Opcodes.I2F:
-					top.setCastType(DataType.FLOAT);
-					break;
-				case Opcodes.I2L:
-					top.setCastType(DataType.LONG);
-					break;
-				case Opcodes.I2S:
-					top.setCastType(DataType.BOOLEAN);
-					break;
-			}
+			setCorrectCastType(opCode, top);
+		} else if (isBetween(opCode, Opcodes.F2L, Opcodes.F2D)) {
+			Expression top = stack.peek();
+			top.setType(DataType.FLOAT);
+			setCorrectCastType(opCode, top);
+		} else if (isBetween(opCode, Opcodes.D2L, Opcodes.D2F)) {
+			Expression top = stack.peek();
+			top.setType(DataType.FLOAT);
+			setCorrectCastType(opCode, top);
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
@@ -189,6 +178,27 @@ public class InstructionTranslator {
 		}
 		//todo to add missing
 	}
+
+	private void setCorrectCastType(int opCode, Expression top) {
+		switch (opCode) {
+			case Opcodes.I2B:
+				top.setCastType(DataType.BYTE);
+				break;
+			case Opcodes.I2C:
+				top.setCastType(DataType.CHAR);
+				break;
+			case Opcodes.I2D:
+				top.setCastType(DataType.DOUBLE);
+				break;
+			case Opcodes.I2F:
+				top.setCastType(DataType.FLOAT);
+				break;
+			case Opcodes.I2L:
+				top.setCastType(DataType.LONG);
+				break;
+			case Opcodes.I2S:
+				top.setCastType(DataType.BOOLEAN);
+				break;
 		}
 	}
 
