@@ -29,11 +29,8 @@ public class Field extends Statement {
 		if (Util.containsFlag(mFieldNode.access, Opcodes.ACC_SYNTHETIC)) {
 			addComment("synthetic");
 		}
-		if (mFieldNode.signature != null) {
-			addFieldSignature(mFieldNode.signature);
-		} else {
-			addType(mFieldNode.desc);
-		}
+
+		buf.append(getType(mFieldNode.desc, mFieldNode.signature)).append(" ");
 		buf.append(mFieldNode.name);
 		if (mFieldNode.value != null) {
 			buf.append(" = ").append(mFieldNode.value);
@@ -43,11 +40,15 @@ public class Field extends Statement {
 		return this;
 	}
 
-	private void addFieldSignature(String signature) {
-		SignatureVisitor sv = new SignatureVisitor(0);
-		SignatureReader r = new SignatureReader(signature);
-		r.acceptType(sv);
-		buf.append(sv.getDeclaration()).append(" ");
+	private String getType(String desc, String signature) {
+		if (signature != null) {
+			SignatureVisitor sv = new SignatureVisitor(0);
+			SignatureReader r = new SignatureReader(signature);
+			r.acceptType(sv);
+			return sv.getDeclaration();
+		} else {
+			return Util.getType(desc).toString();
+		}
 	}
 
 	private void appendAllSingleLineAnnotations(List... annotationLists){

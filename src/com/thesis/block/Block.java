@@ -90,10 +90,6 @@ public abstract class Block implements Writable{
 		}
 	}
 
-	protected void addType(String desc) {
-		buf.append(Util.getType(desc)).append(" ");
-	}
-
 	protected void addComment(String comment) {
 		buf.append(" /* ").append(comment).append(" */ ");
 	}

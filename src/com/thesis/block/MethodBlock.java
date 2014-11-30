@@ -122,17 +122,17 @@ public class MethodBlock extends Block {
 		if (name.equals("<init>")) {
 			buf.append(Util.removeOuterClasses(mClassName));
 		} else {
-			addMethodReturnType(desc, genericReturn);
+			buf.append(getReturnType(desc, genericReturn)).append(" ");
 			buf.append(name);
 		}
 	}
 
-	private void addMethodReturnType(String desc, String genericReturn) {
+	private String getReturnType(String desc, String genericReturn) {
 		if (Util.isNotEmpty(genericReturn)){
-			buf.append(genericReturn).append(" ");
+			return genericReturn;
 		} else {
 			int closingBracketPosition = desc.lastIndexOf(')');
-			addType(desc.substring(closingBracketPosition + 1));
+			return Util.getType(desc.substring(closingBracketPosition + 1)).toString();
 		}
 	}
 
