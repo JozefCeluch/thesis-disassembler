@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.InsnNode;
 
 import java.io.IOException;
@@ -10,9 +11,9 @@ public class ReturnExpression extends Expression {
 
 	private Expression mExpression;
 
-	public ReturnExpression(InsnNode node, DataType type) {
+	public ReturnExpression(InsnNode node) {
 		super(node);
-		mType = type;
+		mType = getReturnType(node.getOpcode());
 	}
 
 	public void setExpression(Expression expression) {
@@ -47,6 +48,23 @@ public class ReturnExpression extends Expression {
 		if (mExpression != null) {
 			writer.write(' ');
 			mExpression.write(writer);
+		}
+	}
+
+	private static DataType getReturnType(int opcode) {
+		switch (opcode){
+			case Opcodes.IRETURN:
+				return DataType.INT;
+			case Opcodes.LRETURN:
+				return DataType.LONG;
+			case Opcodes.FRETURN:
+				return DataType.FLOAT;
+			case Opcodes.DRETURN:
+				return DataType.DOUBLE;
+			case Opcodes.ARETURN:
+				return DataType.UNKNOWN;
+			default:
+				return DataType.VOID;
 		}
 	}
 }

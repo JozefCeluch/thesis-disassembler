@@ -183,27 +183,12 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
-			stack.push(new ReturnExpression(node, getReturnType(opCode)));
+			stack.push(new ReturnExpression(node));
 		} else {
 			//NOP, do nothing
 		}
 		//todo to add missing
 	}
-//todo create type enum?
-	private DataType getReturnType(int opcode) {
-		switch (opcode){
-			case Opcodes.IRETURN:
-				return DataType.INT;
-			case Opcodes.LRETURN:
-				return DataType.LONG;
-			case Opcodes.FRETURN:
-				return DataType.FLOAT;
-			case Opcodes.DRETURN:
-				return DataType.DOUBLE;
-			case Opcodes.ARETURN:
-				return DataType.UNKNOWN;
-			default:
-				return DataType.VOID;
 		}
 	}
 
