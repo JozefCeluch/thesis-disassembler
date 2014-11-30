@@ -19,13 +19,11 @@ public class ParserTest {
 
 	private static String TEST_FOLDER = "testData/";
 	private static String RESULTS_FOLDER = "testData/expectedResults/";
-	private final static Parser PARSER = new Parser(TEST_FOLDER);
 
 	@Test
 	@Parameters(method = "getAllClasses")
 	public void testAll(String name){
-		// javaClassText(expected), compileAndParseClass(expected, mParser)
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, PARSER));
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getAllClasses() {
@@ -35,13 +33,23 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getInsnNodeClasses")
 	public void testInsnNode(String name){
-		// javaClassText(expected), compileAndParseClass(expected, mParser)
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, PARSER));
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getInsnNodeClasses() {
 		return getFilteredClasses(file -> file.isFile()
 				&& file.getPath().endsWith(".java") && file.getPath().contains("InsnNode_"));
+	}
+
+	@Test
+	@Parameters(method = "getBoolExpressions")
+	public void testBoolExpressions(String name){
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getBoolExpressions() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains("BoolExpressions"));
 	}
 
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {

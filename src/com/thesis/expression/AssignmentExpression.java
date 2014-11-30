@@ -15,6 +15,7 @@ public class AssignmentExpression extends  Expression{
 	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide) {
 		super(instruction);
 		mLeftSide = leftSide;
+		mType = mLeftSide.getType();
 	}
 
 	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide, Expression rightSide) {
@@ -40,19 +41,27 @@ public class AssignmentExpression extends  Expression{
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		if (mRightSide != null) return;
+		if (mRightSide != null) return; //the expression already has left side
 		if (!stack.isEmpty() ) { //&& stack.peek().labelId == mLabel
-			Expression rightSide = stack.pop(); // todo array assignment and type
+			mRightSide = stack.pop(); // todo array assignment and type
 //			if (localVar.hasDebugType()) {
 //				rightSide.setType(localVar.getType());
 //			}
-			if (rightSide instanceof PrimaryExpression) {
-				rightSide.setType(mLeftSide.getType());
+			if (mRightSide.hasType() && !mLeftSide.hasType()) {
+				mLeftSide.setType(mRightSide.getType());
+			} else if (mLeftSide.hasType() && !mRightSide.hasType()) {
+				mRightSide.setType(mLeftSide.getType());
 			}
-			if (rightSide instanceof ConditionalExpression && !getType().equals(DataType.BOOLEAN)) {
-				rightSide = new TernaryExpression((ConditionalExpression) rightSide);
+
+			if (mRightSide.mCastType != null) {
+				mLeftSide.setType(mRightSide.mCastType);
+			} else if (mLeftSide.getType() != null && !mLeftSide.getType().equals(mRightSide.getType())) {
+				mRightSide.mCastType = mLeftSide.getType();
 			}
-			mRightSide = rightSide;
+
+			if (mRightSide instanceof ConditionalExpression && !getType().equals(DataType.BOOLEAN)) {
+				mRightSide = new TernaryExpression((ConditionalExpression) mRightSide);
+			}
 		}
 	}
 

@@ -101,8 +101,9 @@ public class InstructionTranslator {
 				break;
 			case AbstractInsnNode.LOOKUPSWITCH_INSN:
 				visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
+				break;
 			case AbstractInsnNode.MULTIANEWARRAY_INSN:
-				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode) node, stack);
+				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode)node, stack);
 				break;
 			case AbstractInsnNode.FRAME:
 				visitFrameNode((FrameNode) node, stack);
@@ -119,8 +120,7 @@ public class InstructionTranslator {
 	}
 
 	private void addLocalVariablesAssignments() {
-		List<Block> localVars = mLocalVariables.values()
-				.stream()
+		List<Block> localVars = mLocalVariables.values().stream()
 				.filter(variable -> !variable.isArgument())
 				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0)) //todo variable line number
 				.collect(Collectors.toList());
@@ -145,14 +145,47 @@ public class InstructionTranslator {
 	private void visitInsnNode(InsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
-		if (isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
-			stack.push(new ArrayAccessExpression(node));
-		} else if (isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
+		if (isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
 			stack.push(new PrimaryExpression(node));
-		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
-			stack.push(new ReturnExpression(node, getReturnType(opCode)));
+		} else if (isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
+			stack.push(new ArrayAccessExpression(node));
+		} else if (isBetween(opCode, Opcodes.IASTORE, Opcodes.SASTORE)) {
+			//TODO
+		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
+			stack.pop();
+		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
+			//TODO
+		} else if (opCode == Opcodes.SWAP) {
+			stack.swap();
+		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2S)) {
+			Expression top = stack.peek();
+			top.setType(DataType.INT);
+			switch (opCode) {
+				case Opcodes.I2B:
+					top.setCastType(DataType.BYTE);
+					break;
+				case Opcodes.I2C:
+					top.setCastType(DataType.CHAR);
+					break;
+				case Opcodes.I2D:
+					top.setCastType(DataType.DOUBLE);
+					break;
+				case Opcodes.I2F:
+					top.setCastType(DataType.FLOAT);
+					break;
+				case Opcodes.I2L:
+					top.setCastType(DataType.LONG);
+					break;
+				case Opcodes.I2S:
+					top.setCastType(DataType.BOOLEAN);
+					break;
+			}
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
+		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
+			stack.push(new ReturnExpression(node, getReturnType(opCode)));
+		} else {
+			//NOP, do nothing
 		}
 		//todo to add missing
 	}
@@ -180,7 +213,7 @@ public class InstructionTranslator {
 		int opCode = node.getOpcode();
 		switch (opCode) {
 			case Opcodes.BIPUSH:
-				stack.push(new PrimaryExpression(node, node.operand, DataType.INT));
+				stack.push(new PrimaryExpression(node, node.operand, DataType.BYTE));
 				break;
 			case Opcodes.SIPUSH:
 				stack.push(new PrimaryExpression(node, node.operand, DataType.SHORT));
@@ -371,9 +404,9 @@ public class InstructionTranslator {
 			}
 
 		}
+		System.out.println("STACK: " + mStack.size());
 		String result = "code: " + opCode + " " + fields;
 		System.out.println(result);
-		System.out.println("STACK: " + mStack.size());
 	}
 
 	/**

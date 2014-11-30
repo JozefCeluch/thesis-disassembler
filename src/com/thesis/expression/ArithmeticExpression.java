@@ -65,15 +65,20 @@ public class ArithmeticExpression extends Expression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		Operand op = makeOperand();
-		writeSubExpression(mLeftSide, writer, op);
-
+		if (mCastType != null) {
+			writer.append("(").append(mCastType.toString()).append(") (");
+		}
+		writeSubExpression(mLeftSide, writer);
 		writer.append(" ").append(op.toString()).append(" ");
+		writeSubExpression(mRightSide, writer);
 
-		writeSubExpression(mRightSide, writer, op);
+		if (mCastType != null) {
+			writer.write(")");
+		}
 	}
 
-	private void writeSubExpression(Expression exp, Writer writer, Operand op) throws IOException {
-		if ((op == Operand.MULTIPLY || op == Operand.DIVIDE) && !(exp instanceof PrimaryExpression)) {
+	private void writeSubExpression(Expression exp, Writer writer) throws IOException {
+		if (!(exp instanceof PrimaryExpression)) {
 			writer.append('(');
 			exp.write(writer);
 			writer.append(')');

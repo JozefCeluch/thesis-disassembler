@@ -22,6 +22,17 @@ public class LeftHandSide extends Expression {
 	}
 
 	@Override
+	public void setType(DataType type) {
+		super.setType(type);
+		mLocalVariable.setType(type);
+	}
+
+	@Override
+	public boolean hasType() {
+		return mLocalVariable.hasType();
+	}
+
+	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		//no preparation necessary
 	}

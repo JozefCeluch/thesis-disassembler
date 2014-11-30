@@ -19,10 +19,14 @@ public class ExpressionStack {
 	}
 
 	public void push(Expression expression) {
-		expression.prepareForStack(this);
-		pushCompleteExp(expression);
+		expression.prepareForStack(this); //TODO move prepare to expression
+		mStack.push(new StackItem(expression, mLabel, mLineNum));
 		improveStack();
 
+	}
+
+	public void pushBelow(Expression expression, int position) {
+		//TODO preparation for DUP instructions
 	}
 
 	private void improveStack() {
@@ -52,6 +56,13 @@ public class ExpressionStack {
 		return mStack.pop().expression;
 	}
 
+	public void swap() {
+		StackItem first = mStack.pop();
+		StackItem second = mStack.pop();
+		mStack.push(first);
+		mStack.push(second);
+	}
+
 	public void addAll(ExpressionStack stack){
 		if (stack == null) return;
 		for(StackItem exp : stack.getAll()){
@@ -65,10 +76,6 @@ public class ExpressionStack {
 
 	public void clear() {
 		mStack.clear();
-	}
-
-	private void pushCompleteExp(Expression expression) {
-		mStack.push(new StackItem(expression, mLabel, mLineNum));
 	}
 
 	public void setLineNumber(int line) {

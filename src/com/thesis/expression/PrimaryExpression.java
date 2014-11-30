@@ -55,12 +55,23 @@ public class PrimaryExpression extends Expression {
 	}
 
 	@Override
-	public void write(Writer writer) throws IOException {
-		String output = mValue.toString();
+	public void setType(DataType type) {
+		super.setType(type);
 		if (mValue instanceof LocalVariable) {
-			output = ((LocalVariable)mValue).getName();
+			((LocalVariable) mValue).setType(type);
+		}
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		String output = mCastType != null ? "(" + mCastType.toString() + ") " : "";
+
+		if (mValue instanceof LocalVariable) {
+			output += ((LocalVariable)mValue).getName();
 		} else if (DataType.BOOLEAN.equals(mType)){
-			output = (int)mValue == 0 ? "false" : "true";
+			output += (int)mValue == 0 ? "false" : "true";
+		} else {
+			output += mValue.toString();
 		}
 
 		writer.write(output);
@@ -74,5 +85,9 @@ public class PrimaryExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		// no preparation necessary
+	}
+
+	public static void createAndAdd(InsnNode instruction, ExpressionStack stack) {
+		stack.push(new PrimaryExpression(instruction));
 	}
 }

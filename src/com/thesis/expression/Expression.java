@@ -11,6 +11,7 @@ public abstract class Expression implements Writable {
 
 	protected AbstractInsnNode mInstruction;
 	protected DataType mType;
+	protected DataType mCastType;
 
 	public Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
@@ -20,6 +21,10 @@ public abstract class Expression implements Writable {
 
 	public void setType(DataType type){
 		mType = type;
+	}
+
+	public void setCastType(DataType type) {
+		mCastType = type;
 	}
 
 	public boolean hasType() {
