@@ -169,6 +169,8 @@ public class InstructionTranslator {
 			Expression top = stack.peek();
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
+		} else if (isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
+			stack.push(new MultiConditional(node, -1, new ExpressionStack()));
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
@@ -278,8 +280,15 @@ public class InstructionTranslator {
 			System.out.println("CREATED MultiConditional EXP");
 
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
-			exp = new SingleConditional(node, jumpDestination, new ExpressionStack());
-			stack.push(exp);
+			Expression stackTop = stack.peek();
+			if (stackTop instanceof MultiConditional && ((MultiConditional) stackTop).getConditionalJumpDest() == -1) {
+				exp = (MultiConditional)stackTop;
+				exp.setConditionalJumpDest(jumpDestination);
+				exp.setInstruction(node);
+			} else {
+				exp = new SingleConditional(node, jumpDestination, new ExpressionStack());
+				stack.push(exp);
+			}
 			System.out.println("CREATED SingleConditional EXP");
 
 		} else if (opCode == Opcodes.GOTO) {
@@ -335,7 +344,7 @@ public class InstructionTranslator {
 		} else if (node.cst instanceof Long) {
 			type = DataType.LONG;
 		} else if (node.cst instanceof String) {
-			type = DataType.getType("String");
+			type = DataType.getType("java.lang.String");
 		} else {
 			type = Util.getType(((Type) node.cst).getDescriptor());
 		}

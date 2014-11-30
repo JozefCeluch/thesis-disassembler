@@ -21,8 +21,7 @@ intTwo = (int) 45;
 if ((intOne > intTwo) & (intOne > 433) && intTwo > 46) {
 boolOne = intOne > 56;
 intThree = (int) 324;
-}
-else {
+} else {
 if (intTwo >= 354) {
 intTwo = (int) 999;
 }
@@ -30,12 +29,10 @@ intTwo = (int) 99;
 }
 if (intOne > 1111) {
 intTwo = (int) 11;
-}
-else {
+} else {
 if (intOne == 2222) {
 intTwo = (int) 22;
-}
-else {
+} else {
 intTwo = (int) 33;
 }
 }

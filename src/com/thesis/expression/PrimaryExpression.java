@@ -72,6 +72,7 @@ public class PrimaryExpression extends Expression {
 			output += (int)mValue == 0 ? "false" : "true";
 		} else {
 			output += mValue.toString();
+			if (mType.equals(DataType.FLOAT)) output += "F";
 		}
 
 		writer.write(output);

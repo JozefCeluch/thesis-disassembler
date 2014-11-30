@@ -27,6 +27,10 @@ public abstract class Expression implements Writable {
 		mCastType = type;
 	}
 
+	public void setInstruction(AbstractInsnNode instruction) {
+		mInstruction = instruction;
+	}
+
 	public boolean hasType() {
 		return mType != null && !mType.equals(DataType.UNKNOWN);
 	}
