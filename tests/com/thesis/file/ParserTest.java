@@ -23,25 +23,37 @@ public class ParserTest {
 
 	@Test
 	@Parameters(method = "getAllClasses")
-	public void testAll(String name, String expected, String generated){
+	public void testAll(String name){
 		// javaClassText(expected), compileAndParseClass(expected, mParser)
-		assertEquals("Classes do not equal", expected, generated);
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, PARSER));
 	}
 
 	public List<Object[]> getAllClasses() {
+		return getFilteredClasses(pathname -> pathname.isFile() && pathname.getPath().endsWith(".java"));
+	}
+
+	@Test
+	@Parameters(method = "getInsnNodeClasses")
+	public void testInsnNode(String name){
+		// javaClassText(expected), compileAndParseClass(expected, mParser)
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, PARSER));
+	}
+
+	public List<Object[]> getInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains("InsnNode_"));
+	}
+
+	private List<Object[]> getFilteredClasses(final FileFilter filter) {
 		File srcFolder = new File(TEST_FOLDER);
 		if (!srcFolder.isDirectory()) throw new RuntimeException("Not a folder");
 
-		File[] files = srcFolder.listFiles(pathname -> pathname.isFile() && pathname.getPath().endsWith(".java"));
+		File[] files = srcFolder.listFiles(filter);
 
 		return Arrays.asList(files).stream()
 				.map(f -> f.getName().replace(".java", ""))
-				.map(ParserTest::createData)
+				.map((String name) -> new Object[] {name})
 				.collect(Collectors.toList());
-	}
-
-	private static Object[] createData(String name) {
-		return new Object[] {name, javaClassText(name), compileAndParseClass(name, PARSER)};
 	}
 
 	private static String javaClassText(String fileName) {
