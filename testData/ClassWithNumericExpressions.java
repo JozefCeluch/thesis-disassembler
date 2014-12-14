@@ -1,4 +1,3 @@
-package test;
 public class ClassWithNumericExpressions {
 public ClassWithNumericExpressions() {
 }

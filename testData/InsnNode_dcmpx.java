@@ -1,4 +1,3 @@
-package test;
 public class InsnNode_dcmpx {
 	private boolean compareDoubleGreaterThan() {
 		double double1 = 3.0;

@@ -1,4 +1,3 @@
-package test;
 @java.lang.annotation.Retention(value=java.lang.annotation.RetentionPolicy.RUNTIME)
 public @interface EmptyInterfaceAnnotation {
 public abstract java.lang.String[] name1();

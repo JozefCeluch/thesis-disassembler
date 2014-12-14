@@ -1,4 +1,3 @@
-package test;
 public class InsnNode_pop {
 	public int returnInt(){
 		return 1;
