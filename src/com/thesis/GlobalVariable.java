@@ -6,8 +6,9 @@ public class GlobalVariable extends Variable {
 
 	private DataType mOwner;
 
-	public GlobalVariable(String name, DataType owner) {
-		super(name, owner);
+	public GlobalVariable(String name, DataType type, DataType owner) {
+		super(name, type);
+		mOwner = owner;
 	}
 
 	public DataType getOwner() {

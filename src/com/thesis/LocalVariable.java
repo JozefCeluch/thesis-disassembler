@@ -51,4 +51,9 @@ public class LocalVariable extends Variable {
 	public boolean hasDebugType(){
 		return mDebugType;
 	}
+
+	@Override
+	public String toString() {
+		return mName;
+	}
 }

@@ -248,6 +248,18 @@ public class InstructionTranslator {
 	//	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
 	private void visitFieldInsnNode(FieldInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		int opCode = node.getOpcode();
+		if (opCode == Opcodes.PUTFIELD) {
+			Expression value = stack.pop();
+			PrimaryExpression owner = (PrimaryExpression)stack.pop();
+			DataType ownerType = DataType.getType(owner.getValue().toString());
+			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), ownerType);
+			stack.push(new AssignmentExpression(node, new LeftHandSide(node,field), value));
+		}
+		if (opCode == Opcodes.GETFIELD) {
+			PrimaryExpression owner = (PrimaryExpression) stack.pop();
+			stack.push(new PrimaryExpression(node, owner.getValue() + "." + node.name,Util.getType(node.desc)));
+		}
 	}
 
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE

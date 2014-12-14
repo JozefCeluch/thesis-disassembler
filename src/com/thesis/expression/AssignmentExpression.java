@@ -20,6 +20,7 @@ public class AssignmentExpression extends  Expression{
 
 	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide, Expression rightSide) {
 		this(instruction, leftSide);
+		rightSide.setType(leftSide.getType());
 		mRightSide = rightSide;
 	}
 

@@ -73,6 +73,7 @@ public class PrimaryExpression extends Expression {
 		} else {
 			output += mValue.toString();
 			if (mType.equals(DataType.FLOAT)) output += "F";
+			if (mType.equals(DataType.LONG)) output += "L";
 		}
 
 		writer.write(output);
@@ -81,6 +82,10 @@ public class PrimaryExpression extends Expression {
 	@Override
 	public DataType getType() {
 		return mType;
+	}
+
+	public Object getValue() {
+		return mValue;
 	}
 
 	@Override

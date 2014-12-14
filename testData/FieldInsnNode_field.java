@@ -13,6 +13,7 @@ public class FieldInsnNode_field {
 		boolField = true;
 		longField = 43;
 		stringField = "another literal";
+		int localInt = intField;
 	}
 
 	private class InnerClass {

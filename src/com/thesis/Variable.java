@@ -30,9 +30,4 @@ public class Variable {
 	public boolean hasType() {
 		return mType != null;
 	}
-
-	@Override
-	public String toString() {
-		return mName;
-	}
 }
