@@ -29,11 +29,12 @@ public class Field extends Statement {
 		if (Util.containsFlag(mFieldNode.access, Opcodes.ACC_SYNTHETIC)) {
 			addComment("synthetic");
 		}
-
-		buf.append(getType(mFieldNode.desc, mFieldNode.signature)).append(" ");
+		//TODO store fields in a list of GlobalVariable objects
+		String type = getType(mFieldNode.desc, mFieldNode.signature);
+		buf.append(type).append(" ");
 		buf.append(mFieldNode.name);
 		if (mFieldNode.value != null) {
-			buf.append(" = ").append(mFieldNode.value);
+			buf.append(" = ").append("java.lang.String".equals(type) ? "\"" : "").append(mFieldNode.value).append("java.lang.String".equals(type) ? "\"" : "");
 		}
 		addStatementEnd();
 		text.add(buf.toString());

@@ -266,6 +266,14 @@ public class InstructionTranslator {
 			PrimaryExpression owner = (PrimaryExpression) stack.pop();
 			stack.push(new PrimaryExpression(node, owner.getValue() + "." + node.name,Util.getType(node.desc)));
 		}
+		if (opCode == Opcodes.GETSTATIC) {
+			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(node.owner)), Util.getType(node.desc)));
+		}
+		if (opCode == Opcodes.PUTSTATIC) {
+			Expression value = stack.pop();
+			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(node.owner));
+			stack.push(new AssignmentExpression(node, new LeftHandSide(node, field), value));
+		}
 	}
 
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE

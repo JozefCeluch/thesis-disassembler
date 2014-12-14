@@ -63,6 +63,17 @@ public class ParserTest {
 				&& file.getPath().endsWith(".java") && file.getPath().contains("FieldInsnNode_"));
 	}
 
+	@Test
+	@Parameters(method = "getTypeInsnNodeClasses")
+	public void testTypeInsnNodeClasses(String name){
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getTypeInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains("TypeInsnNode_"));
+	}
+
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {
 		File srcFolder = new File(TEST_FOLDER);
 		if (!srcFolder.isDirectory()) throw new RuntimeException("Not a folder");
@@ -87,6 +98,14 @@ public class ParserTest {
 
 	private static String compileAndParseClass(String name, Parser parser) {
 		Process process;
+//
+//		File[] files = new File(TEST_FOLDER).listFiles((dir, name1) -> name1.endsWith(".java"));
+//
+//		StringBuilder command = new StringBuilder("javac -g");
+//		for(File file : files) {
+//			command.append(" ").append(file.getPath());
+//		}
+
 		try {
 			System.out.println("COMPILING: " + name);
 			process = Runtime.getRuntime().exec("javac -g " + TEST_FOLDER + name + ".java");
