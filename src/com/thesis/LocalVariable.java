@@ -4,16 +4,10 @@ import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.tree.LocalVariableNode;
 
-public class LocalVariable {
-
-	private String mName;
-
-	private DataType mType;
+public class LocalVariable extends Variable {
 
 	private int mIndex;
-
 	private boolean mIsArgument;
-
 	private boolean mDebugType;
 
 	public LocalVariable(int index) {
@@ -27,33 +21,15 @@ public class LocalVariable {
 	}
 
 	public LocalVariable(LocalVariableNode variableNode) {
-		mName = variableNode.name;
+		super(variableNode.name, Util.getType(variableNode.desc)); //todo use signature for more complex types
 		mIndex = variableNode.index;
-		mType = Util.getType(variableNode.desc); //todo use signature for more complex types
 		mDebugType = true;
 	}
 
 	public LocalVariable(String name, DataType type, int index) {
-		mName = name;
-		mType = type;
+		super(name, type);
 		mIndex = index;
 		mDebugType = false;
-	}
-
-	public String getName() {
-		return mName;
-	}
-
-	public DataType getType() {
-		return mType;
-	}
-
-	public void setType(DataType type) {
-		this.mType = type;
-	}
-
-	public void setName(String name) {
-		mName = name;
 	}
 
 	public int getIndex() {
@@ -70,10 +46,6 @@ public class LocalVariable {
 
 	public boolean isArgument() {
 		return mIsArgument;
-	}
-
-	public boolean hasType() {
-		return mType != null;
 	}
 
 	public boolean hasDebugType(){

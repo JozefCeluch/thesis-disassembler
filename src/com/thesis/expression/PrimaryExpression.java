@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.LocalVariable;
+import com.thesis.Variable;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -25,7 +25,7 @@ public class PrimaryExpression extends Expression {
 		mType = type;
 	}
 
-	public PrimaryExpression(AbstractInsnNode node, LocalVariable value, DataType type) {
+	public PrimaryExpression(AbstractInsnNode node, Variable value, DataType type) {
 		super(node);
 		mValue = value;
 		mType = type;
@@ -57,8 +57,8 @@ public class PrimaryExpression extends Expression {
 	@Override
 	public void setType(DataType type) {
 		super.setType(type);
-		if (mValue instanceof LocalVariable) {
-			((LocalVariable) mValue).setType(type);
+		if (mValue instanceof Variable) {
+			((Variable)mValue).setType(type);
 		}
 	}
 
@@ -66,8 +66,8 @@ public class PrimaryExpression extends Expression {
 	public void write(Writer writer) throws IOException {
 		String output = mCastType != null ? "(" + mCastType.toString() + ") " : "";
 
-		if (mValue instanceof LocalVariable) {
-			output += ((LocalVariable)mValue).getName();
+		if (mValue instanceof Variable) {
+			output += mValue.toString();
 		} else if (DataType.BOOLEAN.equals(mType)){
 			output += (int)mValue == 0 ? "false" : "true";
 		} else {

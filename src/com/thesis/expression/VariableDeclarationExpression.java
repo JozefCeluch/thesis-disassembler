@@ -17,7 +17,7 @@ public class VariableDeclarationExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(mVariable.getType() + " " + mVariable.getName());
+		writer.write(mVariable.getType() + " " + mVariable.toString());
 	}
 
 	@Override

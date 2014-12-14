@@ -145,7 +145,7 @@ public class MethodBlock extends Block {
 				addComma(i);
 				addAnnotations(method, i);
 				LocalVariable variable = mArguments.get(i+1);
-				buf.append(variable.getType()).append(" ").append(variable.getName());
+				buf.append(variable.getType()).append(" ").append(variable.toString());
 			}
 			buf.append(")");
 		}

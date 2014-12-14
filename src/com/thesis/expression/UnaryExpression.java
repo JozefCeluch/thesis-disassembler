@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.LocalVariable;
+import com.thesis.Variable;
 import com.thesis.common.DataType;
 import org.objectweb.asm.tree.IincInsnNode;
 
@@ -9,13 +9,13 @@ import java.io.Writer;
 
 public class UnaryExpression extends Expression {
 
-	LocalVariable mLocalVariable;
+	Variable mVariable;
 	OpPosition mOpPosition;
 
-	public UnaryExpression(IincInsnNode node, LocalVariable variable, DataType type, OpPosition pos) {
+	public UnaryExpression(IincInsnNode node, Variable variable, DataType type, OpPosition pos) {
 		super(node);
 		mType = type;
-		mLocalVariable = variable;
+		mVariable = variable;
 		mOpPosition = pos;
 	}
 
@@ -32,8 +32,8 @@ public class UnaryExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(mOpPosition == OpPosition.PREFIX ? "++" : mLocalVariable.getName());
-		writer.write(mOpPosition == OpPosition.PREFIX ? mLocalVariable.getName() : "++");
+		writer.write(mOpPosition == OpPosition.PREFIX ? "++" : mVariable.toString());
+		writer.write(mOpPosition == OpPosition.PREFIX ? mVariable.toString() : "++");
 	}
 
 	public static enum OpPosition {

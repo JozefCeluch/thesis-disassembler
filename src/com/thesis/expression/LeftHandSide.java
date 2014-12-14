@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.LocalVariable;
+import com.thesis.Variable;
 import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
@@ -9,27 +9,27 @@ import java.io.Writer;
 
 public class LeftHandSide extends Expression {
 
-	private LocalVariable mLocalVariable;
+	private Variable mVariable;
 
-	public LeftHandSide(AbstractInsnNode node, LocalVariable localVar) {
+	public LeftHandSide(AbstractInsnNode node, Variable variable) {
 		super(node);
-		mLocalVariable = localVar;
+		mVariable = variable;
 	}
 
 	@Override
 	public DataType getType() {
-		return mLocalVariable.getType();
+		return mVariable.getType();
 	}
 
 	@Override
 	public void setType(DataType type) {
 		super.setType(type);
-		mLocalVariable.setType(type);
+		mVariable.setType(type);
 	}
 
 	@Override
 	public boolean hasType() {
-		return mLocalVariable.hasType();
+		return mVariable.hasType();
 	}
 
 	@Override
@@ -39,6 +39,6 @@ public class LeftHandSide extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(mLocalVariable.getName());
+		writer.write(mVariable.toString());
 	}
 }
