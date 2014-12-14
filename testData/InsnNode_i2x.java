@@ -1,3 +1,4 @@
+package test;
 public class InsnNode_i2x {
 	private byte intToByte() {
 		int x = -45;

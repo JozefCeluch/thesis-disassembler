@@ -1,3 +1,4 @@
+package test;
 public class InsnNode_lcmp {
 	private boolean compareLongGreaterEqual() {
 		long long1 = 3;

@@ -1,3 +1,4 @@
+package test;
 public class InsnNode_fcmpx {
 	private boolean compareFloatGreaterThan() {
 		float float1 = 3.0F;
