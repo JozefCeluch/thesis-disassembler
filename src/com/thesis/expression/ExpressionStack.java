@@ -22,7 +22,7 @@ public class ExpressionStack {
 		expression.prepareForStack(this); //TODO move prepare to expression
 		mStack.push(new StackItem(expression, mLabel, mLineNum));
 		improveStack();
-
+		expression.afterPush(this);
 	}
 
 	public void pushBelow(Expression expression, int position) {

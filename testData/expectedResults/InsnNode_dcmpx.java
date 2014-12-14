@@ -1,5 +1,6 @@
 public class InsnNode_dcmpx {
 public InsnNode_dcmpx() {
+super();
 }
 private boolean compareDoubleGreaterThan() {
 double double1;

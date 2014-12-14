@@ -1,5 +1,6 @@
 public class ClassWithBoolExpressions {
 ClassWithBoolExpressions() {
+super();
 }
 public int simpleBoolExpressions() {
 boolean boolOne;

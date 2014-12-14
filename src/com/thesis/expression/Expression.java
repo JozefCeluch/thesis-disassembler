@@ -41,6 +41,10 @@ public abstract class Expression implements Writable {
 
 	abstract public void prepareForStack(ExpressionStack stack);
 
+	public void afterPush(ExpressionStack stack){
+
+	}
+
 	@Override
 	public String toString() {
 		StringWriter writer = new StringWriter();

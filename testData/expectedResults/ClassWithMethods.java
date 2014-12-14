@@ -1,5 +1,6 @@
 public class ClassWithMethods {
 public ClassWithMethods() {
+super();
 }
 public void voidMethodNoArgs() {
 }

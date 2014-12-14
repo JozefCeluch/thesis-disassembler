@@ -1,5 +1,6 @@
 public class ClassWithNumericExpressions {
 public ClassWithNumericExpressions() {
+super();
 }
 private void createNewLocalVariables(int param1) {
 int intVar;

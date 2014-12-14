@@ -1,5 +1,6 @@
 public class InsnNode_i2x {
 public InsnNode_i2x() {
+super();
 }
 private byte intToByte() {
 int x;

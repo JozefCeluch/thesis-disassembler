@@ -79,6 +79,10 @@ public class Util {
 		return objectName.replaceAll("/", ".").replaceAll(";","");
 	}
 
+	public static String getFullClassName(String objectName) {
+		return objectName.replace(';', '\0').replace('$','.');
+	}
+
 	public static boolean containsFlag(int value, int flag) {
 		return (value & flag) != 0;
 	}
@@ -102,5 +106,12 @@ public class Util {
 			op = Printer.OPCODES[opCode];
 		}
 		return op;
+	}
+
+	public static String getCommaIfNeeded(int position) {
+		if (position > 0) {
+			return ", ";
+		}
+		return "";
 	}
 }

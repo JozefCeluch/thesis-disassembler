@@ -9,7 +9,10 @@ public static EmptyEnum valueOf(java.lang.String arg0) {
 return this;
 }
 private EmptyEnum() {
+super(arg0, arg1);
 }
 static void <clinit>() {
+new EmptyEnum("A", 0);
+new EmptyEnum("B", 1);
 }
 }

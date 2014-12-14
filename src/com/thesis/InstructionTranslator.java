@@ -3,11 +3,13 @@ package com.thesis;
 import com.thesis.block.Block;
 import com.thesis.block.Statement;
 import com.thesis.common.DataType;
+import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Field;
@@ -154,7 +156,7 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
 			stack.pop();
 		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
-			//TODO
+			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
 			stack.swap();
 		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
@@ -243,6 +245,10 @@ public class InstructionTranslator {
 	//	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
 	private void visitTypeInsnNode(TypeInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		int opCode = node.getOpcode();
+		if (opCode == Opcodes.NEW) {
+			stack.push(new NewExpression(node, DataType.getType(Util.removeOuterClasses(node.desc)))); //TODO probably not remove
+		}
 	}
 
 	//	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
@@ -265,6 +271,10 @@ public class InstructionTranslator {
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		int opCode = node.getOpcode();
+		if (opCode == Opcodes.INVOKESPECIAL) { //invoke <init>, private, superclass methods
+			mStack.push(new MethodInvocationExpression(node, mMethod.name));
+		}
 	}
 
 	//	INVOKEDYNAMIC

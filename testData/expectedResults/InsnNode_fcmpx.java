@@ -1,5 +1,6 @@
 public class InsnNode_fcmpx {
 public InsnNode_fcmpx() {
+super();
 }
 private boolean compareFloatGreaterThan() {
 float float1;
