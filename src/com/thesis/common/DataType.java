@@ -64,7 +64,7 @@ public class DataType {
 	}
 
 	public boolean isReferenceType() {
-		return this.equals(DataType.UNKNOWN);
+		return !SimpleType.contains(this.mTypeString);
 	}
 
 	@Override

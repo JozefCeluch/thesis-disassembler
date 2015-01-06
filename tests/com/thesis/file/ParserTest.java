@@ -73,6 +73,16 @@ public class ParserTest {
 		return getFilteredClasses(file -> file.isFile()
 				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "TypeInsnNode_"));
 	}
+
+	@Test
+	@Parameters(method = "getMethodInsnNodeClasses")
+	public void testMethodInsnNodeClasses(String name){
+		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getMethodInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "MethodInsnNode_"));
 	}
 
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {

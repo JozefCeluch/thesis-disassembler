@@ -1,6 +1,5 @@
 package com.thesis.expression;
 
-import com.thesis.LocalVariable;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
@@ -30,7 +29,7 @@ public class MethodInvocationExpression extends Expression {
 		mType = DataType.getType(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwner = Util.getFullClassName(instruction.owner);
+		mOwner = Util.javaObjectName(Util.getFullClassName(instruction.owner));
 		mCallingMethod = callingMethod;
 	}
 
@@ -44,7 +43,8 @@ public class MethodInvocationExpression extends Expression {
 		for(int i = 0; i < mArgumentCount; i++) {
 			mArguments.add(0, stack.pop());
 		}
-		if (stack.peek() instanceof NewExpression) {
+		Expression stackTop = stack.peek();
+		if (stackTop instanceof NewExpression) {
 			mPreviousExp = (NewExpression) stack.pop();
 			if (stack.peek() instanceof NewExpression) stack.pop(); // new instruction is duplicated
 		}

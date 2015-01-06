@@ -154,7 +154,7 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.IASTORE, Opcodes.SASTORE)) {
 			//TODO
 		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
-			stack.pop();
+//			pop should not remove the expression from the stack
 		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
 			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
@@ -281,7 +281,10 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.INVOKESPECIAL) { //invoke <init>, private, superclass methods
-			mStack.push(new MethodInvocationExpression(node, mMethod.name));
+			stack.push(new MethodInvocationExpression(node, mMethod.name));
+		}
+		if (opCode == Opcodes.INVOKEVIRTUAL) {
+//			TODO
 		}
 	}
 
