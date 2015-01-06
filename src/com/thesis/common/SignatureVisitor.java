@@ -1,7 +1,6 @@
 package com.thesis.common;
 
 import com.thesis.LocalVariable;
-import jdk.internal.org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.LocalVariableNode;
 
@@ -87,12 +86,14 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		super(Opcodes.ASM5);
 		isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
 		this.declaration = new StringBuffer();
+		this.currentArgType = new StringBuffer();
 		mLocalVariableNodes = null;
 	}
 
 	private SignatureVisitor(final StringBuffer buf) {
 		super(Opcodes.ASM5);
 		this.declaration = buf;
+		this.currentArgType = new StringBuffer();
 		mLocalVariableNodes = null;
 	}
 
