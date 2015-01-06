@@ -17,8 +17,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(value = JUnitParamsRunner.class)
 public class ParserTest {
 
-	private static String TEST_FOLDER = "testData/";
-	private static String RESULTS_FOLDER = "testData/expectedResults/";
+	private static String TEST_FOLDER = "testData" + File.separator;
+	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
 
 	@Test
 	@Parameters(method = "getAllClasses")
@@ -38,7 +38,7 @@ public class ParserTest {
 
 	public List<Object[]> getInsnNodeClasses() {
 		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains("InsnNode_"));
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "InsnNode_"));
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class ParserTest {
 
 	public List<Object[]> getBoolExpressions() {
 		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains("BoolExpressions"));
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "BoolExpressions"));
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class ParserTest {
 
 	public List<Object[]> getFieldInsnNodeClasses() {
 		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains("FieldInsnNode_"));
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "FieldInsnNode_"));
 	}
 
 	@Test
@@ -71,7 +71,8 @@ public class ParserTest {
 
 	public List<Object[]> getTypeInsnNodeClasses() {
 		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains("TypeInsnNode_"));
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "TypeInsnNode_"));
+	}
 	}
 
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {
