@@ -12,7 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static junitparams.JUnitParamsRunner.$;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(value = JUnitParamsRunner.class)
 public class ParserTest {
@@ -20,6 +22,7 @@ public class ParserTest {
 	private static String TEST_FOLDER = "testData" + File.separator;
 	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
 
+	//TODO remove testAll when all the test classes are covered by tests
 	@Test
 	@Parameters(method = "getAllClasses")
 	public void testAll(String name){
@@ -49,7 +52,7 @@ public class ParserTest {
 
 	public List<Object[]> getBoolExpressions() {
 		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "BoolExpressions"));
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "ClassWithBoolExpressions"));
 	}
 
 	@Test
@@ -85,6 +88,34 @@ public class ParserTest {
 				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "MethodInsnNode_"));
 	}
 
+	@Test
+	@Parameters(method = "param1, param2, param3, param4, param5, param6, param7, param8, param9")
+	public void testClassesWithDependencies(String name, String dependencies) {
+		String compileString = TEST_FOLDER + name + ".java " + dependencies;
+		if (compileClass(compileString) != 0 ) {
+			fail("COMPILATION FAILED");
+		}
+		assertEquals("Classes do not equal", javaClassText(name), new Parser(TEST_FOLDER).parseClassFile(name + ".class"));
+	}
+	public Object param1(){return $($("EmptyClassWithInterfaces", makeDependencyString("EmptyInterface", "AnotherEmptyInterface")));}
+	public Object param2(){return $($("EmptyInterfaceAnnotation", makeDependencyString("EmptyEnum")));}
+	public Object param3(){return $($("SimpleAnnotation", makeDependencyString("RepeatableAnnotation")));}
+	public Object param4(){return $($("RepeatableAnnotation", makeDependencyString("SimpleAnnotation")));}
+	public Object param5(){return $($("EmptyClassWithComplexAnnotation", makeDependencyString("EmptyInterface", "ComplexAnnotation", "EmptyInterfaceAnnotation", "EmptyEnum")));}
+	public Object param6(){return $($("EmptyClass", makeDependencyString("EmptyInterface", "EmptyInterfaceAnnotation", "EmptyEnum")));}
+	public Object param7(){return $($("ClassWithMethods", makeDependencyString("SimpleAnnotation", "RepeatableAnnotation")));}
+	public Object param8(){return $($("ClassWithFields", makeDependencyString("SimpleAnnotation", "RepeatableAnnotation")));}
+	public Object param9(){return $($("ComplexAnnotation", makeDependencyString("EmptyInterfaceAnnotation", "EmptyEnum")));}
+
+	private String makeDependencyString(String... deps) {
+		String depString = "";
+		for (int i=0; i < deps.length; i++) {
+			deps[i] = TEST_FOLDER + deps[i] + ".java ";
+			depString += deps[i];
+		}
+		return depString;
+	}
+
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {
 		File srcFolder = new File(TEST_FOLDER);
 		if (!srcFolder.isDirectory()) throw new RuntimeException("Not a folder");
@@ -108,31 +139,28 @@ public class ParserTest {
 	}
 
 	private static String compileAndParseClass(String name, Parser parser) {
-		Process process;
-//
-//		File[] files = new File(TEST_FOLDER).listFiles((dir, name1) -> name1.endsWith(".java"));
-//
-//		StringBuilder command = new StringBuilder("javac -g");
-//		for(File file : files) {
-//			command.append(" ").append(file.getPath());
-//		}
+		int compilationResult = compileClass(TEST_FOLDER + name + ".java");
+		if (compilationResult != 0) {
+			System.out.println("COMPILATION ERROR: " + name + ", " + compilationResult);
+			return null;
+		}
+		System.out.println("COMPILATION SUCCESS: " + name);
+		System.out.println("PARSING: " + name);
+		return parser.parseClassFile(name + ".class");
+	}
 
+	private static int compileClass(String name) {
+		Process process;
 		try {
 			System.out.println("COMPILING: " + name);
-			process = Runtime.getRuntime().exec("javac -g " + TEST_FOLDER + name + ".java");
+			process = Runtime.getRuntime().exec("javac -g " + name);
 			printLines(name + " stderr:", process.getErrorStream());
 			process.waitFor();
 		} catch (IOException | InterruptedException  e) {
 			System.out.println("Compilation unsuccessful");
-			return null;
+			return -1;
 		}
-		if (process.exitValue() != 0) {
-			System.out.println("COMPILATION ERROR: " + name + ", " + process.exitValue());
-		} else {
-			System.out.println("COMPILATION SUCCESS: " + name);
-		}
-		System.out.println("PARSING: " + name);
-		return parser.parseClassFile(name + ".class");
+		return process.exitValue();
 	}
 
 	private static void printLines(String name, InputStream ins) throws IOException{
