@@ -3,6 +3,7 @@ package com.thesis.expression;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.MethodInsnNode;
 
@@ -16,9 +17,10 @@ public class MethodInvocationExpression extends Expression {
 	private final String mName;
 	private List<Expression> mArguments;
 	private int mArgumentCount;
-	private String mOwner;
+	private String mOwnerClass;
 	private String mCallingMethod;
 	private NewExpression mPreviousExp;
+	private PrimaryExpression mOwnerInstance;
 
 	public MethodInvocationExpression(MethodInsnNode instruction, String callingMethod) {
 		super(instruction);
@@ -29,7 +31,7 @@ public class MethodInvocationExpression extends Expression {
 		mType = DataType.getType(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwner = Util.javaObjectName(Util.getFullClassName(instruction.owner));
+		mOwnerClass = Util.javaObjectName(Util.getFullClassName(instruction.owner));
 		mCallingMethod = callingMethod;
 	}
 
@@ -46,7 +48,8 @@ public class MethodInvocationExpression extends Expression {
 		Expression stackTop = stack.peek();
 		if (stackTop instanceof NewExpression) {
 			mPreviousExp = (NewExpression) stack.pop();
-			if (stack.peek() instanceof NewExpression) stack.pop(); // new instruction is duplicated
+		} else if (stackTop instanceof PrimaryExpression) {
+			mOwnerInstance = (PrimaryExpression) stackTop;
 		}
 	}
 
@@ -60,13 +63,15 @@ public class MethodInvocationExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if ("<init>".equals(mName)) {
-			if ("<init>".equals(mCallingMethod)) {
-				writer.write("super");
-			} else {
-				writer.write(mOwner);
-			}
+		if (isConstructor()) {
+			writeConstructorInvocation(writer);
+		} else if (isStatic()) {
+			writer.append(mOwnerClass).append('.').write(mName);
 		} else {
+			if (mOwnerInstance.getValue() != null && !mOwnerInstance.getValue().toString().equals("this")) {
+				mOwnerInstance.write(writer);
+				writer.write('.');
+			}
 			writer.write(mName);
 		}
 		writer.write("(");
@@ -75,5 +80,21 @@ public class MethodInvocationExpression extends Expression {
 			mArguments.get(i).write(writer);
 		}
 		writer.write(")");
+	}
+
+	private boolean isStatic() {
+		return mInstruction.getOpcode() == Opcodes.INVOKESTATIC;
+	}
+
+	private void writeConstructorInvocation(Writer writer) throws IOException {
+		if ("<init>".equals(mCallingMethod)) {
+			writer.write("super");
+		} else {
+			writer.write(mOwnerClass);
+		}
+	}
+
+	private boolean isConstructor() {
+		return "<init>".equals(mName);
 	}
 }

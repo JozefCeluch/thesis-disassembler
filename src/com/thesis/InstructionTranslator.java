@@ -156,7 +156,7 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
 //			pop should not remove the expression from the stack
 		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
-			stack.push(stack.peek()); //TODO
+//			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
 			stack.swap();
 		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
@@ -279,13 +279,7 @@ public class InstructionTranslator {
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		int opCode = node.getOpcode();
-		if (opCode == Opcodes.INVOKESPECIAL) { //invoke <init>, private, superclass methods
-			stack.push(new MethodInvocationExpression(node, mMethod.name));
-		}
-		if (opCode == Opcodes.INVOKEVIRTUAL) {
-//			TODO
-		}
+		stack.push(new MethodInvocationExpression(node, mMethod.name));
 	}
 
 	//	INVOKEDYNAMIC
