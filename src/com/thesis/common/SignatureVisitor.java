@@ -389,4 +389,12 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		}
 		return name;
 	}
+
+	public void setStatic(boolean isStatic) {
+		if (isStatic) {
+			mIndex = 0;
+		} else {
+			mIndex = 1;
+		}
+	}
 }

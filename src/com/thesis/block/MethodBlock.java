@@ -72,9 +72,9 @@ public class MethodBlock extends Block {
 			hasVarargs = true;
 		}
 
-		generateArguments(method);
+		generateArguments(method, Util.containsFlag(method.access, Opcodes.ACC_STATIC));
 
-		addMethodArgs(method, genericDecl.toString(), hasVarargs);
+		addMethodArgs(method, genericDecl.toString(), hasVarargs, Util.containsFlag(method.access, Opcodes.ACC_STATIC));
 		addExceptions(method.exceptions, genericExceptions.toString());
 		addAbstractMethodDeclarationEnding(method);
 
@@ -85,6 +85,7 @@ public class MethodBlock extends Block {
 		if (method.signature != null) {
 			SignatureVisitor v = new SignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
 			v.setLocalVariableNodes(method.localVariables);
+			v.setStatic(Util.containsFlag(method.access, Opcodes.ACC_STATIC));
 			SignatureReader r = new SignatureReader(method.signature);
 			r.accept(v);
 			if (v.getDeclaration() != null) genericDecl.append(v.getDeclaration());
@@ -136,15 +137,21 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs) {
+	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs, boolean isStatic) {
 		if (Util.isNotEmpty(genericDecl)) {
 			buf.append(genericDecl);
 		} else {
 			buf.append("(");
-			for(int i = 0; i < mArguments.size()-1; i++) {
+			int maxArgumentCount;
+			if (isStatic){
+				maxArgumentCount = mArguments.size();
+			} else {
+				maxArgumentCount = mArguments.size()-1;
+			}
+			for(int i = 0; i < maxArgumentCount; i++) {
 				addComma(i);
 				addAnnotations(method, i);
-				LocalVariable variable = mArguments.get(i+1);
+				LocalVariable variable = mArguments.get(isStatic ? i : i+1);
 				buf.append(variable.getType()).append(" ").append(variable.toString());
 			}
 			buf.append(")");
@@ -155,33 +162,36 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void generateArguments(MethodNode method) {
-		LocalVariable thisArgument = new LocalVariable("this", DataType.getType(mClassName), 0);
-		thisArgument.setIsArgument(true);
-		mArguments.put(0, thisArgument);
-		generateMethodArgumentsFromDescriptor(method);
+	private void generateArguments(MethodNode method, boolean isStatic) {
+		if (!isStatic) {
+			LocalVariable thisArgument = new LocalVariable("this", DataType.getType(mClassName), 0);
+			thisArgument.setIsArgument(true);
+			mArguments.put(0, thisArgument);
+		}
+		generateMethodArgumentsFromDescriptor(method, isStatic);
 	}
 
-	private void generateMethodArgumentsFromDescriptor(MethodNode method) {
+	private void generateMethodArgumentsFromDescriptor(MethodNode method, boolean isStatic) {
 		int closingBracketPosition = method.desc.lastIndexOf(')');
 		String args = method.desc.substring(1, closingBracketPosition);
 		String[] splitArgs = splitMethodArguments(args);
 
 		for (int i = 0; i < splitArgs.length; i++) {
 			if (!splitArgs[i].isEmpty()) {
-				LocalVariable argument = addArgument(splitArgs[i], i, method.localVariables);
+				LocalVariable argument = addArgument(splitArgs[i], i, method.localVariables, isStatic);
 				mArguments.put(argument.getIndex(), argument);
 			}
 		}
 	}
 
-	private LocalVariable addArgument(String typeCode, int i, List<LocalVariableNode> localVariables) {
-		LocalVariableNode variableNode = Util.variableAtIndex(i+1, localVariables);
+	private LocalVariable addArgument(String typeCode, int i, List<LocalVariableNode> localVariables, boolean isStatic) {
+		int index = isStatic ? i : i+1;
+		LocalVariableNode variableNode = Util.variableAtIndex(index, localVariables);
 		LocalVariable variable;
 		if (variableNode == null) {
 			DataType type = Util.getType(typeCode);
 			String name = Util.ARGUMENT_NAME_BASE + i;
-			variable =  new LocalVariable(name, type, i+1);
+			variable =  new LocalVariable(name, type, index);
 		} else {
 			variable = new LocalVariable(variableNode);
 		}

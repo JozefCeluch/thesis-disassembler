@@ -2,6 +2,12 @@ public class ClassWithMethods {
 public ClassWithMethods() {
 super();
 }
+public static <T> java.util.Map<java.lang.Integer, java.lang.Float>[] staticWithGeneric(T anotherGenericArg) {
+return null;
+}
+public static int staticWithSimpleArgs(int firstInt, int secondInt, @SimpleAnnotation int thirdInt) {
+return secondInt;
+}
 public void voidMethodNoArgs() {
 }
 private void voidMethodWithOneArg(boolean arg0) {
