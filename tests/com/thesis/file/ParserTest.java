@@ -22,21 +22,17 @@ public class ParserTest {
 	private static String TEST_FOLDER = "testData" + File.separator;
 	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
 
-	//TODO remove testAll when all the test classes are covered by tests
 	@Test
-	@Parameters(method = "getAllClasses")
-	public void testAll(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
-	}
-
-	public List<Object[]> getAllClasses() {
-		return getFilteredClasses(pathname -> pathname.isFile() && pathname.getPath().endsWith(".java"));
+	@Parameters({"ClassWithBoolExpressions", "AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
+			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "EmptyClassWithInnerClass"})
+	public void testUngroupedClasses(String name){
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	@Test
 	@Parameters(method = "getInsnNodeClasses")
 	public void testInsnNode(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getInsnNodeClasses() {
@@ -45,20 +41,9 @@ public class ParserTest {
 	}
 
 	@Test
-	@Parameters(method = "getBoolExpressions")
-	public void testBoolExpressions(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
-	}
-
-	public List<Object[]> getBoolExpressions() {
-		return getFilteredClasses(file -> file.isFile()
-				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "ClassWithBoolExpressions"));
-	}
-
-	@Test
 	@Parameters(method = "getFieldInsnNodeClasses")
 	public void testFieldInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getFieldInsnNodeClasses() {
@@ -69,7 +54,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getTypeInsnNodeClasses")
 	public void testTypeInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getTypeInsnNodeClasses() {
@@ -80,7 +65,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getMethodInsnNodeClasses")
 	public void testMethodInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", javaClassText(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getMethodInsnNodeClasses() {
@@ -95,7 +80,7 @@ public class ParserTest {
 		if (compileClass(compileString) != 0 ) {
 			fail("COMPILATION FAILED");
 		}
-		assertEquals("Classes do not equal", javaClassText(name), new Parser(TEST_FOLDER).parseClassFile(name + ".class"));
+		assertEquals("Classes do not equal", getJavaClassContent(name), new Parser(TEST_FOLDER).parseClassFile(name + ".class"));
 	}
 	public Object param1(){return $($("EmptyClassWithInterfaces", makeDependencyString("EmptyInterface", "AnotherEmptyInterface")));}
 	public Object param2(){return $($("EmptyInterfaceAnnotation", makeDependencyString("EmptyEnum")));}
@@ -128,7 +113,7 @@ public class ParserTest {
 				.collect(Collectors.toList());
 	}
 
-	private static String javaClassText(String fileName) {
+	private static String getJavaClassContent(String fileName) {
 		byte[] fileContents = new byte[0];
 		try {
 			fileContents = Files.readAllBytes(Paths.get(RESULTS_FOLDER + fileName + ".java"));
