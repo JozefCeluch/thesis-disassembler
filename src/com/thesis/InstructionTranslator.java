@@ -249,6 +249,9 @@ public class InstructionTranslator {
 		if (opCode == Opcodes.NEW) {
 			stack.push(new NewExpression(node, DataType.getType(Util.removeOuterClasses(node.desc)))); //TODO probably not remove
 		}
+		if (opCode == Opcodes.INSTANCEOF) {
+			stack.push(new InstanceOfExpression(node, node.desc));
+		}
 	}
 
 	//	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
