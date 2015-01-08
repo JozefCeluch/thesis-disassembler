@@ -3,12 +3,12 @@ public final static enum EmptyEnum A;
 public final static enum EmptyEnum B;
 private final static  /* synthetic */ EmptyEnum[] $VALUES;
 public static EmptyEnum[] values() {
-return EmptyEnum.$VALUES;
+return EmptyEnum.$VALUES.clone();
 }
-public static EmptyEnum valueOf(java.lang.String arg0) {
-return this;
+public static EmptyEnum valueOf(java.lang.String name) {
+return java.lang.Enum.valueOf(EmptyEnum.class, name);
 }
-private EmptyEnum() {
+private EmptyEnum(java.lang.String arg0, int arg1) {
 super(arg0, arg1);
 }
 static void <clinit>() {
