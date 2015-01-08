@@ -201,7 +201,7 @@ public class InstructionTranslator {
 				top.setCastType(DataType.LONG);
 				break;
 			case Opcodes.I2S:
-				top.setCastType(DataType.BOOLEAN);
+				top.setCastType(DataType.SHORT);
 				break;
 		}
 	}

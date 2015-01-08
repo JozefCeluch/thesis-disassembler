@@ -52,12 +52,7 @@ public class MethodInvocationExpression extends Expression {
 		if (isStatic()) {
 			writer.append(mOwnerClass).append('.').write(mName);
 		} else {
-			if (mOwnerInstance instanceof PrimaryExpression) {
-				if (((PrimaryExpression) mOwnerInstance).getValue() != null && !((PrimaryExpression) mOwnerInstance).getValue().toString().equals("this")) {
-					mOwnerInstance.write(writer);
-					writer.write('.');
-				}
-			} else {
+			if (!isLocalMethod()) {
 				mOwnerInstance.write(writer);
 				writer.write('.');
 			}
@@ -79,4 +74,7 @@ public class MethodInvocationExpression extends Expression {
 		return mInstruction.getOpcode() == Opcodes.INVOKESTATIC;
 	}
 
+	private boolean isLocalMethod() {
+		return mOwnerInstance instanceof PrimaryExpression && ((PrimaryExpression) mOwnerInstance).getValue().toString().equals("this");
+	}
 }
