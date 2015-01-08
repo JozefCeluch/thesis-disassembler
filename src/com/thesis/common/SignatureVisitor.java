@@ -148,7 +148,6 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			argCount++;
 		} else {
 			seenParameter = true;
-			declaration.append('(');
 		}
 		startType();
 		return this;
@@ -159,10 +158,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		endFormals();
 		if (seenParameter) {
 			seenParameter = false;
-		} else {
-			declaration.append('(');
 		}
-		declaration.append(')');
 		returnType = new StringBuffer();
 		return new SignatureVisitor(returnType);
 	}

@@ -3,9 +3,6 @@ package com.thesis.common;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.util.Printer;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.List;
 
 public class Util {
@@ -47,9 +44,7 @@ public class Util {
 		return DataType.getType(removeOuterClasses(javaObjectName(desc.substring(1))));
 	}
 
-	//TODO convert to common.Type
 	public static DataType getPrimitiveType(String desc) {
-		DataType type;
 		switch (desc) {
 			case "B":
 				return DataType.BYTE;

@@ -138,10 +138,10 @@ public class MethodBlock extends Block {
 	}
 
 	private void addMethodArgs(MethodNode method, String genericDecl, boolean hasVarargs, boolean isStatic) {
+		buf.append("(");
 		if (Util.isNotEmpty(genericDecl)) {
 			buf.append(genericDecl);
 		} else {
-			buf.append("(");
 			int maxArgumentCount;
 			if (isStatic){
 				maxArgumentCount = mArguments.size();
@@ -154,12 +154,12 @@ public class MethodBlock extends Block {
 				LocalVariable variable = mArguments.get(isStatic ? i : i+1);
 				buf.append(variable.getType()).append(" ").append(variable.toString());
 			}
-			buf.append(")");
 		}
 		if (hasVarargs) {
 			int lastBrackets = buf.lastIndexOf("[]");
 			buf.replace(lastBrackets, lastBrackets+2, "...");
 		}
+		buf.append(")");
 	}
 
 	private void generateArguments(MethodNode method, boolean isStatic) {

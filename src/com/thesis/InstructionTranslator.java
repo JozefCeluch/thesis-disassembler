@@ -362,20 +362,21 @@ public class InstructionTranslator {
 	private void visitLdcInsnNode(LdcInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		DataType type;
-		if (node.cst instanceof Integer) {
+		Object constant = node.cst;
+		if (constant instanceof Integer) {
 			type = DataType.INT;
-		} else if (node.cst instanceof Float) {
+		} else if (constant instanceof Float) {
 			type = DataType.FLOAT;
-		} else if (node.cst instanceof Double) {
+		} else if (constant instanceof Double) {
 			type = DataType.DOUBLE;
-		} else if (node.cst instanceof Long) {
+		} else if (constant instanceof Long) {
 			type = DataType.LONG;
-		} else if (node.cst instanceof String) {
+		} else if (constant instanceof String) {
 			type = DataType.getType("java.lang.String");
 		} else {
-			type = Util.getType(((Type) node.cst).getDescriptor());
+			type = Util.getType(((Type) constant).getDescriptor());
 		}
-		stack.push(new PrimaryExpression(node, node.cst, type));
+		stack.push(new PrimaryExpression(node, constant, type));
 	}
 
 	private void visitIincInsnNode(IincInsnNode node, ExpressionStack stack) {
