@@ -374,7 +374,8 @@ public class InstructionTranslator {
 		} else if (constant instanceof String) {
 			type = DataType.getType("java.lang.String");
 		} else {
-			type = Util.getType(((Type) constant).getDescriptor());
+			constant = Util.getType(((Type) constant).getDescriptor()).toString() + ".class"; //todo think is this correct?
+			type = DataType.getType("java.lang.Class");
 		}
 		stack.push(new PrimaryExpression(node, constant, type));
 	}
