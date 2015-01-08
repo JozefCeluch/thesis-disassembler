@@ -275,14 +275,11 @@ public class MethodBlock extends Block {
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			writer.write(BLOCK_START);
 			for(Block child : children) {
-				if (isConstructor() && child instanceof Statement && ((Statement) child).mExpression instanceof ReturnExpression) continue; // todo constructor return statement
+				if (Util.isConstructor(mMethodNode.name) && child instanceof Statement && ((Statement) child).mExpression instanceof ReturnExpression) continue; // todo constructor return statement
 				child.write(writer);
 			}
 			writer.write(BLOCK_END);
 		}
 	}
 
-	private boolean isConstructor() {
-		return mMethodNode.name.equals("<init>");
-	}
 }

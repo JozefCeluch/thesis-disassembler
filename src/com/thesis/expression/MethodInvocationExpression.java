@@ -14,13 +14,12 @@ import java.util.List;
 
 public class MethodInvocationExpression extends Expression {
 
-	private final String mName;
-	private List<Expression> mArguments;
-	private int mArgumentCount;
-	private String mOwnerClass;
-	private String mCallingMethod;
-	private NewExpression mPreviousExp;
-	private PrimaryExpression mOwnerInstance;
+	protected final String mName;
+	protected List<Expression> mArguments;
+	protected int mArgumentCount;
+	protected String mOwnerClass;
+	protected String mCallingMethod;
+	protected Expression mOwnerInstance;
 
 	public MethodInvocationExpression(MethodInsnNode instruction, String callingMethod) {
 		super(instruction);
@@ -45,35 +44,29 @@ public class MethodInvocationExpression extends Expression {
 		for(int i = 0; i < mArgumentCount; i++) {
 			mArguments.add(0, stack.pop());
 		}
-		Expression stackTop = stack.peek();
-		if (stackTop instanceof NewExpression) {
-			mPreviousExp = (NewExpression) stack.pop();
-		} else if (stackTop instanceof PrimaryExpression) {
-			mOwnerInstance = (PrimaryExpression) stackTop;
-		}
-	}
-
-	@Override
-	public void afterPush(ExpressionStack stack) {
-		if (mPreviousExp != null) {
-			mPreviousExp.setExpression(stack.pop());
-			stack.push(mPreviousExp);
-		}
+		mOwnerInstance = stack.pop();
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if (isConstructor()) {
-			writeConstructorInvocation(writer);
-		} else if (isStatic()) {
+		if (isStatic()) {
 			writer.append(mOwnerClass).append('.').write(mName);
 		} else {
-			if (mOwnerInstance.getValue() != null && !mOwnerInstance.getValue().toString().equals("this")) {
+			if (mOwnerInstance instanceof PrimaryExpression) {
+				if (((PrimaryExpression) mOwnerInstance).getValue() != null && !((PrimaryExpression) mOwnerInstance).getValue().toString().equals("this")) {
+					mOwnerInstance.write(writer);
+					writer.write('.');
+				}
+			} else {
 				mOwnerInstance.write(writer);
 				writer.write('.');
 			}
 			writer.write(mName);
 		}
+		writeArguments(writer);
+	}
+
+	protected void writeArguments(Writer writer) throws IOException {
 		writer.write("(");
 		for(int i = 0; i < mArguments.size(); i++) {
 			writer.append(Util.getCommaIfNeeded(i));
@@ -86,15 +79,4 @@ public class MethodInvocationExpression extends Expression {
 		return mInstruction.getOpcode() == Opcodes.INVOKESTATIC;
 	}
 
-	private void writeConstructorInvocation(Writer writer) throws IOException {
-		if ("<init>".equals(mCallingMethod)) {
-			writer.write("super");
-		} else {
-			writer.write(mOwnerClass);
-		}
-	}
-
-	private boolean isConstructor() {
-		return "<init>".equals(mName);
-	}
 }

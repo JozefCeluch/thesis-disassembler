@@ -282,7 +282,11 @@ public class InstructionTranslator {
 	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		stack.push(new MethodInvocationExpression(node, mMethod.name));
+		if (node.getOpcode() == Opcodes.INVOKESPECIAL && Util.isConstructor(node.name)) {
+			stack.push(new ConstructorInvocationExpression(node, mMethod.name));
+		} else {
+			stack.push(new MethodInvocationExpression(node, mMethod.name));
+		}
 	}
 
 	//	INVOKEDYNAMIC

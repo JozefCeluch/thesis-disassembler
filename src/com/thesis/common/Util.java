@@ -109,4 +109,8 @@ public class Util {
 		}
 		return "";
 	}
+
+	public static boolean isConstructor(String name) {
+		return name.equals("<init>");
+	}
 }
