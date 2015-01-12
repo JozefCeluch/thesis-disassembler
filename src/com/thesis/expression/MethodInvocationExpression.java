@@ -44,7 +44,9 @@ public class MethodInvocationExpression extends Expression {
 		for(int i = 0; i < mArgumentCount; i++) {
 			mArguments.add(0, stack.pop());
 		}
-		mOwnerInstance = stack.pop();
+		if (!isStatic()) {
+			mOwnerInstance = stack.pop();
+		}
 	}
 
 	@Override
