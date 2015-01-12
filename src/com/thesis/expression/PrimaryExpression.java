@@ -3,8 +3,7 @@ package com.thesis.expression;
 import com.thesis.Variable;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.*;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -15,20 +14,36 @@ public class PrimaryExpression extends Expression {
 
 	private Object mValue;
 
-	public PrimaryExpression(AbstractInsnNode node, Object value, DataType type) {
+	private PrimaryExpression(AbstractInsnNode node, Object value, DataType type) {
+		super(node);
+		mValue = value;
+		mType = type;
+	}
+
+	public PrimaryExpression(LdcInsnNode node, Object constant, DataType type) {
 		super(node);
 		if (DataType.getType("String").equals(type) || DataType.getType("java.lang.String").equals(type)) {
-			mValue = QUOTE + value + QUOTE;
+			mValue = QUOTE + constant + QUOTE;
 		} else {
-			mValue = value;
+			mValue = constant;
 		}
 		mType = type;
 	}
 
-	public PrimaryExpression(AbstractInsnNode node, Variable value, DataType type) {
-		super(node);
-		mValue = value;
-		mType = type;
+	public PrimaryExpression(FieldInsnNode node, Variable field, DataType type) {
+		this(node, (Object) field, type);
+	}
+
+	public PrimaryExpression(VarInsnNode node, Variable variable, DataType type) {
+		this(node, (Object) variable, type);
+	}
+
+	public PrimaryExpression(IincInsnNode node, int increment, DataType type) {
+		this(node, (Object) increment, type);
+	}
+
+	public PrimaryExpression(IntInsnNode node, int operand, DataType type) {
+		this(node, (Object) operand, type);
 	}
 
 	public PrimaryExpression(InsnNode instruction) {
