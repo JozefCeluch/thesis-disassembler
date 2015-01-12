@@ -1,7 +1,10 @@
 package com.thesis;
 
 import com.thesis.common.DataType;
+import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.LocalVariableNode;
 
 public class LocalVariable extends Variable {
@@ -21,7 +24,15 @@ public class LocalVariable extends Variable {
 	}
 
 	public LocalVariable(LocalVariableNode variableNode) {
-		super(variableNode.name, Util.getType(variableNode.desc)); //todo use signature for more complex types
+		super(variableNode.name, Util.getType(variableNode.desc));
+		String decl;
+		if (variableNode.signature != null && !variableNode.signature.isEmpty()) {
+			SignatureVisitor visitor = new SignatureVisitor(Opcodes.ACC_PRIVATE);
+			SignatureReader reader = new SignatureReader(variableNode.signature);
+			reader.acceptType(visitor);
+			decl = visitor.getDeclaration();
+			mType = DataType.getType(decl);
+		}
 		mIndex = variableNode.index;
 		mDebugType = true;
 	}
