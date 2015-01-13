@@ -1,11 +1,11 @@
 public class ClassWithBoolExpressions {
-ClassWithBoolExpressions() {
+public ClassWithBoolExpressions() {
 super();
 }
 public int simpleBoolExpressions() {
-boolean boolOne;
 int intOne;
 int intTwo;
+boolean boolOne;
 intOne = (int) 6;
 intTwo = (int) 8728;
 boolOne = (intOne >= intTwo) & (intTwo > 3 && intOne < 67);
@@ -38,5 +38,12 @@ intTwo = (int) 33;
 }
 }
 intThree = (int) 55;
+}
+private void nullConditionals() {
+boolean bool;
+bool = "string" != null;
+if (this == null) {
+bool = this != null;
+}
 }
 }

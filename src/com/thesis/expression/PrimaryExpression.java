@@ -60,7 +60,7 @@ public class PrimaryExpression extends Expression {
 					break;
 				case "NULL":
 					mValue = "null";
-					mType = DataType.getType("java.lang.Object");
+					mType = DataType.UNKNOWN;
 					break;
 				default:
 					mValue = Integer.valueOf(val);

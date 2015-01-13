@@ -239,7 +239,7 @@ public class InstructionTranslator {
 			stack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
 			//todo assignment to fields and static variables
 		}
-		//todo add RET
+		// RET is deprecated since Java 6
 	}
 
 	//	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
@@ -327,10 +327,14 @@ public class InstructionTranslator {
 			}
 			System.out.println("CREATED SingleConditional EXP");
 
+		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
+			exp = new MultiConditional(node, jumpDestination, new ExpressionStack());
+			stack.push(new PrimaryExpression("null", DataType.UNKNOWN));
+			stack.push(exp);
 		} else if (opCode == Opcodes.GOTO) {
 			stack.push(new UnconditionalJump(node, jumpDestination));
 		}
-		// todo ifnull, innonnull, jsr
+		// JSR is deprecated since Java 6
 		int elseBranchEnd = 0;
 		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO && stack.getLabelId(mLabel) != jumpDestination) {
 			movedNode = movedNode.getNext();
