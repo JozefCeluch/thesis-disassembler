@@ -1,22 +1,41 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import com.thesis.common.Util;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArrayCreationExpression extends Expression {
 
 	private Expression mLength;
+	private List<Expression> mItems;
+
+	protected ArrayCreationExpression(AbstractInsnNode node, DataType type) {
+		super(node);
+		mType = type;
+		mItems = new ArrayList<>();
+	}
 
 	public ArrayCreationExpression(IntInsnNode node) {
-		super(node);
-		mType = convertTypeCodeToType(node.operand);
+		this(node, convertTypeCodeToType(node.operand));
+	}
+
+	public ArrayCreationExpression(TypeInsnNode node) {
+		this(node, DataType.getType(Util.javaObjectName(node.desc)));
 	}
 
 	public void setLength(Expression length) {
 		mLength = length;
+	}
+
+	public void addMember(Expression expression) {
+		mItems.add(expression);
 	}
 
 	@Override
@@ -34,11 +53,19 @@ public class ArrayCreationExpression extends Expression {
 		writer.write("new ");
 		writer.write(mType.toString());
 		writer.write("[");
-		mLength.write(writer);
+		if (mItems.isEmpty()) mLength.write(writer);
 		writer.write("]");
+		if (!mItems.isEmpty()) {
+			writer.write('{');
+			for(int i = 0; i < mItems.size(); i++) {
+				writer.write(Util.getCommaIfNeeded(i));
+				mItems.get(i).write(writer);
+			}
+			writer.write('}');
+		}
 	}
 
-	private DataType convertTypeCodeToType(int code) {
+	private static DataType convertTypeCodeToType(int code) {
 		switch (code) {
 			case 4:
 				return DataType.BOOLEAN;

@@ -25,6 +25,14 @@ public class ExpressionStack {
 		expression.afterPush(this);
 	}
 
+	public void push(Expression expression, boolean shouldUpdateStack) {
+		if (shouldUpdateStack) {
+			push(expression);
+		} else {
+			mStack.push(new StackItem(expression, mLabel, mLineNum));
+		}
+	}
+
 	public void pushBelow(Expression expression, int position) {
 		//TODO preparation for DUP instructions
 	}

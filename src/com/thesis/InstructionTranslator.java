@@ -152,7 +152,15 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
 			stack.push(new ArrayAccessExpression(node));
 		} else if (isBetween(opCode, Opcodes.IASTORE, Opcodes.SASTORE)) {
-			//TODO
+			Expression value = stack.pop();
+			Expression index = stack.pop();
+			Expression stackTop = stack.peek();
+			if (stackTop instanceof ArrayCreationExpression) {
+				ArrayCreationExpression arrayExpression = (ArrayCreationExpression) stackTop;
+				arrayExpression.addMember(value);
+			} else if (stackTop instanceof PrimaryExpression) {
+				stack.push(new ArrayAssignmentExpression(node, index, value));
+			}
 		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
 //			pop should not remove the expression from the stack
 		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
@@ -251,6 +259,9 @@ public class InstructionTranslator {
 		}
 		if (opCode == Opcodes.INSTANCEOF) {
 			stack.push(new InstanceOfExpression(node, node.desc));
+		}
+		if (opCode == Opcodes.ANEWARRAY) {
+			stack.push(new ArrayCreationExpression(node));
 		}
 	}
 
