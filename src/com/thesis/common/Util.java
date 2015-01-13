@@ -31,13 +31,13 @@ public class Util {
 
 	public static DataType getArrayReferenceType(String desc) {
 		int dimensions = desc.lastIndexOf('[') + 1;
-		String type = desc.substring(dimensions);
-		DataType arrayType = getType(type);
-		String typeString = removeOuterClasses(arrayType.toString());
-		for (int i = 0; i < dimensions; i++) {
-			typeString += "[]";
-		}
-		return DataType.getType(typeString); //todo think if there should be a special array type
+		String fullTypeString = desc.substring(dimensions);
+		DataType fullType = getType(fullTypeString);
+		String typeString = removeOuterClasses(fullType.toString());
+
+		DataType arrayType = DataType.getType(typeString);
+		arrayType.setDimension(dimensions);
+		return arrayType;
 	}
 
 	public static DataType getReferenceType(String desc) {

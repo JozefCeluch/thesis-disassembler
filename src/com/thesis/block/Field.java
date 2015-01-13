@@ -48,7 +48,7 @@ public class Field extends Statement {
 			r.acceptType(sv);
 			return sv.getDeclaration();
 		} else {
-			return Util.getType(desc).toString();
+			return Util.getType(desc).print();
 		}
 	}
 

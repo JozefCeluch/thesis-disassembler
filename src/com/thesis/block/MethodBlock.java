@@ -133,7 +133,7 @@ public class MethodBlock extends Block {
 			return genericReturn;
 		} else {
 			int closingBracketPosition = desc.lastIndexOf(')');
-			return Util.getType(desc.substring(closingBracketPosition + 1)).toString();
+			return Util.getType(desc.substring(closingBracketPosition + 1)).print();
 		}
 	}
 
@@ -152,7 +152,7 @@ public class MethodBlock extends Block {
 				addComma(i);
 				addAnnotations(method, i);
 				LocalVariable variable = mArguments.get(isStatic ? i : i+1);
-				buf.append(variable.getType()).append(" ").append(variable.toString());
+				buf.append(variable.getType().print()).append(" ").append(variable.toString());
 			}
 		}
 		if (hasVarargs) {

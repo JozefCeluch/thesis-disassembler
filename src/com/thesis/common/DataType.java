@@ -50,21 +50,41 @@ public class DataType {
 	public static final DataType UNKNOWN = new DataType("java.lang.Object");
 
 	private String mTypeString;
+	private int mDimension;
 
 	private DataType(String typeString) {
 		mTypeString = typeString;
+		mDimension = 0;
 	}
 
 	public static DataType getType(String typeString) {
-		if (SimpleType.contains(typeString)) {
-			return SimpleType.valueOf(typeString.toUpperCase()).getType();
-		} else {
 			return new DataType(typeString);
-		}
 	}
 
 	public boolean isReferenceType() {
 		return !SimpleType.contains(this.mTypeString);
+	}
+
+	public boolean isArrayType() {
+		return mDimension > 0;
+	}
+
+	public int getDimension() {
+		return mDimension;
+	}
+
+	public void setDimension(int dimension) {
+		mDimension = dimension;
+	}
+
+	public String print(){
+		String brackets = "";
+		if (isArrayType()) {
+			for (int i = 0; i < mDimension; i++) {
+				brackets += "[]";
+			}
+		}
+		return mTypeString + brackets;
 	}
 
 	@Override
