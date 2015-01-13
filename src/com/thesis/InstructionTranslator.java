@@ -161,8 +161,9 @@ public class InstructionTranslator {
 			} else if (stackTop instanceof PrimaryExpression) {
 				stack.push(new ArrayAssignmentExpression(node, index, value));
 			}
+
 		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
-//			pop should not remove the expression from the stack
+//			pop should not remove the expression from the stack //TODO
 		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
 //			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
@@ -258,7 +259,7 @@ public class InstructionTranslator {
 			stack.push(new NewExpression(node, DataType.getType(Util.removeOuterClasses(node.desc)))); //TODO probably not remove
 		}
 		if (opCode == Opcodes.INSTANCEOF) {
-			stack.push(new InstanceOfExpression(node, node.desc));
+			stack.push(new InstanceOfExpression(node));
 		}
 		if (opCode == Opcodes.ANEWARRAY) {
 			stack.push(new ArrayCreationExpression(node));
