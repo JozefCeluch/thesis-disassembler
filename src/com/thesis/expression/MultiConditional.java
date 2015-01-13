@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -10,17 +11,14 @@ public class MultiConditional extends ConditionalExpression {
 	private Expression left;
 	private Expression right;
 
-	public MultiConditional(AbstractInsnNode instruction, int jumpDestination, ExpressionStack then) {
+	public MultiConditional(JumpInsnNode instruction, int jumpDestination, ExpressionStack then) {
 		super(instruction, jumpDestination);
 		super.thenBranch = then;
 	}
 
-	public void setLeft(Expression left) {
-		this.left = left;
-	}
-
-	public void setRight(Expression right) {
-		this.right = right;
+	public MultiConditional(InsnNode instruction, int jumpDestination, ExpressionStack then) {
+		super(instruction, jumpDestination);
+		super.thenBranch = then;
 	}
 
 	@Override

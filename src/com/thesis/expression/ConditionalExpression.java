@@ -1,8 +1,11 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
+
+import java.util.ArrayList;
 
 public abstract class ConditionalExpression extends Expression {
 
@@ -53,23 +56,23 @@ public abstract class ConditionalExpression extends Expression {
 	}
 
 	protected Operand makeOperand() {
-		String opcode = Printer.OPCODES[mInstruction.getOpcode()];
-		if (opcode.endsWith("EQ")) {
+		int opcode = mInstruction.getOpcode();
+		if (opcode == Opcodes.IFEQ || opcode == Opcodes.IF_ACMPEQ || opcode == Opcodes.IF_ICMPEQ || opcode == Opcodes.IFNULL) {
 			return Operand.EQUAL;
 		}
-		if (opcode.endsWith("NE")){
+		if (opcode == Opcodes.IFNE || opcode == Opcodes.IF_ACMPNE || opcode == Opcodes.IF_ICMPNE || opcode == Opcodes.IFNONNULL){
 			return Operand.NOT_EQUAL;
 		}
-		if (opcode.endsWith("GE")){
+		if (opcode == Opcodes.IFGE || opcode == Opcodes.IF_ICMPGE){
 			return Operand.GREATER_EQUAL;
 		}
-		if (opcode.endsWith("GT")){
+		if (opcode == Opcodes.IFGT || opcode == Opcodes.IF_ICMPGT){
 			return Operand.GREATER_THAN;
 		}
-		if (opcode.endsWith("LE")){
+		if (opcode == Opcodes.IFLE || opcode == Opcodes.IF_ICMPLE){
 			return Operand.LESS_EQUAL;
 		}
-		if (opcode.endsWith("LT")){
+		if (opcode == Opcodes.IFLT || opcode == Opcodes.IF_ICMPLT){
 			return Operand.LESS_THAN;
 		}
 
