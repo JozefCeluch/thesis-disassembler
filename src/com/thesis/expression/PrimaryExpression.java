@@ -69,6 +69,10 @@ public class PrimaryExpression extends Expression {
 		}
 	}
 
+	public PrimaryExpression(Object value, DataType type) {
+		this(null, value, type);
+	}
+
 	@Override
 	public void setType(DataType type) {
 		super.setType(type);
