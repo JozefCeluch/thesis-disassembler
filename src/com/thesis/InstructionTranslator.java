@@ -186,6 +186,8 @@ public class InstructionTranslator {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
 			stack.push(new ReturnExpression(node));
+		} else if (opCode == Opcodes.ARRAYLENGTH) {
+			stack.push(new ArrayLengthExpression(node));
 		} else {
 			//NOP, do nothing
 		}
