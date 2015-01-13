@@ -181,7 +181,7 @@ public class InstructionTranslator {
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
 		} else if (isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(node, -1, new ExpressionStack()));
+			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, new ExpressionStack()));
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {

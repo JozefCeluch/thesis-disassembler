@@ -9,8 +9,10 @@ import java.util.ArrayList;
 
 public abstract class ConditionalExpression extends Expression {
 
-	protected int mConditionalJumpDest = -1;
-	protected int mGoToDest = -1;
+	public static final int NO_DESTINATION = -1;
+
+	protected int mConditionalJumpDest = NO_DESTINATION;
+	protected int mGoToDest = NO_DESTINATION;
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
 
