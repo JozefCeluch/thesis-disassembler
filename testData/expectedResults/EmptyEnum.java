@@ -14,6 +14,6 @@ super(arg0, arg1);
 static void <clinit>() {
 EmptyEnum.A = new EmptyEnum("A", 0);
 EmptyEnum.B = new EmptyEnum("B", 1);
-EmptyEnum.$VALUES = EmptyEnum.B;
+EmptyEnum.$VALUES = new EmptyEnum[]{EmptyEnum.A, EmptyEnum.B};
 }
 }

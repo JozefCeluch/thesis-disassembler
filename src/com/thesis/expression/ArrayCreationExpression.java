@@ -2,8 +2,10 @@ package com.thesis.expression;
 
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.IOException;
@@ -13,13 +15,16 @@ import java.util.List;
 
 public class ArrayCreationExpression extends Expression {
 
-	private Expression mLength;
+	private List<Expression> mLengths;
 	private List<Expression> mItems;
+	private int mDimensions;
 
 	protected ArrayCreationExpression(AbstractInsnNode node, DataType type) {
 		super(node);
 		mType = type;
 		mItems = new ArrayList<>();
+		mLengths = new ArrayList<>();
+		mDimensions = 1;
 	}
 
 	public ArrayCreationExpression(IntInsnNode node) {
@@ -27,11 +32,13 @@ public class ArrayCreationExpression extends Expression {
 	}
 
 	public ArrayCreationExpression(TypeInsnNode node) {
-		this(node, DataType.getType(Util.javaObjectName(node.desc)));
+		this(node, convertTypeStringToType(node.desc));
+		mDimensions = mType.getDimension() + 1;
 	}
 
-	public void setLength(Expression length) {
-		mLength = length;
+	public ArrayCreationExpression(MultiANewArrayInsnNode node) {
+		this(node, convertTypeStringToType(node.desc));
+		mDimensions = node.dims;
 	}
 
 	public void addMember(Expression expression) {
@@ -45,16 +52,24 @@ public class ArrayCreationExpression extends Expression {
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		mLength = stack.pop();
+		if (mInstruction.getOpcode() == Opcodes.MULTIANEWARRAY) {
+			for (int i = 0; i < mDimensions; i++) {
+				mLengths.add(0, stack.pop());
+			}
+		} else {
+			mLengths.add(stack.pop());
+		}
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write("new ");
 		writer.write(mType.toString());
-		writer.write("[");
-		if (mItems.isEmpty()) mLength.write(writer);
-		writer.write("]");
+		for (int i = 0; i < mDimensions; i++) {
+			writer.write("[");
+			if (mItems.isEmpty() && i < mLengths.size()) mLengths.get(i).write(writer);
+			writer.write("]");
+		}
 		if (!mItems.isEmpty()) {
 			writer.write('{');
 			for(int i = 0; i < mItems.size(); i++) {
@@ -63,6 +78,16 @@ public class ArrayCreationExpression extends Expression {
 			}
 			writer.write('}');
 		}
+	}
+
+	private static DataType convertTypeStringToType(String desc) {
+		if (desc == null || desc.isEmpty()) {
+			return DataType.UNKNOWN;
+		}
+		if (desc.startsWith("[") || desc.startsWith("L")) {
+			return Util.getType(desc);
+		}
+		return DataType.getType(Util.javaObjectName(desc));
 	}
 
 	private static DataType convertTypeCodeToType(int code) {

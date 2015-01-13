@@ -434,6 +434,7 @@ public class InstructionTranslator {
 	//	MULTIANEWARRAY
 	private void visitMultiANewArrayInsnNode(MultiANewArrayInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		stack.push(new ArrayCreationExpression(node));
 	}
 
 	private void visitFrameNode(FrameNode node, ExpressionStack stack) {
