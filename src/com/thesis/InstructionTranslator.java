@@ -286,7 +286,7 @@ public class InstructionTranslator {
 			stack.push(new PrimaryExpression(node, field,Util.getType(node.desc)));
 		}
 		if (opCode == Opcodes.GETSTATIC) {
-			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(node.owner)), Util.getType(node.desc)));
+			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(Util.javaObjectName(node.owner))), Util.getType(node.desc)));
 		}
 		if (opCode == Opcodes.PUTSTATIC) {
 			Expression value = stack.pop();
