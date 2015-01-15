@@ -40,34 +40,22 @@ public class StatementCreator {
 		return statements;
 	}
 
-	//TODO this beauty probably does what it should, but WTF!! REFACTOR
 	private Statement handleConditionalExpression(ConditionalExpression expression, int line, int label) {
 		if (isIfThenElseStatement(expression)) {
 			IfThenElseStatement ifThenElseStatement = new IfThenElseStatement(expression, line);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
-			BlockStatement thenBlock = new BlockStatement(line);
-			for(Statement statement : thenStatements) {
-				thenBlock.addStatement(statement);
-			}
-			ifThenElseStatement.setThenStatement(thenBlock);
-
 			List<Statement> elseStatements = createStatements(expression.getElseBranch());
-			BlockStatement elseBlock = new BlockStatement(line);
-			for(Statement statement : elseStatements) {
-				elseBlock.addStatement(statement);
-			}
-			ifThenElseStatement.setElseStatement(elseBlock);
+
+			ifThenElseStatement.setThenStatement(new BlockStatement(line, thenStatements));
+			ifThenElseStatement.setElseStatement(new BlockStatement(line, elseStatements));
 			return ifThenElseStatement;
 		} else if (isIfThenStatement(expression)){
 			IfThenStatement ifThenStatement = new IfThenStatement(expression, line);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
-			BlockStatement thenBlock = new BlockStatement(line);
-			for(Statement statement : thenStatements) {
-				thenBlock.addStatement(statement);
-			}
-			ifThenStatement.setThenStatement(thenBlock);
+			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements));
 			return ifThenStatement;
 		}
+		//TODO loops
 		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", DataType.getType("String")),0);
 	}
 

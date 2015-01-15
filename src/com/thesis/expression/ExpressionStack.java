@@ -15,7 +15,7 @@ public class ExpressionStack {
 
 	public ExpressionStack() {
 		mStack = new Stack<>();
-		mLabels = InstructionTranslator.getLabels();
+		mLabels = InstructionTranslator.getLabels(); //TODO pass as argument in constructor
 	}
 
 	public void push(Expression expression) {

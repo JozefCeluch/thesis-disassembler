@@ -9,13 +9,9 @@ public class BlockStatement extends Statement {
 
 	private List<Statement> mStatements;
 
-	public BlockStatement(int line){
+	public BlockStatement(int line, List<Statement> statements){
 		super(line);
-		mStatements = new ArrayList<>();
-	}
-
-	public void addStatement(Statement statement) {
-		mStatements.add(statement);
+		mStatements = statements;
 	}
 
 	@Override
