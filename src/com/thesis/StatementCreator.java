@@ -1,14 +1,8 @@
 package com.thesis;
 
-import com.thesis.block.BlockStatement;
-import com.thesis.block.IfThenElseStatement;
-import com.thesis.block.IfThenStatement;
-import com.thesis.block.Statement;
+import com.thesis.block.*;
 import com.thesis.common.DataType;
-import com.thesis.expression.ConditionalExpression;
-import com.thesis.expression.ExpressionStack;
-import com.thesis.expression.PrimaryExpression;
-import com.thesis.expression.StackItem;
+import com.thesis.expression.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +27,23 @@ public class StatementCreator {
 
 			if (item.expression instanceof ConditionalExpression) {
 				statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
+			} else if (item.expression instanceof SwitchExpression) {
+				statements.add(handleSwitchExpression((SwitchExpression) item.expression, item.line, item.labelId));
 			} else {
 				statements.add(new Statement(item.expression, item.line));
 			}
 		}
 		return statements;
+	}
+
+	private Statement handleSwitchExpression(SwitchExpression expression, int line, int labelId) {
+		SwitchStatement statement = new SwitchStatement(expression, line);
+		List<Statement> caseStatements = new ArrayList<>();
+		for(SwitchExpression.CaseExpression caseExp : expression.getCaseList()) {
+			caseStatements.add(new SwitchStatement.CaseStatement(caseExp, line, createStatements(caseExp.getStack()))); //TODO line
+		}
+		statement.setSwitchBlock(new BlockStatement(line, caseStatements));
+		return statement;
 	}
 
 	private Statement handleConditionalExpression(ConditionalExpression expression, int line, int label) {
@@ -54,6 +60,8 @@ public class StatementCreator {
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
 			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements));
 			return ifThenStatement;
+		} else if (expression instanceof JumpExpression) {
+			return new Statement(expression, line);
 		}
 		//TODO loops
 		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", DataType.getType("String")),0);

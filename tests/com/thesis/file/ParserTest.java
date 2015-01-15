@@ -75,6 +75,17 @@ public class ParserTest {
 	}
 
 	@Test
+	@Parameters(method = "getSwitchInsnNodeClasses")
+	public void testSwitchInsnNodeClasses(String name){
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getSwitchInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains("SwitchInsnNode"));
+	}
+
+	@Test
 	@Parameters(method = "param1, param2, param3, param4, param5, param6, param7, param8, param9")
 	public void testClassesWithDependencies(String name, String dependencies) {
 		String compileString = TEST_FOLDER + name + ".java " + dependencies;
