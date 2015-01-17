@@ -421,43 +421,49 @@ public class InstructionTranslator {
 		stack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, DataType.INT)));
 	}
 
-	//	TABLESWITCH //TODO CLEAN AND TEST!!!
+	//	TABLESWITCH
 	private AbstractInsnNode visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		AbstractInsnNode movedNode = node;
-		SwitchExpression switchExp = new SwitchExpression(node);
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
-		int switchEndLabel = -1;
-		List<Integer> keys = new ArrayList<>();
-		int range = node.max - node.min;
-		for (int i = 0; i <= range; i++) {
-			keys.add(node.min + i);
-			AbstractInsnNode caseNode = (AbstractInsnNode) node.labels.get(i);
-			int nextLabelId = i < range ? stack.getLabelId(((LabelNode) node.labels.get(i+1)).getLabel()): defaultLabel;
-			if (nextLabelId == defaultLabel && i < range) continue;
 
-			ExpressionStack caseStack = new ExpressionStack();
-			while(stack.getLabelId(mLabel) != nextLabelId) {
-				caseNode = pushNodeToStackAsExpression(caseNode, caseStack);
-				caseNode = caseNode.getNext();
-			}
-			if (caseStack.peek() instanceof UnconditionalJump) {
-				UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
-				switchEndLabel = jump.getConditionalJumpDest();
-				caseStack.push(new BreakExpression(jump));
-			}
-			switchExp.addCase(new SwitchExpression.CaseExpression(keys.get(i), caseStack));
-			movedNode = caseNode;
+		Map<Integer, String> labelCaseMap = new HashMap<>();
+
+		for (int i = 0; i <= node.max - node.min; i++) {
+			int labelId = stack.getLabelId(((LabelNode) node.labels.get(i)).getLabel());
+			String caseKey = String.valueOf(node.min + i);
+			labelCaseMap.put(labelId, caseKey);
 		}
-		if (switchEndLabel != -1 && defaultLabel != switchEndLabel) {
-			ExpressionStack caseStack = new ExpressionStack();
-			AbstractInsnNode caseNode = node.dflt;
-			while(stack.getLabelId(mLabel) != switchEndLabel) {
-				caseNode = pushNodeToStackAsExpression(caseNode, caseStack);
-				caseNode = caseNode.getNext();
+		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
+
+		int currentLabel = stack.getLabelId(mLabel);
+		int switchEndLabel = -1;
+		SwitchExpression switchExp = new SwitchExpression((TableSwitchInsnNode)movedNode);
+		SwitchExpression.CaseExpression caseExpression = null;
+		ExpressionStack caseStack = new ExpressionStack();
+
+		while (currentLabel != switchEndLabel && (movedNode = movedNode.getNext()) != null) {
+			movedNode = pushNodeToStackAsExpression(movedNode, caseStack);
+			currentLabel = stack.getLabelId(mLabel);
+
+			if (labelCaseMap.containsKey(currentLabel) && caseExpression == null) {
+				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(currentLabel), currentLabel, defaultLabel, caseStack);
 			}
-			switchExp.addCase(new SwitchExpression.CaseExpression(SwitchExpression.CaseExpression.DEFAULT, caseStack));
-			movedNode = caseNode;
+
+			if (caseExpression != null && labelCaseMap.containsKey(currentLabel) && caseExpression.getLabel() != currentLabel) {
+				if (caseStack.peek() instanceof UnconditionalJump) {
+					UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
+					switchEndLabel = jump.getConditionalJumpDest();
+					caseStack.push(new BreakExpression(jump));
+				}
+				switchExp.addCase(caseExpression);
+				caseStack = new ExpressionStack();
+				caseExpression = null;
+			}
+
+		}
+		if (caseExpression != null) {
+			switchExp.addCase(caseExpression);
 		}
 
 		stack.push(switchExp);

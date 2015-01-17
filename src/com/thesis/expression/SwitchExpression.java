@@ -52,11 +52,15 @@ public class SwitchExpression extends Expression {
 
 		private ExpressionStack mStack;
 		private Object mValue;
+		private int mLabel;
+		private int mDefaultLabel;
 		//TODO value can be number, String or enum
-		public CaseExpression(Object value, ExpressionStack stack) {
+		public CaseExpression(Object value, int label, int defaultLabel, ExpressionStack stack) {
 			super(null);
 			mValue = value;
 			mStack = stack;
+			mLabel = label;
+			mDefaultLabel = defaultLabel;
 		}
 
 		public ExpressionStack getStack() {
@@ -64,11 +68,19 @@ public class SwitchExpression extends Expression {
 		}
 
 		public void write(Writer writer) throws IOException {
-			if (mValue instanceof String && DEFAULT.equals(mValue)) {
+			if (isDefaultCase()) {
 				writer.write(DEFAULT + ":\n");
 			} else {
 				writer.append("case ").append(mValue.toString()).write(":\n");
 			}
+		}
+
+		public int getLabel() {
+			return mLabel;
+		}
+
+		private boolean isDefaultCase() {
+			return mLabel == mDefaultLabel;
 		}
 
 		@Override
@@ -80,5 +92,7 @@ public class SwitchExpression extends Expression {
 		public void prepareForStack(ExpressionStack stack) {
 
 		}
+
+
 	}
 }
