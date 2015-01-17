@@ -357,7 +357,6 @@ public class InstructionTranslator {
 			if (movedNode instanceof JumpInsnNode) {
 				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
 				exp.setGoToDest(elseBranchEnd);
-				movedNode = movedNode.getNext();
 				break;
 			}
 			Expression branchTop = exp.getThenBranch().peek();
