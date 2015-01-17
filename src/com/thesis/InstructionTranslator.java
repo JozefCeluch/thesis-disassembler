@@ -102,7 +102,7 @@ public class InstructionTranslator {
 				node = visitTableSwitchInsnNode((TableSwitchInsnNode) node, stack);
 				break;
 			case AbstractInsnNode.LOOKUPSWITCH_INSN:
-				visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
+				node = visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
 				break;
 			case AbstractInsnNode.MULTIANEWARRAY_INSN:
 				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode)node, stack);
@@ -424,7 +424,6 @@ public class InstructionTranslator {
 	//	TABLESWITCH
 	private AbstractInsnNode visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		AbstractInsnNode movedNode = node;
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
 
 		Map<Integer, String> labelCaseMap = new HashMap<>();
@@ -436,15 +435,21 @@ public class InstructionTranslator {
 		}
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
-		int currentLabel = stack.getLabelId(mLabel);
-		int switchEndLabel = -1;
-		SwitchExpression switchExp = new SwitchExpression((TableSwitchInsnNode)movedNode);
-		SwitchExpression.CaseExpression caseExpression = null;
+		SwitchExpression switchExp = new SwitchExpression(node);
+		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
+		stack.push(switchExp);
+		return movedNode;
+	}
+
+	private AbstractInsnNode updateSwitchWithCases(SwitchExpression switchExp, AbstractInsnNode movedNode, int defaultLabel, Map<Integer, String> labelCaseMap) {
 		ExpressionStack caseStack = new ExpressionStack();
+		int currentLabel = caseStack.getLabelId(mLabel);
+		int switchEndLabel = -1;
+		SwitchExpression.CaseExpression caseExpression = null;
 
 		while (currentLabel != switchEndLabel && (movedNode = movedNode.getNext()) != null) {
 			movedNode = pushNodeToStackAsExpression(movedNode, caseStack);
-			currentLabel = stack.getLabelId(mLabel);
+			currentLabel = caseStack.getLabelId(mLabel);
 
 			if (labelCaseMap.containsKey(currentLabel) && caseExpression == null) {
 				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(currentLabel), currentLabel, defaultLabel, caseStack);
@@ -465,14 +470,25 @@ public class InstructionTranslator {
 		if (caseExpression != null) {
 			switchExp.addCase(caseExpression);
 		}
-
-		stack.push(switchExp);
 		return movedNode;
 	}
 
 	// LOOKUPSWITCH
-	private void visitLookupSwitchInsnNode(LookupSwitchInsnNode node, ExpressionStack stack) {
+	private AbstractInsnNode visitLookupSwitchInsnNode(LookupSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
+		Map<Integer, String> labelCaseMap = new HashMap<>();
+		for (int i = 0; i < node.labels.size(); i++) {
+			int labelId = stack.getLabelId(((LabelNode) node.labels.get(i)).getLabel());
+			String caseKey = String.valueOf(node.keys.get(i));
+			labelCaseMap.put(labelId, caseKey);
+		}
+		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
+
+		SwitchExpression switchExp = new SwitchExpression(node);
+		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
+		stack.push(switchExp);
+		return movedNode;
 	}
 
 	//	MULTIANEWARRAY

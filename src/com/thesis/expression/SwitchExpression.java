@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
 
 import java.io.IOException;
@@ -14,6 +15,11 @@ public class SwitchExpression extends Expression {
 	private List<CaseExpression> mCaseList;
 
 	public SwitchExpression(TableSwitchInsnNode instruction) {
+		super(instruction);
+		mCaseList = new ArrayList<>();
+	}
+
+	public SwitchExpression(LookupSwitchInsnNode instruction) {
 		super(instruction);
 		mCaseList = new ArrayList<>();
 	}
