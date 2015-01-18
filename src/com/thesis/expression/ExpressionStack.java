@@ -64,6 +64,10 @@ public class ExpressionStack {
 		return mStack.pop().expression;
 	}
 
+	public Expression get(int index) {
+		return mStack.get(index).expression;
+	}
+
 	public void swap() {
 		StackItem first = mStack.pop();
 		StackItem second = mStack.pop();

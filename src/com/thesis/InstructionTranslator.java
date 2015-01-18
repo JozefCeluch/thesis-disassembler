@@ -3,13 +3,11 @@ package com.thesis;
 import com.thesis.block.Block;
 import com.thesis.block.Statement;
 import com.thesis.common.DataType;
-import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Field;
@@ -357,6 +355,13 @@ public class InstructionTranslator {
 			if (movedNode instanceof JumpInsnNode) {
 				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
 				exp.setGoToDest(elseBranchEnd);
+				if (exp.getThenBranch().size() == 2) {
+					Expression expression = exp.getThenBranch().get(0);
+					if (expression instanceof PrimaryExpression &&
+							(((PrimaryExpression) expression).getValue().equals(1) || ((PrimaryExpression) expression).getValue().equals(0))) {
+						expression.setType(DataType.BOOLEAN);
+					}
+				}
 				break;
 			}
 			Expression branchTop = exp.getThenBranch().peek();
@@ -372,6 +377,15 @@ public class InstructionTranslator {
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
 			}
+			if (exp.getElseBranch().size() == 1) {
+				Expression expression = exp.getElseBranch().get(0);
+				if (DataType.BOOLEAN.equals(exp.getThenBranch().get(0).getType())) {
+					expression.setType(DataType.BOOLEAN);
+				}
+			}
+		}
+		if (exp!= null && exp.isTernaryExpression()) {
+			stack.push(new TernaryExpression((ConditionalExpression)stack.pop()));
 		}
 		return movedNode;
 	}

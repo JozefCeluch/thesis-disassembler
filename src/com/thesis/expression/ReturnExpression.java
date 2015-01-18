@@ -28,11 +28,7 @@ public class ReturnExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		if (!mType.equals(DataType.VOID)) {
-			Expression expression = stack.pop();
-			if (expression instanceof ConditionalExpression && !DataType.BOOLEAN.equals(getType())) {
-				expression = new TernaryExpression((ConditionalExpression) expression);
-			}
-			mExpression = expression;
+			mExpression = stack.pop();
 		}
 	}
 

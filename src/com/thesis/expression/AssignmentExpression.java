@@ -59,10 +59,6 @@ public class AssignmentExpression extends  Expression{
 			} else if (mLeftSide.getType() != null && !mLeftSide.getType().equals(mRightSide.getType())) {
 				mRightSide.mCastType = mLeftSide.getType();
 			}
-
-			if (mRightSide instanceof ConditionalExpression && !getType().equals(DataType.BOOLEAN)) {
-				mRightSide = new TernaryExpression((ConditionalExpression) mRightSide);
-			}
 		}
 	}
 

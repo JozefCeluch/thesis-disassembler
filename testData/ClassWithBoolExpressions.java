@@ -7,7 +7,7 @@ public class ClassWithBoolExpressions {
 		int intTwo = 8728;
 		boolean boolOne = intOne >= intTwo & (intTwo > 3 && intOne < 67);
 		intOne = intTwo > 34 ? 99 : 1;
-		return intTwo > 34 ? 99 : 1;
+		return intTwo >= 34 ? 99 : intTwo > 34 ? 0 : 1;
 	}
 
 	public void ifExpression() {

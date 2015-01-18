@@ -7,16 +7,26 @@ import java.io.Writer;
 
 public class TernaryExpression extends ConditionalExpression {
 
-	private ConditionalExpression mExpression;
+	private ConditionalExpression mCondition;
+	private Expression mFirst;
+	private Expression mSecond;
 
 	public TernaryExpression(ConditionalExpression expression) {
 		super(expression.mInstruction, expression.getConditionalJumpDest());
-		mExpression = expression;
+		mCondition = expression;
+		mFirst = mCondition.getThenBranch().getAll().get(0).expression;
+		mSecond = mCondition.getElseBranch().getAll().get(0).expression;
+		if(mSecond instanceof ConditionalExpression) {
+			mSecond = new TernaryExpression((ConditionalExpression) mSecond);
+		}
+		setType(mFirst.getType());
 	}
 
 	@Override
-	public DataType getType() {
-		return mExpression.getType();
+	public void setType(DataType type) {
+		super.setType(type);
+		mFirst.setType(type);
+		mSecond.setType(type);
 	}
 
 	@Override
@@ -26,10 +36,10 @@ public class TernaryExpression extends ConditionalExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		mExpression.write(writer);
+		mCondition.write(writer);
 		writer.write(" ? ");
-		mExpression.getThenBranch().getAll().get(0).expression.write(writer);
+		mFirst.write(writer);
 		writer.write(" : ");
-		mExpression.getElseBranch().getAll().get(0).expression.write(writer);
+		mSecond.write(writer);
 	}
 }

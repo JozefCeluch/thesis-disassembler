@@ -52,6 +52,18 @@ public abstract class ConditionalExpression extends Expression {
 		return elseBranch;
 	}
 
+	public boolean isTernaryExpression() {
+		if (thenBranch.size() != 2 || elseBranch.size() != 1) return false;
+
+		Expression thenExp = thenBranch.get(0);
+		Expression elseExp = elseBranch.get(0);
+		return ((thenExp instanceof PrimaryExpression && !(DataType.BOOLEAN.equals(thenExp.getType())))
+					|| (thenExp instanceof MethodInvocationExpression && !DataType.VOID.equals(thenExp.getType())))
+				&& ((elseExp instanceof PrimaryExpression && !(DataType.BOOLEAN.equals(thenExp.getType())))
+					|| (elseExp instanceof MethodInvocationExpression && !DataType.VOID.equals(elseExp.getType()))
+					|| elseExp instanceof ConditionalExpression);
+	}
+
 	@Override
 	public DataType getType() {
 		return mType;

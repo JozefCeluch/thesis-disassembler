@@ -10,7 +10,7 @@ intOne = (int) 6;
 intTwo = (int) 8728;
 boolOne = (intOne >= intTwo) & (intTwo > 3 && intOne < 67);
 intOne = intTwo > 34 ? 99 : 1;
-return intTwo > 34 ? 99 : 1;
+return intTwo >= 34 ? 99 : intTwo > 34 ? 0 : 1;
 }
 public void ifExpression() {
 int intOne;
