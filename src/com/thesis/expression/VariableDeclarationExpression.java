@@ -13,6 +13,7 @@ public class VariableDeclarationExpression extends Expression {
 	public VariableDeclarationExpression(LocalVariable variable) {
 		super(null);
 		mVariable = variable;
+		mType = variable.getType();
 	}
 
 	@Override

@@ -186,6 +186,12 @@ public class InstructionTranslator {
 			stack.push(new ReturnExpression(node));
 		} else if (opCode == Opcodes.ARRAYLENGTH) {
 			stack.push(new ArrayLengthExpression(node));
+		} else if (opCode == Opcodes.ATHROW) {
+			//TODO
+		} else if (opCode == Opcodes.MONITORENTER) {
+			//TODO
+		} else if (opCode == Opcodes.MONITOREXIT) {
+			//TODO
 		} else {
 			//NOP, do nothing
 		}
