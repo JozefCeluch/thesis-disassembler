@@ -23,6 +23,7 @@ public class InstructionTranslator {
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private int mLine;
 	private Label mLabel;
+	private TryCatchManager mTryCatchManager;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		mStatements = statements;
@@ -31,6 +32,7 @@ public class InstructionTranslator {
 		mLocalVariables = new HashMap<>();
 		copyLocalVariables();
 		mLocalVariables.putAll(arguments);
+		mTryCatchManager = TryCatchManager.newInstance(method.tryCatchBlocks, mStack);
 	}
 
 	private void copyLocalVariables() {
