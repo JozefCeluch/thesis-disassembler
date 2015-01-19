@@ -14,6 +14,7 @@ public class LocalVariable extends Variable {
 	private boolean mDebugType;
 
 	public LocalVariable(int index) {
+		super();
 		this.mIndex = index;
 		mDebugType = false;
 	}

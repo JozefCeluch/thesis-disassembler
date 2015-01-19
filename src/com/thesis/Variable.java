@@ -8,11 +8,12 @@ public class Variable {
 	protected DataType mType;
 
 	public Variable() {
+		mType = DataType.UNKNOWN;
 	}
 
 	public Variable(String name, DataType type) {
 		mName = name;
-		mType = type;
+		mType = type != null ? type : DataType.UNKNOWN;
 	}
 
 	public DataType getType() {
@@ -28,6 +29,6 @@ public class Variable {
 	}
 
 	public boolean hasType() {
-		return mType != null;
+		return mType != null && !mType.equals(DataType.UNKNOWN);
 	}
 }

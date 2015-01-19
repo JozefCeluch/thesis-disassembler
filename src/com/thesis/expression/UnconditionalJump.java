@@ -13,11 +13,6 @@ public class UnconditionalJump extends JumpExpression {
 	}
 
 	@Override
-	public DataType getType() {
-		return null;
-	}
-
-	@Override
 	public void write(Writer writer) throws IOException {
 	}
 

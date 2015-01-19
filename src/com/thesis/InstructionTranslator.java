@@ -250,11 +250,10 @@ public class InstructionTranslator {
 		}
 		if (isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
 			if (!mLocalVariables.containsKey(node.var)) {
-				mLocalVariables.put(node.var, new LocalVariable("var" + node.var, node.var));
+				mLocalVariables.put(node.var, new LocalVariable("var" + node.var, DataType.UNKNOWN, node.var)); //TODO set type according to the instruction
 			}
 			LocalVariable localVar = mLocalVariables.get(node.var);
 			stack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
-			//todo assignment to fields and static variables
 		}
 		// RET is deprecated since Java 6
 	}
