@@ -21,7 +21,6 @@ public class InstructionTranslator {
 	private static final HashMap<Label, Integer> mLabels = new HashMap<>();
 	private List<Block> mStatements;
 	private Map<Integer, LocalVariable> mLocalVariables;
-	private int mLine;
 	private Label mLabel;
 	private TryCatchManager mTryCatchManager;
 
@@ -116,8 +115,6 @@ public class InstructionTranslator {
 			default:
 				printNodeInfo(node);
 		}
-		stack.setLineNumber(mLine);
-		stack.addLabel(mLabel);
 		return node;
 	}
 
@@ -400,9 +397,8 @@ public class InstructionTranslator {
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		mLabel = node.getLabel();
-		if(mLabels.containsKey(mLabel)) {
-			System.out.println("LABEL: " + "L" + mLabels.get(mLabel));
-		}
+		stack.addLabel(mLabel);
+		System.out.println("LABEL: " + "L" + stack.getLabelId(mLabel));
 	}
 
 	// LDC
@@ -526,8 +522,7 @@ public class InstructionTranslator {
 
 	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		mLine = node.line;
-
+		stack.setLineNumber(node.line);
 	}
 
 	private void printNodeInfo(AbstractInsnNode node) {
