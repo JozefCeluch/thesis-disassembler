@@ -17,20 +17,31 @@ public class TryCatchManager {
 	private TryCatchManager() {
 	}
 
-	public List<TryCatchItem> getTryCatchItems() {
-		return mTryCatchItems;
-	}
-
 	public void setTryCatchItems(List<TryCatchItem> tryCatchItems) {
 		mTryCatchItems = tryCatchItems;
 	}
 
-	public List<TryCatchItem> getFinallyItems() {
-		return mFinallyItems;
-	}
-
 	public void setFinallyItems(List<TryCatchItem> finallyItems) {
 		mFinallyItems = finallyItems;
+	}
+
+	public boolean isEmpty() {
+		return mTryCatchItems == null || mFinallyItems == null || (mTryCatchItems.isEmpty() && mFinallyItems.isEmpty());
+	}
+
+	public List<TryCatchItem> getItemsWithStartId(int labelId) {
+		List<TryCatchItem> result = new ArrayList<>();
+		for (TryCatchItem item : mTryCatchItems) {
+			if (item.getStartId() == labelId) result.add(item);
+		}
+		return result;
+	}
+
+	public TryCatchItem getItemWithEnd(int labelId) {
+		for (TryCatchItem item : mTryCatchItems) {
+			if (item.getEndId() == labelId) return item;
+		}
+		return null;
 	}
 
 	public static TryCatchManager newInstance(List tryCatchBlocks, ExpressionStack stack) {
@@ -66,5 +77,12 @@ public class TryCatchManager {
 		if (!foundMatch) {
 			tryCatchItems.add(item);
 		}
+	}
+
+	public boolean isDefaultHandlerEnd(int label) {
+		for (TryCatchItem item : mFinallyItems) {
+			if (item.getEndId() == label) return true;
+		}
+		return false;
 	}
 }

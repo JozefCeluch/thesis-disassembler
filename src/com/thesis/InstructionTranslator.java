@@ -5,6 +5,7 @@ import com.thesis.block.Statement;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
+import com.thesis.expression.TryExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -18,10 +19,11 @@ public class InstructionTranslator {
 
 	private final MethodNode mMethod;
 	private ExpressionStack mStack;
-	private static final HashMap<Label, Integer> mLabels = new HashMap<>();
+	private static final HashMap<Label, Integer> mLabels = new HashMap<>(); //TODO make instance field
 	private List<Block> mStatements;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private Label mLabel;
+	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
@@ -90,6 +92,7 @@ public class InstructionTranslator {
 				break;
 			case AbstractInsnNode.LABEL:
 				visitLabelNode((LabelNode) node, stack);
+				node = createTryCatchBlocks(node, stack);
 				break;
 			case AbstractInsnNode.LDC_INSN:
 				visitLdcInsnNode((LdcInsnNode) node, stack);
@@ -116,6 +119,81 @@ public class InstructionTranslator {
 				printNodeInfo(node);
 		}
 		return node;
+	}
+
+	private AbstractInsnNode createTryCatchBlocks(AbstractInsnNode node, ExpressionStack stack) {
+		if (mTryCatchManager.isEmpty()) return node;
+		List<TryCatchItem> tryCatchItems = mTryCatchManager.getItemsWithStartId(mCurrentLabel);
+		if (tryCatchItems.isEmpty()) return node;
+
+		AbstractInsnNode movedNode = node;
+		TryExpression previousExpression = null;
+		for(TryCatchItem item : tryCatchItems) {
+			TryExpression newExpression = new TryExpression(item);
+			item.setTryStack(new ExpressionStack());
+			if (previousExpression != null) {
+				item.getTryStack().push(previousExpression);
+			}
+			movedNode = processTryCatchBlock(movedNode, item);
+			previousExpression = newExpression;
+		}
+		stack.push(previousExpression);
+		return movedNode;
+	}
+
+	private AbstractInsnNode processTryCatchBlock(AbstractInsnNode node, TryCatchItem tryCatchItem) {
+		AbstractInsnNode movedNode = node;
+		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerLocations().size()) return node;
+
+		// fill try block
+		while (mCurrentLabel != tryCatchItem.getEndId()) {
+			movedNode = movedNode.getNext();
+			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getTryStack());
+		}
+
+		// fill finally block and get block end lable
+		tryCatchItem.setFinallyStack(new ExpressionStack());
+		while (!tryCatchItem.isHandlerLabel(mCurrentLabel)) {
+			movedNode = movedNode.getNext();
+			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getFinallyStack());
+		}
+		int tryCatchBlockEnd = -1;
+		if (tryCatchItem.getFinallyStack().peek() instanceof UnconditionalJump) {
+			tryCatchBlockEnd = ((UnconditionalJump) tryCatchItem.getFinallyStack().peek()).getConditionalJumpDest();
+			if (tryCatchItem.getFinallyStack().size() == 1) {
+				tryCatchItem.getFinallyStack().pop(); //does not have finally block
+			}
+		}
+
+		// fill catch blocks
+		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
+			if (!tryCatchItem.getFinallyStack().isEmpty()) { //isEmpty means no finally block
+				System.out.println("skipping finally stack");
+				while (!(tryCatchItem.isHandlerLabel(mCurrentLabel) || mTryCatchManager.isDefaultHandlerEnd(mCurrentLabel))) {
+					movedNode = movedNode.getNext();
+					movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
+				}
+				System.out.println("finally stack skipped");
+			}
+
+			tryCatchItem.addCatchBlock(mCurrentLabel, new ExpressionStack());
+			int currentBlockLabel = mCurrentLabel;
+			System.out.println("created catch block " + currentBlockLabel);
+			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.isHandlerLabel(mCurrentLabel) || mTryCatchManager.isDefaultHandlerEnd(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
+				movedNode = movedNode.getNext();
+				movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getCatchBlock(currentBlockLabel));
+			}
+			System.out.println("catch block filled");
+		}
+
+		if (tryCatchBlockEnd != -1) {
+			while (mCurrentLabel != tryCatchBlockEnd) {
+				movedNode = movedNode.getNext();
+				movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
+			}
+		}
+
+		return movedNode;
 	}
 
 	private void addLocalVariablesAssignments() {
@@ -398,7 +476,8 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		mLabel = node.getLabel();
 		stack.addLabel(mLabel);
-		System.out.println("LABEL: " + "L" + stack.getLabelId(mLabel));
+		mCurrentLabel = stack.getLabelId(mLabel);
+		System.out.println("LABEL: " + "L" + mCurrentLabel);
 	}
 
 	// LDC
