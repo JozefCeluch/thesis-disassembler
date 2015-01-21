@@ -2,6 +2,7 @@ package com.thesis;
 
 import com.thesis.expression.ExpressionStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,8 @@ public class TryCatchItem {
 
 	private int mStartId;
 	private int mEndId;
-	private Map<Integer, String> mHandlerLocations = new HashMap<>(); // labelId, type
+	private List<Integer> mHandlerLocations = new ArrayList<>();
+	private Map<Integer, String> mHandlerTypes = new HashMap<>(); // labelId, type
 	private ExpressionStack mTryStack;
 	private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //labelId, stack
 	private ExpressionStack mFinallyStack;
@@ -18,7 +20,8 @@ public class TryCatchItem {
 	public TryCatchItem(int startId, int endId, int handlerId, String exception) {
 		mStartId = startId;
 		mEndId = endId;
-		mHandlerLocations.put(handlerId, exception);
+		mHandlerLocations.add(handlerId);
+		mHandlerTypes.put(handlerId, exception);
 	}
 
 	public int getStartId() {
@@ -45,20 +48,25 @@ public class TryCatchItem {
 		mFinallyStack = finallyStack;
 	}
 
-	public Map<Integer, String> getHandlerLocations() {
+	public Map<Integer, String> getHandlerTypes() {
+		return mHandlerTypes;
+	}
+
+	public List<Integer> getHandlerLocations() {
 		return mHandlerLocations;
 	}
 
 	public int getHandlerCount() {
-		return mHandlerLocations.size();
+		return mHandlerTypes.size();
 	}
 
 	public int getCatchBlockCount() {
 		return mCatchStacks.size();
 	}
 
-	public void addHandlers(Map<Integer,String> handlers) {
-		mHandlerLocations.putAll(handlers);
+	public void addHandlers(List<Integer> handlerLocations, Map<Integer,String> handlers) {
+		mHandlerLocations.addAll(handlerLocations);
+		mHandlerTypes.putAll(handlers);
 	}
 
 	public boolean matches(TryCatchItem other) {
@@ -66,7 +74,7 @@ public class TryCatchItem {
 	}
 
 	public boolean isHandlerLabel(int label) {
-		for(int key : mHandlerLocations.keySet()) {
+		for(int key : mHandlerTypes.keySet()) {
 			if (key == label) return true;
 		}
 		return false;
@@ -78,6 +86,10 @@ public class TryCatchItem {
 
 	public ExpressionStack getCatchBlock(int handlerId) {
 		return mCatchStacks.get(handlerId);
+	}
+
+	public String getHandlerType(int handlerId) {
+		return mHandlerTypes.get(handlerId);
 	}
 
 }

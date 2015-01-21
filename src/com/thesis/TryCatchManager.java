@@ -70,7 +70,7 @@ public class TryCatchManager {
 		for (TryCatchItem tryCatchItem : tryCatchItems) {
 			if (tryCatchItem.matches(item)) {
 				foundMatch = true;
-				tryCatchItem.addHandlers(item.getHandlerLocations());
+				tryCatchItem.addHandlers(item.getHandlerLocations(), item.getHandlerTypes());
 				break;
 			}
 		}

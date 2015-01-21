@@ -60,7 +60,6 @@ public class InstructionTranslator {
 		addLocalVariablesAssignments();
 		//todo do some improvements of the expressions on the expression stack here
 		StatementCreator sc = new StatementCreator(mStack);
-		sc.createStatements();
 		mStatements.addAll(sc.getStatements());
 	}
 
@@ -129,13 +128,12 @@ public class InstructionTranslator {
 		AbstractInsnNode movedNode = node;
 		TryExpression previousExpression = null;
 		for(TryCatchItem item : tryCatchItems) {
-			TryExpression newExpression = new TryExpression(item);
 			item.setTryStack(new ExpressionStack());
 			if (previousExpression != null) {
 				item.getTryStack().push(previousExpression);
 			}
 			movedNode = processTryCatchBlock(movedNode, item);
-			previousExpression = newExpression;
+			previousExpression = new TryExpression(item);
 		}
 		stack.push(previousExpression);
 		return movedNode;
@@ -143,7 +141,7 @@ public class InstructionTranslator {
 
 	private AbstractInsnNode processTryCatchBlock(AbstractInsnNode node, TryCatchItem tryCatchItem) {
 		AbstractInsnNode movedNode = node;
-		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerLocations().size()) return node;
+		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return node;
 
 		// fill try block
 		while (mCurrentLabel != tryCatchItem.getEndId()) {
@@ -167,23 +165,17 @@ public class InstructionTranslator {
 
 		// fill catch blocks
 		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			if (!tryCatchItem.getFinallyStack().isEmpty()) { //isEmpty means no finally block
-				System.out.println("skipping finally stack");
-				while (!(tryCatchItem.isHandlerLabel(mCurrentLabel) || mTryCatchManager.isDefaultHandlerEnd(mCurrentLabel))) {
-					movedNode = movedNode.getNext();
-					movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
-				}
-				System.out.println("finally stack skipped");
+			while (!(tryCatchItem.isHandlerLabel(mCurrentLabel))) {
+				movedNode = movedNode.getNext();
+				movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
 			}
 
 			tryCatchItem.addCatchBlock(mCurrentLabel, new ExpressionStack());
 			int currentBlockLabel = mCurrentLabel;
-			System.out.println("created catch block " + currentBlockLabel);
 			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.isHandlerLabel(mCurrentLabel) || mTryCatchManager.isDefaultHandlerEnd(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getCatchBlock(currentBlockLabel));
 			}
-			System.out.println("catch block filled");
 		}
 
 		if (tryCatchBlockEnd != -1) {
@@ -597,6 +589,11 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
 		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
+		if (!node.stack.isEmpty()) {
+			for(int i = node.stack.size() - 1; i >= 0; i--) {
+				stack.push(new PrimaryExpression(node.stack.get(i), DataType.UNKNOWN));
+			}
+		}
 	}
 
 	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {

@@ -16,7 +16,7 @@ public class StatementCreator {
 		mStack = stack;
 	}
 
-	public void createStatements(){
+	private void createStatements(){
 		mStatements = createStatements(mStack);
 	}
 
@@ -29,6 +29,8 @@ public class StatementCreator {
 				statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
 			} else if (item.expression instanceof SwitchExpression) {
 				statements.add(handleSwitchExpression((SwitchExpression) item.expression, item.line, item.labelId));
+			} else if (item.expression instanceof TryExpression) {
+				statements.add(new TryCatchStatement((TryExpression)item.expression, item.line));
 			} else {
 				statements.add(new Statement(item.expression, item.line));
 			}
@@ -76,6 +78,9 @@ public class StatementCreator {
 	}
 
 	public List<Statement> getStatements() {
+		if (mStatements == null) {
+			createStatements();
+		}
 		return mStatements;
 	}
 }
