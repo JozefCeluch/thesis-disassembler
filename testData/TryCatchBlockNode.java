@@ -6,7 +6,7 @@ import java.lang.String;
 
 class TryCatchBlockNode {
 
-	void method() {
+	void innerTryCatch() {
 		String value = "4";
 		int number;
 		try {
@@ -27,5 +27,13 @@ class TryCatchBlockNode {
 			System.out.println("called finally");
 		}
 		System.out.println("value is" + number);
+	}
+
+	void onlyFinally() {
+		try {
+			int number = Integer.valueOf("3");
+		} finally {
+			System.out.println("called finally");
+		}
 	}
 }

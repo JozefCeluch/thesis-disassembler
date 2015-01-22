@@ -15,7 +15,8 @@ public class TryCatchItem {
 	private Map<Integer, String> mHandlerTypes = new HashMap<>(); // labelId, type
 	private ExpressionStack mTryStack;
 	private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //labelId, stack
-	private ExpressionStack mFinallyStack;
+	private boolean mHasFinallyBlock;
+	private int mFinallyBlockStart;
 
 	public TryCatchItem(int startId, int endId, int handlerId, String exception) {
 		mStartId = startId;
@@ -40,12 +41,20 @@ public class TryCatchItem {
 		mTryStack = tryStack;
 	}
 
-	public ExpressionStack getFinallyStack() {
-		return mFinallyStack;
+	public boolean hasFinallyBlock() {
+		return mHasFinallyBlock;
 	}
 
-	public void setFinallyStack(ExpressionStack finallyStack) {
-		mFinallyStack = finallyStack;
+	public void setHasFinallyBlock(boolean hasFinallyBlock) {
+		this.mHasFinallyBlock = hasFinallyBlock;
+	}
+
+	public int getFinallyBlockStart() {
+		return mFinallyBlockStart;
+	}
+
+	public void setFinallyBlockStart(int finallyBlockStart) {
+		mFinallyBlockStart = finallyBlockStart;
 	}
 
 	public Map<Integer, String> getHandlerTypes() {
@@ -67,6 +76,11 @@ public class TryCatchItem {
 	public void addHandlers(List<Integer> handlerLocations, Map<Integer,String> handlers) {
 		mHandlerLocations.addAll(handlerLocations);
 		mHandlerTypes.putAll(handlers);
+	}
+
+	public void removeHandler(int location) {
+		mHandlerLocations.remove(mHandlerLocations.indexOf(location));
+		mCatchStacks.remove(location);
 	}
 
 	public boolean matches(TryCatchItem other) {

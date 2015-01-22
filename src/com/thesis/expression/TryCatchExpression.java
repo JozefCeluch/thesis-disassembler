@@ -12,25 +12,37 @@ import java.util.stream.Collectors;
 
 public class TryCatchExpression extends Expression {
 
-	private TryCatchItem mTryCatchItem;
+	private ExpressionStack mTryStack;
 	private List<CatchExpression> mCatchExpressions;
+	private ExpressionStack mFinallyStack;
 
 	public TryCatchExpression(TryCatchItem tryCatchItem) {
 		super(null);
 		mCatchExpressions = new ArrayList<>();
-		mCatchExpressions.addAll(
-				tryCatchItem.getHandlerLocations().stream()
-				.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
-				.collect(Collectors.toList()));
-		mTryCatchItem = tryCatchItem;
+
+		if (tryCatchItem.hasFinallyBlock() && tryCatchItem.getCatchBlockCount() > 1) {
+			int finallyLocation = tryCatchItem.getFinallyBlockStart();
+			mCatchExpressions.add(new CatchExpression(finallyLocation, null, tryCatchItem.getCatchBlock(finallyLocation)));
+			tryCatchItem.removeHandler(finallyLocation);
+			tryCatchItem.setHasFinallyBlock(false);
+			TryCatchExpression innerTryCatch = new TryCatchExpression(tryCatchItem);
+			mTryStack = new ExpressionStack();
+			mTryStack.push(innerTryCatch);
+		} else {
+			mCatchExpressions.addAll(
+					tryCatchItem.getHandlerLocations().stream()
+							.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
+							.collect(Collectors.toList()));
+			mTryStack = tryCatchItem.getTryStack();
+		}
 	}
 
 	public ExpressionStack getTryStack() {
-		return mTryCatchItem.getTryStack();
+		return mTryStack;
 	}
 
 	public ExpressionStack getFinallyStack() {
-		return mTryCatchItem.getFinallyStack();
+		return mFinallyStack;
 	}
 
 	public List<CatchExpression> getCatchExpressions() {

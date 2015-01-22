@@ -54,8 +54,8 @@ public class InstructionTranslator {
 		System.out.println("METHOD: " + mMethod.name);
 		AbstractInsnNode node = mMethod.instructions.getFirst();
 		while (node != null && node.getNext() != null) {
-			node = node.getNext();
 			node = pushNodeToStackAsExpression(node, mStack);
+			node = node.getNext();
 		}
 		addLocalVariablesAssignments();
 		//todo do some improvements of the expressions on the expression stack here
@@ -144,44 +144,27 @@ public class InstructionTranslator {
 		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return node;
 
 		// fill try block
-		while (mCurrentLabel != tryCatchItem.getEndId()) {
+		while (!tryCatchItem.isHandlerLabel(mCurrentLabel)) {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getTryStack());
 		}
 
-		// fill finally block and get block end lable
-		tryCatchItem.setFinallyStack(new ExpressionStack());
-		while (!tryCatchItem.isHandlerLabel(mCurrentLabel)) {
-			movedNode = movedNode.getNext();
-			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getFinallyStack());
-		}
 		int tryCatchBlockEnd = -1;
-		if (tryCatchItem.getFinallyStack().peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) tryCatchItem.getFinallyStack().peek()).getConditionalJumpDest();
-			if (tryCatchItem.getFinallyStack().size() == 1) {
-				tryCatchItem.getFinallyStack().pop(); //does not have finally block
-			}
+		if (tryCatchItem.getTryStack().peek() instanceof UnconditionalJump) {
+			tryCatchBlockEnd = ((UnconditionalJump) tryCatchItem.getTryStack().peek()).getConditionalJumpDest();
 		}
 
 		// fill catch blocks
 		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			while (!(tryCatchItem.isHandlerLabel(mCurrentLabel))) {
-				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
-			}
-
 			tryCatchItem.addCatchBlock(mCurrentLabel, new ExpressionStack());
 			int currentBlockLabel = mCurrentLabel;
-			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.isHandlerLabel(mCurrentLabel) || mTryCatchManager.isDefaultHandlerEnd(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
+			if (tryCatchItem.getHandlerType(currentBlockLabel) == null) {
+				tryCatchItem.setHasFinallyBlock(true);
+				tryCatchItem.setFinallyBlockStart(currentBlockLabel);
+			}
+			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.isHandlerLabel(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getCatchBlock(currentBlockLabel));
-			}
-		}
-
-		if (tryCatchBlockEnd != -1) {
-			while (mCurrentLabel != tryCatchBlockEnd) {
-				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, new ExpressionStack()); //TODO use one stack for all redundant finally blocks
 			}
 		}
 
