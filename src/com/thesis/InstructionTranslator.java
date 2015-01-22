@@ -589,14 +589,15 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
 		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
-		if (!node.stack.isEmpty()) {
-			for(int i = node.stack.size() - 1; i >= 0; i--) {
-				stack.push(new PrimaryExpression(node.stack.get(i), DataType.UNKNOWN));
-			}
-		}
+//		if (!node.stack.isEmpty()) {
+//			for(int i = node.stack.size() - 1; i >= 0; i--) {
+//				stack.push(new PrimaryExpression(node.stack.get(i), DataType.UNKNOWN));
+//			}
+//		}
 	}
 
 	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {
+		System.out.println("LINE: " + node.line);
 		printNodeInfo(node);
 		stack.setLineNumber(node.line);
 	}
