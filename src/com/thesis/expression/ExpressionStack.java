@@ -19,6 +19,7 @@ public class ExpressionStack {
 	}
 
 	public void push(Expression expression) {
+		expression.setLine(mLineNum);
 		expression.prepareForStack(this); //TODO move prepare to expression
 		mStack.push(new StackItem(expression, mLabel, mLineNum));
 		improveStack();

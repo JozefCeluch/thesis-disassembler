@@ -57,7 +57,6 @@ public class TryCatchExpression extends Expression {
 		private DataType mType;
 		private AssignmentExpression mExpression;
 		private ExpressionStack mStack;
-		private int mLine = 0; //TODO line
 
 		public CatchExpression(int label, String typeString, ExpressionStack stack) {
 			super(null);

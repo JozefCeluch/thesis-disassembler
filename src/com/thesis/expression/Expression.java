@@ -12,6 +12,7 @@ public abstract class Expression implements Writable {
 	protected AbstractInsnNode mInstruction;
 	protected DataType mType;
 	protected DataType mCastType;
+	protected int mLine;
 
 	public Expression(AbstractInsnNode instruction) {
 		mInstruction = instruction;
@@ -25,6 +26,14 @@ public abstract class Expression implements Writable {
 
 	public void setCastType(DataType type) {
 		mCastType = type;
+	}
+
+	public int getLine() {
+		return mLine;
+	}
+
+	public void setLine(int line) {
+		mLine = line;
 	}
 
 	public void setInstruction(AbstractInsnNode instruction) {
