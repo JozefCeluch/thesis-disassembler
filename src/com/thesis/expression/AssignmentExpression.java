@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.Variable;
 import com.thesis.common.DataType;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
@@ -26,6 +27,10 @@ public class AssignmentExpression extends  Expression{
 
 	public void setRightSide(Expression rightSide) {
 		mRightSide = rightSide;
+	}
+
+	public Variable getVariable() {
+		return mLeftSide.getVariable();
 	}
 
 	@Override

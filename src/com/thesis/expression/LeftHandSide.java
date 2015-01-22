@@ -41,4 +41,8 @@ public class LeftHandSide extends Expression {
 	public void write(Writer writer) throws IOException {
 		writer.write(mVariable.toString());
 	}
+
+	public Variable getVariable() {
+		return mVariable;
+	}
 }

@@ -1,7 +1,7 @@
 package com.thesis.block;
 
 import com.thesis.StatementCreator;
-import com.thesis.expression.TryExpression;
+import com.thesis.expression.TryCatchExpression;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -14,14 +14,14 @@ public class TryCatchStatement extends Statement {
 	private List<CatchStatement> mCatchBlocks;
 	private BlockStatement mFinallyBlock;
 
-	public TryCatchStatement(TryExpression tryExpression, int line) {
-		super(tryExpression, line);
-		mTryBlock = new BlockStatement(line, new StatementCreator(tryExpression.getTryStack()).getStatements());
-		if (tryExpression.getFinallyStack() != null && !tryExpression.getFinallyStack().isEmpty()) {
-			mFinallyBlock = new BlockStatement(line, new StatementCreator(tryExpression.getFinallyStack()).getStatements());
+	public TryCatchStatement(TryCatchExpression tryCatchExpression, int line) {
+		super(tryCatchExpression, line);
+		mTryBlock = new BlockStatement(line, new StatementCreator(tryCatchExpression.getTryStack()).getStatements());
+		if (tryCatchExpression.getFinallyStack() != null && !tryCatchExpression.getFinallyStack().isEmpty()) {
+			mFinallyBlock = new BlockStatement(line, new StatementCreator(tryCatchExpression.getFinallyStack()).getStatements());
 		}
 		mCatchBlocks = new ArrayList<>();
-		for(TryExpression.CatchExpression catchExpression : tryExpression.getCatchExpressions()) {
+		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
 			mCatchBlocks.add(new CatchStatement(catchExpression));
 		}
 	}
@@ -51,7 +51,7 @@ public class TryCatchStatement extends Statement {
 
 		private BlockStatement mCatchBlock;
 
-		protected CatchStatement(TryExpression.CatchExpression catchExpression) {
+		protected CatchStatement(TryCatchExpression.CatchExpression catchExpression) {
 			super(catchExpression, catchExpression.getLine());
 			mCatchBlock = new BlockStatement(this.mLine, new StatementCreator(catchExpression.getStack()).getStatements());
 		}

@@ -90,6 +90,10 @@ public class ExpressionStack {
 		mStack.clear();
 	}
 
+	public void remove(int index) {
+		mStack.remove(index);
+	}
+
 	public void setLineNumber(int line) {
 		mLineNum = line;
 	}

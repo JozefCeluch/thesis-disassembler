@@ -5,7 +5,7 @@ import com.thesis.block.Statement;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
-import com.thesis.expression.TryExpression;
+import com.thesis.expression.TryCatchExpression;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -126,14 +126,14 @@ public class InstructionTranslator {
 		if (tryCatchItems.isEmpty()) return node;
 
 		AbstractInsnNode movedNode = node;
-		TryExpression previousExpression = null;
+		TryCatchExpression previousExpression = null;
 		for(TryCatchItem item : tryCatchItems) {
 			item.setTryStack(new ExpressionStack());
 			if (previousExpression != null) {
 				item.getTryStack().push(previousExpression);
 			}
 			movedNode = processTryCatchBlock(movedNode, item);
-			previousExpression = new TryExpression(item);
+			previousExpression = new TryCatchExpression(item);
 		}
 		stack.push(previousExpression);
 		return movedNode;

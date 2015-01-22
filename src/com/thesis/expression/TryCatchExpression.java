@@ -10,16 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TryExpression extends Expression {
+public class TryCatchExpression extends Expression {
 
 	private TryCatchItem mTryCatchItem;
 	private List<CatchExpression> mCatchExpressions;
 
-	public TryExpression(TryCatchItem tryCatchItem) {
+	public TryCatchExpression(TryCatchItem tryCatchItem) {
 		super(null);
 		mCatchExpressions = new ArrayList<>();
-		mCatchExpressions.addAll(tryCatchItem.getHandlerLocations()
-				.stream()
+		mCatchExpressions.addAll(
+				tryCatchItem.getHandlerLocations().stream()
 				.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
 				.collect(Collectors.toList()));
 		mTryCatchItem = tryCatchItem;
@@ -55,14 +55,17 @@ public class TryExpression extends Expression {
 
 		private int mLabel;
 		private DataType mType;
+		private AssignmentExpression mExpression;
 		private ExpressionStack mStack;
 		private int mLine = 0; //TODO line
 
 		public CatchExpression(int label, String typeString, ExpressionStack stack) {
 			super(null);
 			mLabel = label;
-			mType = DataType.getType(Util.javaObjectName(typeString));
+			mType = typeString != null ? DataType.getType(Util.javaObjectName(typeString)) : DataType.getType("java.lang.Throwable");
 			mStack = stack;
+			mExpression = (AssignmentExpression) mStack.get(0);
+			mStack.remove(0);
 		}
 
 		public ExpressionStack getStack() {
@@ -81,7 +84,9 @@ public class TryExpression extends Expression {
 
 		@Override
 		public void write(Writer writer) throws IOException {
-			writer.append(" catch (").append(mType.toString()).append(")");
+			writer.append(" catch (")
+					.append(mType.toString()).append(" ").append(mExpression.getVariable().toString())
+					.append(")");
 		}
 
 		public int getLine() {
