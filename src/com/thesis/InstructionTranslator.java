@@ -256,7 +256,7 @@ public class InstructionTranslator {
 		} else if (opCode == Opcodes.ARRAYLENGTH) {
 			stack.push(new ArrayLengthExpression(node));
 		} else if (opCode == Opcodes.ATHROW) {
-			//TODO
+			stack.push(new ThrowExpression(node));
 		} else if (opCode == Opcodes.MONITORENTER) {
 			//TODO
 		} else if (opCode == Opcodes.MONITOREXIT) {
