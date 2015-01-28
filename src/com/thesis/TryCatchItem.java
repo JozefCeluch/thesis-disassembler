@@ -87,7 +87,7 @@ public class TryCatchItem {
 		return this.mStartId == other.mStartId && this.mEndId == other.mEndId;
 	}
 
-	public boolean isHandlerLabel(int label) {
+	public boolean hasHandlerLabel(int label) {
 		for(int key : mHandlerTypes.keySet()) {
 			if (key == label) return true;
 		}

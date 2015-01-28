@@ -144,14 +144,20 @@ public class InstructionTranslator {
 		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return node;
 
 		// fill try block
-		while (!tryCatchItem.isHandlerLabel(mCurrentLabel)) {
+		while (tryCatchItem.getEndId() != mCurrentLabel) {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getTryStack());
 		}
 
+		// ignore repeated finally blocks
+		ExpressionStack repeatedFinallyCalls = new ExpressionStack();
+		while (!tryCatchItem.hasHandlerLabel(mCurrentLabel)) {
+			movedNode = movedNode.getNext();
+			movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
+		}
 		int tryCatchBlockEnd = -1;
-		if (tryCatchItem.getTryStack().peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) tryCatchItem.getTryStack().peek()).getConditionalJumpDest();
+		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
+			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getConditionalJumpDest();
 		}
 
 		// fill catch blocks
@@ -162,9 +168,16 @@ public class InstructionTranslator {
 				tryCatchItem.setHasFinallyBlock(true);
 				tryCatchItem.setFinallyBlockStart(currentBlockLabel);
 			}
-			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.isHandlerLabel(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
+			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.hasHandlerLabel(mCurrentLabel)
+					|| mTryCatchManager.hasCatchHandlerEnd(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getCatchBlock(currentBlockLabel));
+			}
+
+			// ignore repeated finally blocks
+			while (!(tryCatchItem.hasHandlerLabel(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
+				movedNode = movedNode.getNext();
+				movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
 			}
 		}
 

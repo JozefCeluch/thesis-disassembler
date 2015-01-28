@@ -20,21 +20,11 @@ public class TryCatchExpression extends Expression {
 		super(null);
 		mCatchExpressions = new ArrayList<>();
 
-		if (tryCatchItem.hasFinallyBlock() && tryCatchItem.getCatchBlockCount() > 1) {
-			int finallyLocation = tryCatchItem.getFinallyBlockStart();
-			mCatchExpressions.add(new CatchExpression(finallyLocation, null, tryCatchItem.getCatchBlock(finallyLocation)));
-			tryCatchItem.removeHandler(finallyLocation);
-			tryCatchItem.setHasFinallyBlock(false);
-			TryCatchExpression innerTryCatch = new TryCatchExpression(tryCatchItem);
-			mTryStack = new ExpressionStack();
-			mTryStack.push(innerTryCatch);
-		} else {
-			mCatchExpressions.addAll(
-					tryCatchItem.getHandlerLocations().stream()
-							.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
-							.collect(Collectors.toList()));
-			mTryStack = tryCatchItem.getTryStack();
-		}
+		mCatchExpressions.addAll(
+				tryCatchItem.getHandlerLocations().stream()
+						.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
+						.collect(Collectors.toList()));
+		mTryStack = tryCatchItem.getTryStack();
 	}
 
 	public ExpressionStack getTryStack() {
@@ -73,10 +63,13 @@ public class TryCatchExpression extends Expression {
 		public CatchExpression(int label, String typeString, ExpressionStack stack) {
 			super(null);
 			mLabel = label;
-			mType = typeString != null ? DataType.getType(Util.javaObjectName(typeString)) : DataType.getType("java.lang.Throwable");
+			mType = typeString != null ? DataType.getType(Util.javaObjectName(typeString)) : null;
 			mStack = stack;
 			mExpression = (AssignmentExpression) mStack.get(0);
 			mStack.remove(0);
+			if (mType == null && mStack.size() > 0) {
+				mStack.pop();
+			}
 		}
 
 		public ExpressionStack getStack() {
@@ -95,9 +88,13 @@ public class TryCatchExpression extends Expression {
 
 		@Override
 		public void write(Writer writer) throws IOException {
-			writer.append(" catch (")
-					.append(mType.toString()).append(" ").append(mExpression.getVariable().toString())
-					.append(")");
+			if (mType != null) {
+				writer.append(" catch (")
+						.append(mType.toString()).append(" ").append(mExpression.getVariable().toString())
+						.append(")");
+			} else {
+				writer.write(" finally");
+			}
 		}
 
 		public int getLine() {

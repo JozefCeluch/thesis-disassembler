@@ -12,14 +12,10 @@ public class TryCatchStatement extends Statement {
 
 	private BlockStatement mTryBlock;
 	private List<CatchStatement> mCatchBlocks;
-	private BlockStatement mFinallyBlock;
 
 	public TryCatchStatement(TryCatchExpression tryCatchExpression, int line) {
 		super(tryCatchExpression, line);
 		mTryBlock = new BlockStatement(line, new StatementCreator(tryCatchExpression.getTryStack()).getStatements());
-		if (tryCatchExpression.getFinallyStack() != null && !tryCatchExpression.getFinallyStack().isEmpty()) {
-			mFinallyBlock = new BlockStatement(line, new StatementCreator(tryCatchExpression.getFinallyStack()).getStatements());
-		}
 		mCatchBlocks = new ArrayList<>();
 		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
 			mCatchBlocks.add(new CatchStatement(catchExpression));
@@ -38,13 +34,7 @@ public class TryCatchStatement extends Statement {
 		for (CatchStatement catchBlock : mCatchBlocks) {
 			catchBlock.write(writer);
 		}
-		if (mFinallyBlock != null) {
-			writer.write(" finally");
-			mFinallyBlock.write(writer);
-			writer.write(NL);
-		} else {
-			writer.write(NL);
-		}
+		writer.write(NL);
 	}
 
 	private class CatchStatement extends Statement {
