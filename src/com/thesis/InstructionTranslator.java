@@ -173,7 +173,7 @@ public class InstructionTranslator {
 
 	private void addLocalVariablesAssignments() {
 		List<Block> localVars = mLocalVariables.values().stream()
-				.filter(variable -> !variable.isArgument())
+				.filter(variable -> !variable.isArgument() && !variable.isAdded())
 				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0)) //todo variable line number
 				.collect(Collectors.toList());
 		mStatements.addAll(0, localVars);

@@ -3,6 +3,8 @@ package com.thesis;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import com.thesis.expression.ExpressionStack;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -12,6 +14,9 @@ public class LocalVariable extends Variable {
 	private int mIndex;
 	private boolean mIsArgument;
 	private boolean mDebugType;
+	private Label mStart;
+	private Label mEnd;
+	private boolean isAdded = false;
 
 	public LocalVariable(int index) {
 		super();
@@ -35,6 +40,8 @@ public class LocalVariable extends Variable {
 			mType = DataType.getType(decl);
 		}
 		mIndex = variableNode.index;
+		mStart = variableNode.start.getLabel();
+		mEnd = variableNode.end.getLabel();
 		mDebugType = true;
 	}
 
@@ -62,6 +69,22 @@ public class LocalVariable extends Variable {
 
 	public boolean hasDebugType(){
 		return mDebugType;
+	}
+
+	public int getStartLabel(ExpressionStack stack) {
+		return stack.getLabelId(mStart);
+	}
+
+	public int getEndLabelId(ExpressionStack stack) {
+		return stack.getLabelId(mEnd);
+	}
+
+	public boolean isAdded() {
+		return isAdded;
+	}
+
+	public void setAdded(boolean added) {
+		this.isAdded = added;
 	}
 
 	@Override
