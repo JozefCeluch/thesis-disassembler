@@ -14,7 +14,6 @@ public class LookupSwitchInsnNode {
 			default:
 				System.out.println("default");
 		}
-		;
 		System.out.println("AFTER SWITCH");
 	}
 
@@ -32,7 +31,6 @@ public class LookupSwitchInsnNode {
 			default:
 				System.out.println("default");
 		}
-		;
 		System.out.println("AFTER SWITCH");
 	}
 }

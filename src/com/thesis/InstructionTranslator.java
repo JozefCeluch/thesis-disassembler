@@ -53,9 +53,9 @@ public class InstructionTranslator {
 		System.out.println(" ");
 		System.out.println("METHOD: " + mMethod.name);
 		AbstractInsnNode node = mMethod.instructions.getFirst();
-		while (node != null && node.getNext() != null) {
+		while (node != null) {
 			node = pushNodeToStackAsExpression(node, mStack);
-			node = node.getNext();
+			if (node != null) node = node.getNext();
 		}
 		addLocalVariablesAssignments();
 		//todo do some improvements of the expressions on the expression stack here
