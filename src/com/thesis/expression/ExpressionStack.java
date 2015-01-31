@@ -49,8 +49,13 @@ public class ExpressionStack {
 					mStack.remove(i+1);
 					mLastImprovementPosition = i + 1;
 				}
-			} else {
-//				mLastImprovementPosition = i;
+			} else if (currentExp instanceof MonitorExpression && mStack.size() > i+1) {
+				Expression followingExp = mStack.get(i+1).expression;
+				if (followingExp instanceof TryCatchExpression) {
+					((MonitorExpression) currentExp).setSynchronizedBlock((TryCatchExpression)followingExp);
+					mStack.remove(i+1);
+					mLastImprovementPosition = i + 1;
+				}
 			}
 		}
 	}

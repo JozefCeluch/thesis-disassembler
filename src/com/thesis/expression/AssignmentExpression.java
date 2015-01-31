@@ -29,6 +29,10 @@ public class AssignmentExpression extends  Expression{
 		mRightSide = rightSide;
 	}
 
+	public Expression getRightSide() {
+		return mRightSide;
+	}
+
 	public Variable getVariable() {
 		return mLeftSide.getVariable();
 	}
