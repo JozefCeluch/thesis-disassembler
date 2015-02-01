@@ -1,5 +1,5 @@
-public class ClassWithBoolExpressions {
-public ClassWithBoolExpressions() {
+public class JumpInsnNode_conditions {
+public JumpInsnNode_conditions() {
 super();
 }
 public int simpleBoolExpressions() {

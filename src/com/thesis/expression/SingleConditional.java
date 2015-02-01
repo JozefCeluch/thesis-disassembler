@@ -7,24 +7,20 @@ import java.io.Writer;
 
 public class SingleConditional extends ConditionalExpression {
 
-	private Expression left;
+	private Expression mLeftExpression;
 
-	public SingleConditional(AbstractInsnNode instruction, int jumpDestination, ExpressionStack then) {
+	public SingleConditional(AbstractInsnNode instruction, int jumpDestination, Expression leftExpression, ExpressionStack then) {
 		super(instruction, jumpDestination);
 		super.thenBranch = then;
-	}
-
-	public void setLeft(Expression left) {
-		this.left = left;
+		mLeftExpression = leftExpression;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		left.write(writer);
+		mLeftExpression.write(writer);
 	}
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		left = stack.pop();
 	}
 }

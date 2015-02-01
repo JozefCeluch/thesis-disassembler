@@ -155,9 +155,9 @@ public class InstructionTranslator {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
 		}
-		int tryCatchBlockEnd = -1;
+		int tryCatchBlockEnd = ConditionalExpression.NO_DESTINATION;
 		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getConditionalJumpDest();
+			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
 		}
 
 		// fill catch blocks
@@ -244,7 +244,7 @@ public class InstructionTranslator {
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
 		} else if (isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, new ExpressionStack()));
+			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), new ExpressionStack()));
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
@@ -379,83 +379,71 @@ public class InstructionTranslator {
 	/**
 	 * IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IFNULL or IFNONNULL
 	 * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
-	 * GOTO, JSR.
+	 * GOTO, JSR (deprecated since Java 6).
 	 */
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
-		//TODO REFACTOR AND GENERALISE THE WHOLE METHOD!!!
 		printNodeInfo(node);
-		int jumpDestination = stack.getLabelId(node.label.getLabel());
-		int opCode = node.getOpcode();
+		ConditionalExpression exp = makeConditionalExpression(node, stack);
+		if (exp == null) return node;
+
 		AbstractInsnNode movedNode = node;
-		ConditionalExpression exp = null;
-		System.out.println("L" + jumpDestination);
 
-		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(node, jumpDestination, new ExpressionStack());
-			stack.push(exp);
-			System.out.println("CREATED MultiConditional EXP");
-
-		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
-			Expression stackTop = stack.peek();
-			if (stackTop instanceof MultiConditional && ((MultiConditional) stackTop).getConditionalJumpDest() == -1) {
-				exp = (MultiConditional)stackTop;
-				exp.setConditionalJumpDest(jumpDestination);
-				exp.setInstruction(node);
-			} else {
-				exp = new SingleConditional(node, jumpDestination, new ExpressionStack());
-				stack.push(exp);
-			}
-			System.out.println("CREATED SingleConditional EXP");
-
-		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
-			exp = new MultiConditional(node, jumpDestination, new ExpressionStack());
-			stack.push(new PrimaryExpression("null", DataType.UNKNOWN));
-			stack.push(exp);
-		} else if (opCode == Opcodes.GOTO) {
-			stack.push(new UnconditionalJump(node, jumpDestination));
-		}
-		// JSR is deprecated since Java 6
-		int elseBranchEnd = 0;
-		while(exp != null && movedNode.getOpcode() != Opcodes.GOTO && stack.getLabelId(mLabel) != jumpDestination) {
+		while (movedNode.getOpcode() != Opcodes.GOTO && mCurrentLabel != exp.getJumpDestination()) {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
 
-			if (movedNode instanceof JumpInsnNode) {
-				elseBranchEnd = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
-				exp.setGoToDest(elseBranchEnd);
-				if (exp.getThenBranch().size() == 2) {
-					Expression expression = exp.getThenBranch().get(0);
-					if (expression instanceof PrimaryExpression &&
-							(((PrimaryExpression) expression).getValue().equals(1) || ((PrimaryExpression) expression).getValue().equals(0))) {
-						expression.setType(DataType.BOOLEAN);
-					}
-				}
+			if (exp.containsLogicGateExpression()) {
 				break;
 			}
-			Expression branchTop = exp.getThenBranch().peek();
-			Expression stackTop = stack.peek();
-			if (branchTop != null && branchTop instanceof ConditionalExpression && stackTop instanceof ConditionalExpression && ((ConditionalExpression) stackTop).getConditionalJumpDest() == ((ConditionalExpression) branchTop).getConditionalJumpDest()) {
-				stack.push(new LogicGateExpression((ConditionalExpression) exp.getThenBranch().pop()));
-				break;
+
+			if (movedNode instanceof JumpInsnNode) {
+				exp.setElseBranchEnd(stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel()));
+				exp.updateThenBranchType();
 			}
 		}
 
-		if (exp != null && elseBranchEnd != 0 && elseBranchEnd != jumpDestination) {
-			while(stack.getLabelId(mLabel) != elseBranchEnd){
+		if (exp.hasElseBranch()) {
+			while(mCurrentLabel != exp.getElseBranchEnd()){
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
 			}
-			if (exp.getElseBranch().size() == 1) {
-				Expression expression = exp.getElseBranch().get(0);
-				if (DataType.BOOLEAN.equals(exp.getThenBranch().get(0).getType())) {
-					expression.setType(DataType.BOOLEAN);
-				}
-			}
+			exp.updateElseBranchType();
 		}
-		if (exp!= null && exp.isTernaryExpression()) {
-			stack.push(new TernaryExpression((ConditionalExpression)stack.pop()));
+
+		if (exp.isTernaryExpression()) {
+			stack.push(new TernaryExpression(exp));
+		} else if (exp.containsLogicGateExpression()) {
+			stack.push(new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop()));
+		} else {
+			stack.push(exp);
 		}
 		return movedNode;
+	}
+
+	private ConditionalExpression makeConditionalExpression(JumpInsnNode node, ExpressionStack stack) {
+		ConditionalExpression exp = null;
+
+		int jumpDestination = stack.getLabelId(node.label.getLabel());
+		int opCode = node.getOpcode();
+		System.out.println("L" + jumpDestination);
+
+		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
+			exp = new MultiConditional(node, jumpDestination, stack.pop(), stack.pop(), new ExpressionStack());
+		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
+			Expression stackTop = stack.peek();
+			if (stackTop instanceof MultiConditional && !((MultiConditional) stackTop).isJumpDestinationSet()) {
+				exp = (MultiConditional)stack.pop();
+				exp.setJumpDestination(jumpDestination);
+				exp.setInstruction(node);
+			} else {
+				exp = new SingleConditional(node, jumpDestination, stack.pop(), new ExpressionStack());
+			}
+		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
+			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), new ExpressionStack());
+		} else if (opCode == Opcodes.GOTO) {
+			exp = new UnconditionalJump(node, jumpDestination);
+		}
+		return exp;
 	}
 
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
@@ -539,7 +527,7 @@ public class InstructionTranslator {
 			if (caseExpression != null && labelCaseMap.containsKey(currentLabel) && caseExpression.getLabel() != currentLabel) {
 				if (caseStack.peek() instanceof UnconditionalJump) {
 					UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
-					switchEndLabel = jump.getConditionalJumpDest();
+					switchEndLabel = jump.getJumpDestination();
 					caseStack.push(new BreakExpression(jump));
 				}
 				switchExp.addCase(caseExpression);

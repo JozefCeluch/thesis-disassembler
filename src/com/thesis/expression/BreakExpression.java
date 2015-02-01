@@ -12,7 +12,7 @@ public class BreakExpression extends JumpExpression {
 	}
 
 	public BreakExpression(UnconditionalJump jump) {
-		super(jump.mInstruction, jump.mConditionalJumpDest);
+		super(jump.mInstruction, jump.mJumpDestination);
 	}
 
 	@Override

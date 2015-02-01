@@ -11,14 +11,18 @@ public class MultiConditional extends ConditionalExpression {
 	private Expression left;
 	private Expression right;
 
-	public MultiConditional(JumpInsnNode instruction, int jumpDestination, ExpressionStack then) {
+	public MultiConditional(JumpInsnNode instruction, int jumpDestination, Expression rightExpression , Expression leftExpression, ExpressionStack then) {
 		super(instruction, jumpDestination);
 		super.thenBranch = then;
+		left = leftExpression;
+		right = rightExpression;
 	}
 
-	public MultiConditional(InsnNode instruction, int jumpDestination, ExpressionStack then) {
+	public MultiConditional(InsnNode instruction, int jumpDestination, Expression rightExpression, Expression leftExpression, ExpressionStack then) {
 		super(instruction, jumpDestination);
 		super.thenBranch = then;
+		left = leftExpression;
+		right = rightExpression;
 	}
 
 	@Override
@@ -30,7 +34,5 @@ public class MultiConditional extends ConditionalExpression {
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		right = stack.pop();
-		left = stack.pop();
 	}
 }

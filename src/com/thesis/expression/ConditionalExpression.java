@@ -3,23 +3,20 @@ package com.thesis.expression;
 import com.thesis.common.DataType;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.util.Printer;
-
-import java.util.ArrayList;
 
 public abstract class ConditionalExpression extends Expression {
 
 	public static final int NO_DESTINATION = -1;
 
-	protected int mConditionalJumpDest = NO_DESTINATION;
-	protected int mGoToDest = NO_DESTINATION;
+	protected int mJumpDestination = NO_DESTINATION;
+	protected int mElseBranchEnd = NO_DESTINATION;
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
 		mType = DataType.BOOLEAN;
-		mConditionalJumpDest = jumpDestination;
+		mJumpDestination = jumpDestination;
 		thenBranch = new ExpressionStack();
 		elseBranch = new ExpressionStack();
 	}
@@ -28,20 +25,20 @@ public abstract class ConditionalExpression extends Expression {
 		this(null, jumpDestination);
 	}
 
-	public int getConditionalJumpDest() {
-		return mConditionalJumpDest;
+	public int getJumpDestination() {
+		return mJumpDestination;
 	}
 
-	public void setConditionalJumpDest(int conditionalJumpDest) {
-		mConditionalJumpDest = conditionalJumpDest;
+	public void setJumpDestination(int jumpDestination) {
+		mJumpDestination = jumpDestination;
 	}
 
-	public int getGoToDest() {
-		return mGoToDest;
+	public int getElseBranchEnd() {
+		return mElseBranchEnd;
 	}
 
-	public void setGoToDest(int goToDest) {
-		mGoToDest = goToDest;
+	public void setElseBranchEnd(int elseBranchEnd) {
+		mElseBranchEnd = elseBranchEnd;
 	}
 
 	public ExpressionStack getThenBranch() {
@@ -50,6 +47,33 @@ public abstract class ConditionalExpression extends Expression {
 
 	public ExpressionStack getElseBranch() {
 		return elseBranch;
+	}
+
+	public boolean hasElseBranch() {
+		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination;
+	}
+
+	public boolean isJumpDestinationSet() {
+		return mJumpDestination != NO_DESTINATION;
+	}
+
+	public void updateThenBranchType() {
+		if (thenBranch.size() == 2) {
+			Expression expression = thenBranch.get(0);
+			if (expression instanceof PrimaryExpression &&
+					(((PrimaryExpression) expression).getValue().equals(1) || ((PrimaryExpression) expression).getValue().equals(0))) {
+				expression.setType(DataType.BOOLEAN);
+			}
+		}
+	}
+
+	public void updateElseBranchType() {
+		if (elseBranch.size() == 1) {
+			Expression expression = elseBranch.get(0);
+			if (DataType.BOOLEAN.equals(thenBranch.get(0).getType())) {
+				expression.setType(DataType.BOOLEAN);
+			}
+		}
 	}
 
 	public boolean isTernaryExpression() {
@@ -62,6 +86,13 @@ public abstract class ConditionalExpression extends Expression {
 				&& ((elseExp instanceof PrimaryExpression && !(DataType.BOOLEAN.equals(thenExp.getType())))
 					|| (elseExp instanceof MethodInvocationExpression && !DataType.VOID.equals(elseExp.getType()))
 					|| elseExp instanceof ConditionalExpression);
+	}
+
+	public boolean containsLogicGateExpression() {
+		if (thenBranch.isEmpty()) return false;
+		Expression branchTop = thenBranch.get(0);
+		return branchTop != null && branchTop instanceof ConditionalExpression
+				&& mJumpDestination == ((ConditionalExpression) branchTop).getJumpDestination();
 	}
 
 	@Override

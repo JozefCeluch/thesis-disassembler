@@ -11,11 +11,13 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mLeft;
 	private ConditionalExpression  mRight;
 
-	public LogicGateExpression(ConditionalExpression right) {
-		super(right.getConditionalJumpDest());
-		setGoToDest(right.getGoToDest());
+	public LogicGateExpression(ConditionalExpression left, ConditionalExpression right) {
+		super(right.getJumpDestination());
+		setElseBranchEnd(right.getElseBranchEnd());
 		mRight = right;
+		mLeft = left;
 		mType = DataType.BOOLEAN;
+		updateBranches();
 	}
 
 	public void setOperand(LogicGateOperand operand) {
@@ -42,9 +44,7 @@ public class LogicGateExpression extends ConditionalExpression {
 	public void prepareForStack(ExpressionStack stack) {
 		LogicGateOperand operand;
 		operand = LogicGateOperand.AND; //todo operand
-		mLeft = (ConditionalExpression)stack.pop();
 		mOperand = operand;
-		updateBranches();
 	}
 
 	@Override

@@ -23,7 +23,7 @@ public class ParserTest {
 	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
 
 	@Test
-	@Parameters({"ClassWithBoolExpressions", "AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
+	@Parameters({"AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
 			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "ClassWithInnerClasses", "ComplexVariableNames",
 			"MultiANewArrayInsnNode", "TryCatchBlockNode"})
 	public void testUngroupedClasses(String name){
@@ -50,6 +50,17 @@ public class ParserTest {
 	public List<Object[]> getFieldInsnNodeClasses() {
 		return getFilteredClasses(file -> file.isFile()
 				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "FieldInsnNode_"));
+	}
+
+	@Test
+	@Parameters(method = "getJumpInsnNodeClasses")
+	public void testJumpInsnNodeClasses(String name){
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, new Parser(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getJumpInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "JumpInsnNode_"));
 	}
 
 	@Test

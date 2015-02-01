@@ -1,6 +1,6 @@
 import java.lang.Integer;
 
-public class ClassWithBoolExpressions {
+public class JumpInsnNode_conditions {
 
 	public int simpleBoolExpressions() {
 		int intOne = 6;
