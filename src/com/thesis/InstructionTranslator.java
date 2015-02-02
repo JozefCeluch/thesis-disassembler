@@ -396,6 +396,10 @@ public class InstructionTranslator {
 				break;
 			}
 
+			if (movedNode instanceof FrameNode && exp.getThenBranchStart() == ConditionalExpression.NO_DESTINATION) {
+				exp.setThenBranchStart(mCurrentLabel);
+			}
+
 			if (movedNode instanceof JumpInsnNode) {
 				exp.setElseBranchEnd(stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel()));
 				exp.updateThenBranchType();

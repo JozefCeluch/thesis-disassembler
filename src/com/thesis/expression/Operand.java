@@ -26,7 +26,7 @@ public enum Operand {
 
 	private Operand(String operation){
 		mOperation = operation;
-		mOpposite = null;
+		mOpposite = operation;
 	}
 
 	private Operand(String operation, String opposite){

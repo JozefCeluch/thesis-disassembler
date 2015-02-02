@@ -28,7 +28,7 @@ public class MultiConditional extends ConditionalExpression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		left.write(writer);
-		writer.append(" ").append(makeOperand().neg().toString()).append(" "); //todo NEG
+		writer.append(" ").append(mOperand.toString()).append(" ");
 		right.write(writer);
 	}
 

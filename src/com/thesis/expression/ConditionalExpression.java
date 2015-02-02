@@ -10,8 +10,10 @@ public abstract class ConditionalExpression extends Expression {
 
 	protected int mJumpDestination = NO_DESTINATION;
 	protected int mElseBranchEnd = NO_DESTINATION;
+	protected int mThenBranchStart = NO_DESTINATION;
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
+	protected Operand mOperand;
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
@@ -19,6 +21,7 @@ public abstract class ConditionalExpression extends Expression {
 		mJumpDestination = jumpDestination;
 		thenBranch = new ExpressionStack();
 		elseBranch = new ExpressionStack();
+		mOperand = instruction != null ? makeOperand(instruction.getOpcode()).neg() : Operand.ERR;
 	}
 
 	public ConditionalExpression(int jumpDestination) {
@@ -41,6 +44,14 @@ public abstract class ConditionalExpression extends Expression {
 		mElseBranchEnd = elseBranchEnd;
 	}
 
+	public int getThenBranchStart() {
+		return mThenBranchStart;
+	}
+
+	public void setThenBranchStart(int thenBranchStart) {
+		mThenBranchStart = thenBranchStart;
+	}
+
 	public ExpressionStack getThenBranch() {
 		return thenBranch;
 	}
@@ -55,6 +66,10 @@ public abstract class ConditionalExpression extends Expression {
 
 	public boolean isJumpDestinationSet() {
 		return mJumpDestination != NO_DESTINATION;
+	}
+
+	public void negate() {
+		mOperand = mOperand.neg();
 	}
 
 	public void updateThenBranchType() {
@@ -92,7 +107,8 @@ public abstract class ConditionalExpression extends Expression {
 		if (thenBranch.isEmpty()) return false;
 		Expression branchTop = thenBranch.get(0);
 		return branchTop != null && branchTop instanceof ConditionalExpression
-				&& mJumpDestination == ((ConditionalExpression) branchTop).getJumpDestination();
+				&& (mJumpDestination == ((ConditionalExpression) branchTop).getJumpDestination()
+				|| mJumpDestination == ((ConditionalExpression) branchTop).getThenBranchStart());
 	}
 
 	@Override
@@ -100,8 +116,7 @@ public abstract class ConditionalExpression extends Expression {
 		return mType;
 	}
 
-	protected Operand makeOperand() {
-		int opcode = mInstruction.getOpcode();
+	private static Operand makeOperand(int opcode) {
 		if (opcode == Opcodes.IFEQ || opcode == Opcodes.IF_ACMPEQ || opcode == Opcodes.IF_ICMPEQ || opcode == Opcodes.IFNULL) {
 			return Operand.EQUAL;
 		}

@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.io.IOException;
@@ -17,6 +18,9 @@ public class SingleConditional extends ConditionalExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
+		if (mOperand.equals(Operand.EQUAL)) {
+			writer.write("!");
+		}
 		mLeftExpression.write(writer);
 	}
 
