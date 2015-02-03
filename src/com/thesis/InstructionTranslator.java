@@ -387,26 +387,23 @@ public class InstructionTranslator {
 		if (exp == null) return node;
 
 		AbstractInsnNode movedNode = node;
-
-		while (movedNode.getOpcode() != Opcodes.GOTO && mCurrentLabel != exp.getJumpDestination()) {
+		while (movedNode.getOpcode() != Opcodes.GOTO && mCurrentLabel != exp.getJumpDestination() && mCurrentLabel != exp.getElseBranchEnd()) {
 			movedNode = movedNode.getNext();
+			if (isConditionalJump(movedNode)) {
+				movedNode = checkLogicGateExpressionIsOnTop(exp, movedNode);
+				if (exp.containsLogicGateExpression()) {
+					exp = new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop());
+				}
+			}
 			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
-
-			if (exp.containsLogicGateExpression()) {
-				break;
-			}
-
-			if (movedNode instanceof FrameNode && exp.getThenBranchStart() == ConditionalExpression.NO_DESTINATION) {
-				exp.setThenBranchStart(mCurrentLabel);
-			}
-
-			if (movedNode instanceof JumpInsnNode) {
+			if (isEndOfThenBlock(movedNode)) {
 				exp.setElseBranchEnd(stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel()));
 				exp.updateThenBranchType();
+				break;
 			}
 		}
 
-		if (exp.hasElseBranch()) {
+		if (exp.hasEmptyElseBranch()) {
 			while(mCurrentLabel != exp.getElseBranchEnd()){
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
@@ -416,10 +413,29 @@ public class InstructionTranslator {
 
 		if (exp.isTernaryExpression()) {
 			stack.push(new TernaryExpression(exp));
-		} else if (exp.containsLogicGateExpression()) {
-			stack.push(new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop()));
 		} else {
 			stack.push(exp);
+		}
+		return movedNode;
+	}
+
+	private boolean isEndOfThenBlock(AbstractInsnNode movedNode) {
+		return movedNode instanceof JumpInsnNode && movedNode.getOpcode() == Opcodes.GOTO;
+	}
+
+	private boolean isConditionalJump(AbstractInsnNode movedNode) {
+		return movedNode instanceof JumpInsnNode && movedNode.getOpcode() != Opcodes.GOTO;
+	}
+
+	private AbstractInsnNode checkLogicGateExpressionIsOnTop(ConditionalExpression exp, AbstractInsnNode movedNode) {
+		ExpressionStack thenBranchBackup = exp.getThenBranch().duplicate();
+		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode)movedNode, exp.getThenBranch());
+		exp.getThenBranch().push(innerExp);
+		if (exp.containsLogicGateExpression()) {
+			movedNode = movedNode.getNext();
+		} else {
+			exp.setThenBranch(thenBranchBackup);
+			movedNode = visitJumpInsnNode((JumpInsnNode)movedNode, exp.getThenBranch());
 		}
 		return movedNode;
 	}
@@ -446,6 +462,9 @@ public class InstructionTranslator {
 			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), new ExpressionStack());
 		} else if (opCode == Opcodes.GOTO) {
 			exp = new UnconditionalJump(node, jumpDestination);
+		}
+		if (opCode != Opcodes.GOTO && exp != null && node.getNext() != null && node.getNext() instanceof LabelNode) {
+			exp.setThenBranchStart(stack.getLabelId(((LabelNode) node.getNext()).getLabel()));
 		}
 		return exp;
 	}

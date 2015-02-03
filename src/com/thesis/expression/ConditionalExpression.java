@@ -60,8 +60,12 @@ public abstract class ConditionalExpression extends Expression {
 		return elseBranch;
 	}
 
-	public boolean hasElseBranch() {
-		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination;
+	public void setThenBranch(ExpressionStack thenBranch) {
+		this.thenBranch = thenBranch;
+	}
+
+	public boolean hasEmptyElseBranch() {
+		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination && elseBranch.isEmpty();
 	}
 
 	public boolean isJumpDestinationSet() {

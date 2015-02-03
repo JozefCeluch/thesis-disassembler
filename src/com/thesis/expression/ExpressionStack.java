@@ -125,4 +125,14 @@ public class ExpressionStack {
 		return mStack.isEmpty();
 	}
 
+	public ExpressionStack duplicate() {
+		ExpressionStack copy = new ExpressionStack();
+		copy.mStack.addAll(this.mStack);
+		copy.mLineNum = this.mLineNum;
+		copy.mLabels = this.mLabels;
+		copy.mLabel = this.mLabel;
+		copy.mLastImprovementPosition = this.mLastImprovementPosition;
+		return copy;
+	}
+
 }

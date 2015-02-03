@@ -7,7 +7,6 @@ import java.io.Writer;
 
 public class LogicGateExpression extends ConditionalExpression {
 
-	private LogicGateOperand mOperand;
 	private ConditionalExpression  mLeft;
 	private ConditionalExpression  mRight;
 
@@ -19,9 +18,9 @@ public class LogicGateExpression extends ConditionalExpression {
 		mType = DataType.BOOLEAN;
 		updateBranches();
 		if (mLeft.getJumpDestination() == right.getJumpDestination()) {
-			mOperand = LogicGateOperand.AND;
+			mOperand = Operand.AND;
 		} else {
-			mOperand = LogicGateOperand.OR;
+			mOperand = Operand.OR;
 			left.negate();
 		}
 		mThenBranchStart = right.getThenBranchStart();
@@ -32,6 +31,13 @@ public class LogicGateExpression extends ConditionalExpression {
 		mLeft.elseBranch.addAll(mRight.elseBranch);
 		thenBranch = mLeft.thenBranch;
 		elseBranch = mLeft.elseBranch;
+	}
+
+	@Override
+	public void negate() {
+		mLeft.negate();
+		mRight.negate();
+		mOperand = mOperand.neg();
 	}
 
 	@Override

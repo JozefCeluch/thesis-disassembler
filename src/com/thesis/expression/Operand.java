@@ -18,6 +18,8 @@ public enum Operand {
 	LESS_EQUAL("<=", ">"),
 	GREATER_THAN(">", "<="),
 	LESS_THAN("<", ">="),
+	AND("&&", "||"),
+	OR("||", "&&"),
 	ERR("ERR")
 	;
 
@@ -58,6 +60,10 @@ public enum Operand {
 				return GREATER_THAN;
 			case "<":
 				return LESS_THAN;
+			case "||":
+				return OR;
+			case "&&":
+				return AND;
 		}
 		return this;
 	}
