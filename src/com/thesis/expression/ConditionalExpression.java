@@ -21,11 +21,17 @@ public abstract class ConditionalExpression extends Expression {
 		mJumpDestination = jumpDestination;
 		thenBranch = new ExpressionStack();
 		elseBranch = new ExpressionStack();
-		mOperand = instruction != null ? makeOperand(instruction.getOpcode()).neg() : Operand.ERR;
+		mOperand = makeOperand(instruction).neg();
 	}
 
 	public ConditionalExpression(int jumpDestination) {
 		this(null, jumpDestination);
+	}
+
+	@Override
+	public void setInstruction(AbstractInsnNode instruction) {
+		super.setInstruction(instruction);
+		mOperand = makeOperand(instruction).neg();
 	}
 
 	public int getJumpDestination() {
@@ -120,7 +126,11 @@ public abstract class ConditionalExpression extends Expression {
 		return mType;
 	}
 
-	private static Operand makeOperand(int opcode) {
+	private static Operand makeOperand(AbstractInsnNode instruction) {
+		if (instruction == null) {
+			return Operand.ERR;
+		}
+		int opcode = instruction.getOpcode();
 		if (opcode == Opcodes.IFEQ || opcode == Opcodes.IF_ACMPEQ || opcode == Opcodes.IF_ICMPEQ || opcode == Opcodes.IFNULL) {
 			return Operand.EQUAL;
 		}
