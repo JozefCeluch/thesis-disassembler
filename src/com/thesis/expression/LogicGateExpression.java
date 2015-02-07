@@ -12,7 +12,6 @@ public class LogicGateExpression extends ConditionalExpression {
 
 	public LogicGateExpression(ConditionalExpression left, ConditionalExpression right) {
 		super(right.getJumpDestination());
-		setElseBranchEnd(right.getElseBranchEnd());
 		mRight = right;
 		mLeft = left;
 		mType = DataType.BOOLEAN;
@@ -24,6 +23,8 @@ public class LogicGateExpression extends ConditionalExpression {
 			left.negate();
 		}
 		mThenBranchStart = right.getThenBranchStart();
+		mElseBranchEnd = right.getElseBranchEnd();
+		mStartFrameLocation = left.getStartFrameLocation();
 	}
 
 	public void updateBranches(){

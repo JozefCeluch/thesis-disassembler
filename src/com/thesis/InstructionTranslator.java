@@ -25,6 +25,7 @@ public class InstructionTranslator {
 	private Label mLabel;
 	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
+	private int mFrameLabel;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		mStatements = statements;
@@ -386,6 +387,8 @@ public class InstructionTranslator {
 		ConditionalExpression exp = makeConditionalExpression(node, stack);
 		if (exp == null) return node;
 
+		if (exp.getStartFrameLocation() == -1)
+			exp.setStartFrameLocation(mFrameLabel);
 		AbstractInsnNode movedNode = node;
 		while (movedNode.getOpcode() != Opcodes.GOTO && mCurrentLabel != exp.getJumpDestination() && mCurrentLabel != exp.getElseBranchEnd()) {
 			movedNode = movedNode.getNext();
@@ -403,7 +406,7 @@ public class InstructionTranslator {
 			}
 		}
 
-		if (exp.hasEmptyElseBranch()) {
+		if (exp.hasEmptyElseBranch() && !exp.isLoop()) {
 			while(mCurrentLabel != exp.getElseBranchEnd()){
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
@@ -461,7 +464,12 @@ public class InstructionTranslator {
 		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
 			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), new ExpressionStack());
 		} else if (opCode == Opcodes.GOTO) {
-			exp = new UnconditionalJump(node, jumpDestination);
+			int frameIndex = stack.getExpressionIndexOfFrame(jumpDestination);
+			if (frameIndex != -1) {
+				exp = new UnconditionalJump(node, jumpDestination, stack.substack(frameIndex, stack.size()));
+			} else {
+				exp = new UnconditionalJump(node, jumpDestination);
+			}
 		}
 		if (opCode != Opcodes.GOTO && exp != null && node.getNext() != null && node.getNext() instanceof LabelNode) {
 			exp.setThenBranchStart(stack.getLabelId(((LabelNode) node.getNext()).getLabel()));
@@ -594,11 +602,9 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
 		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
-//		if (!node.stack.isEmpty()) {
-//			for(int i = node.stack.size() - 1; i >= 0; i--) {
-//				stack.push(new PrimaryExpression(node.stack.get(i), DataType.UNKNOWN));
-//			}
-//		}
+
+		mFrameLabel = mCurrentLabel;
+		stack.addFrame(mCurrentLabel);
 	}
 
 	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {

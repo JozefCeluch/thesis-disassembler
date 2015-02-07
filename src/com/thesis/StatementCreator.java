@@ -26,7 +26,11 @@ public class StatementCreator {
 			if (item.expression.isVirtual() || item.expression instanceof PrimaryExpression) continue;
 
 			if (item.expression instanceof ConditionalExpression) {
-				statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
+				if (((ConditionalExpression)item.expression).isLoop()) {
+					statements.add(new WhileLoopStatement((ConditionalExpression) item.expression, item.line));
+				} else {
+					statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
+				}
 			} else if (item.expression instanceof SwitchExpression) {
 				statements.add(handleSwitchExpression((SwitchExpression) item.expression, item.line, item.labelId));
 			} else if (item.expression instanceof TryCatchExpression) {
@@ -59,20 +63,21 @@ public class StatementCreator {
 			ifThenElseStatement.setThenStatement(new BlockStatement(line, thenStatements));
 			ifThenElseStatement.setElseStatement(new BlockStatement(line, elseStatements));
 			return ifThenElseStatement;
-		} else if (isIfThenStatement(expression)){
+		}
+		if (isIfThenStatement(expression)){
 			IfThenStatement ifThenStatement = new IfThenStatement(expression, line);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
 			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements));
 			return ifThenStatement;
-		} else if (expression instanceof JumpExpression) {
+		}
+		if (expression instanceof JumpExpression) {
 			return new Statement(expression, line);
 		}
-		//TODO loops
 		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", DataType.getType("String")),0);
 	}
 
 	private boolean isIfThenStatement(ConditionalExpression expression) {
-		return !expression.getThenBranch().isEmpty() && expression.getElseBranch().isEmpty();
+		return !expression.getThenBranch().isEmpty() && expression.getElseBranch().isEmpty() && !expression.isLoop();
 	}
 
 	private boolean isIfThenElseStatement(ConditionalExpression expression) {

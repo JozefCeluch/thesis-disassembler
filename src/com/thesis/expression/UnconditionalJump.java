@@ -8,8 +8,19 @@ import java.io.Writer;
 
 public class UnconditionalJump extends JumpExpression {
 
+	private boolean mIsVirtual;
+
 	public UnconditionalJump(JumpInsnNode instruction, int jumpLocation) {
 		super(instruction, jumpLocation);
+		mIsVirtual = true;
+	}
+
+	public UnconditionalJump(JumpInsnNode insnNode, int jumpLocation, ExpressionStack stack) {
+		super(insnNode, jumpLocation);
+		mIsVirtual = false;
+		mElseBranchEnd = jumpLocation;
+		mStartFrameLocation = jumpLocation;
+		thenBranch = stack;
 	}
 
 	@Override
@@ -18,7 +29,7 @@ public class UnconditionalJump extends JumpExpression {
 
 	@Override
 	public boolean isVirtual() {
-		return true;
+		return mIsVirtual;
 	}
 
 	@Override

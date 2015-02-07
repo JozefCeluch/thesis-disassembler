@@ -7,9 +7,12 @@ import java.io.Writer;
 
 public class Statement extends Block {
 
-	protected static final String STATEMENT_END = ";\n";
+	protected static final String STATEMENT_END_NL = ";\n";
+	protected static final String STATEMENT_END = "; ";
 	protected Expression mExpression;
 	protected int mLine;
+	protected boolean mAddNewLine;
+	protected boolean mWriteEnd;
 
 
 	protected Statement(int line) {
@@ -19,12 +22,24 @@ public class Statement extends Block {
 	public Statement(Expression expression, int line) {
 		this(line);
 		mExpression = expression;
+		mAddNewLine = true;
+		mWriteEnd = true;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
 		mExpression.write(writer);
-		writeEnd(writer);
+		if (mWriteEnd) {
+			writeEnd(writer);
+		}
+	}
+
+	public void setAddNewLine(boolean addNewLine) {
+		mAddNewLine = addNewLine;
+	}
+
+	public void setWriteEnd(boolean writeEnd) {
+		mWriteEnd = writeEnd;
 	}
 
 	@Override
@@ -33,6 +48,6 @@ public class Statement extends Block {
 	}
 
 	protected void writeEnd(Writer writer) throws IOException{
-		writer.write(STATEMENT_END);
+		writer.write(mAddNewLine ? STATEMENT_END_NL : STATEMENT_END);
 	}
 }

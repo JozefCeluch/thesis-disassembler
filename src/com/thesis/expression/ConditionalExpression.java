@@ -11,6 +11,7 @@ public abstract class ConditionalExpression extends Expression {
 	protected int mJumpDestination = NO_DESTINATION;
 	protected int mElseBranchEnd = NO_DESTINATION;
 	protected int mThenBranchStart = NO_DESTINATION;
+	protected int mStartFrameLocation = NO_DESTINATION;
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
 	protected Operand mOperand;
@@ -58,6 +59,14 @@ public abstract class ConditionalExpression extends Expression {
 		mThenBranchStart = thenBranchStart;
 	}
 
+	public int getStartFrameLocation() {
+		return mStartFrameLocation;
+	}
+
+	public void setStartFrameLocation(int startFrameLocation) {
+		mStartFrameLocation = startFrameLocation;
+	}
+
 	public ExpressionStack getThenBranch() {
 		return thenBranch;
 	}
@@ -76,6 +85,10 @@ public abstract class ConditionalExpression extends Expression {
 
 	public boolean isJumpDestinationSet() {
 		return mJumpDestination != NO_DESTINATION;
+	}
+
+	public boolean isLoop() {
+		return mElseBranchEnd != NO_DESTINATION && mStartFrameLocation != NO_DESTINATION && mElseBranchEnd == mStartFrameLocation;
 	}
 
 	public void negate() {

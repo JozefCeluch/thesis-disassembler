@@ -7,15 +7,20 @@ import java.util.*;
 
 public class ExpressionStack {
 
+	private static final int NOT_SET = -1;
+
 	private final Stack<StackItem> mStack;
 	private int mLineNum;
 	private HashMap<Label, Integer> mLabels;
 	private int mLabel;
 	private int mLastImprovementPosition = 0;
+	private int mVisitedFrame = NOT_SET;
+	private Map<Integer, StackItem> mFrameItemMap;
 
 	public ExpressionStack() {
 		mStack = new Stack<>();
 		mLabels = InstructionTranslator.getLabels(); //TODO pass as argument in constructor
+		mFrameItemMap = new HashMap<>();
 	}
 
 	public void push(Expression expression) {
@@ -24,6 +29,10 @@ public class ExpressionStack {
 		mStack.push(new StackItem(expression, mLabel, mLineNum));
 		improveStack();
 		expression.afterPush(this);
+		if (mVisitedFrame != NOT_SET) {
+			mFrameItemMap.put(mVisitedFrame, mStack.peek());
+			mVisitedFrame = NOT_SET;
+		}
 	}
 
 	public void push(Expression expression, boolean shouldUpdateStack) {
@@ -135,4 +144,23 @@ public class ExpressionStack {
 		return copy;
 	}
 
+	public void addFrame(int currentLabel) {
+		mVisitedFrame = currentLabel;
+	}
+
+	public int getExpressionIndexOfFrame(int label) {
+		StackItem item = mFrameItemMap.get(label);
+		if (item == null) {
+			return -1;
+		}
+		return mStack.indexOf(item);
+	}
+
+	public ExpressionStack substack(int startIndex, int endIndex) {
+		ExpressionStack subStack = new ExpressionStack();
+		for(int i = 0; i < endIndex - startIndex; i++ ) {
+			subStack.mStack.push(mStack.remove(startIndex));
+		}
+		return subStack;
+	}
 }
