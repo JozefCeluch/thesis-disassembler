@@ -77,11 +77,13 @@ public class StatementCreator {
 	}
 
 	private boolean isIfThenStatement(ConditionalExpression expression) {
-		return !expression.getThenBranch().isEmpty() && expression.getElseBranch().isEmpty() && !expression.isLoop();
+		return expression.getThenBranch() != null && !expression.getThenBranch().isEmpty()
+				&& (expression.getElseBranch() == null || expression.getElseBranch().isEmpty()) && !expression.isLoop();
 	}
 
 	private boolean isIfThenElseStatement(ConditionalExpression expression) {
-		return !expression.getThenBranch().isEmpty() && !expression.getElseBranch().isEmpty();
+		return expression.getThenBranch() != null && !expression.getThenBranch().isEmpty()
+				&& expression.getElseBranch() != null && !expression.getElseBranch().isEmpty();
 	}
 
 	public List<Statement> getStatements() {

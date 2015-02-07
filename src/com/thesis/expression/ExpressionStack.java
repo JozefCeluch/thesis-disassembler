@@ -1,6 +1,5 @@
 package com.thesis.expression;
 
-import com.thesis.InstructionTranslator;
 import org.objectweb.asm.Label;
 
 import java.util.*;
@@ -11,15 +10,15 @@ public class ExpressionStack {
 
 	private final Stack<StackItem> mStack;
 	private int mLineNum;
-	private HashMap<Label, Integer> mLabels;
+	private Map<Label, Integer> mLabels;
 	private int mLabel;
 	private int mLastImprovementPosition = 0;
 	private int mVisitedFrame = NOT_SET;
 	private Map<Integer, StackItem> mFrameItemMap;
 
-	public ExpressionStack() {
+	public ExpressionStack(Map<Label, Integer> labels) {
+		mLabels = labels;
 		mStack = new Stack<>();
-		mLabels = InstructionTranslator.getLabels(); //TODO pass as argument in constructor
 		mFrameItemMap = new HashMap<>();
 	}
 
@@ -43,9 +42,9 @@ public class ExpressionStack {
 		}
 	}
 
-	public void pushBelow(Expression expression, int position) {
-		//TODO preparation for DUP instructions
-	}
+//	public void pushBelow(Expression expression, int position) {
+//		//TODO preparation for DUP instructions
+//	}
 
 	private void improveStack() {
 		for (int i = mLastImprovementPosition; i < mStack.size(); i++) { //todo think if ok
@@ -101,9 +100,9 @@ public class ExpressionStack {
 		return Arrays.asList(mStack.toArray(new StackItem[mStack.size()]));
 	}
 
-	public void clear() {
-		mStack.clear();
-	}
+//	public void clear() {
+//		mStack.clear();
+//	}
 
 	public void remove(int index) {
 		mStack.remove(index);
@@ -135,7 +134,7 @@ public class ExpressionStack {
 	}
 
 	public ExpressionStack duplicate() {
-		ExpressionStack copy = new ExpressionStack();
+		ExpressionStack copy = new ExpressionStack(mLabels);
 		copy.mStack.addAll(this.mStack);
 		copy.mLineNum = this.mLineNum;
 		copy.mLabels = this.mLabels;
@@ -157,7 +156,7 @@ public class ExpressionStack {
 	}
 
 	public ExpressionStack substack(int startIndex, int endIndex) {
-		ExpressionStack subStack = new ExpressionStack();
+		ExpressionStack subStack = new ExpressionStack(mLabels);
 		for(int i = 0; i < endIndex - startIndex; i++ ) {
 			subStack.mStack.push(mStack.remove(startIndex));
 		}

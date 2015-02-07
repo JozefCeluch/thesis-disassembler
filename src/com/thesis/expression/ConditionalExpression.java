@@ -20,8 +20,8 @@ public abstract class ConditionalExpression extends Expression {
 		super(instruction);
 		mType = DataType.BOOLEAN;
 		mJumpDestination = jumpDestination;
-		thenBranch = new ExpressionStack();
-		elseBranch = new ExpressionStack();
+//		thenBranch = new ExpressionStack();
+//		elseBranch = new ExpressionStack();
 		mOperand = makeOperand(instruction).neg();
 	}
 
@@ -75,12 +75,16 @@ public abstract class ConditionalExpression extends Expression {
 		return elseBranch;
 	}
 
+	public void setElseBranch(ExpressionStack elseBranch) {
+		this.elseBranch = elseBranch;
+	}
+
 	public void setThenBranch(ExpressionStack thenBranch) {
 		this.thenBranch = thenBranch;
 	}
 
 	public boolean hasEmptyElseBranch() {
-		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination && elseBranch.isEmpty();
+		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination && (elseBranch == null || elseBranch.isEmpty());
 	}
 
 	public boolean isJumpDestinationSet() {
@@ -115,7 +119,7 @@ public abstract class ConditionalExpression extends Expression {
 	}
 
 	public boolean isTernaryExpression() {
-		if (thenBranch.size() != 2 || elseBranch.size() != 1) return false;
+		if (thenBranch == null || elseBranch == null || thenBranch.size() != 2 || elseBranch.size() != 1) return false;
 
 		Expression thenExp = thenBranch.get(0);
 		Expression elseExp = elseBranch.get(0);

@@ -28,8 +28,16 @@ public class LogicGateExpression extends ConditionalExpression {
 	}
 
 	public void updateBranches(){
-		mLeft.thenBranch.addAll(mRight.thenBranch);
-		mLeft.elseBranch.addAll(mRight.elseBranch);
+		if (mLeft.thenBranch != null) {
+			mLeft.thenBranch.addAll(mRight.thenBranch);
+		} else {
+			mLeft.thenBranch = mRight.thenBranch;
+		}
+		if (mLeft.elseBranch != null) {
+			mLeft.elseBranch.addAll(mRight.elseBranch);
+		} else {
+			mLeft.elseBranch = mRight.elseBranch;
+		}
 		thenBranch = mLeft.thenBranch;
 		elseBranch = mLeft.elseBranch;
 	}
