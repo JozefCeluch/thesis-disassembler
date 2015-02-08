@@ -29,6 +29,6 @@ public class Variable {
 	}
 
 	public boolean hasType() {
-		return mType != null;
+		return mType != null && !mType.toString().isEmpty() && !mType.equals(DataType.UNKNOWN);
 	}
 }

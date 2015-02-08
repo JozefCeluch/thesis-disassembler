@@ -41,7 +41,7 @@ public abstract class Expression implements Writable {
 	}
 
 	public boolean hasType() {
-		return mType != null && !mType.equals(DataType.UNKNOWN);
+		return mType != null && !mType.toString().isEmpty() && !mType.equals(DataType.UNKNOWN);
 	}
 
 	public boolean isVirtual() {

@@ -109,14 +109,14 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitClassBound() {
+	public SignatureVisitor visitClassBound() {
 		separator = " extends ";
 		startType();
 		return this;
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitInterfaceBound() {
+	public SignatureVisitor visitInterfaceBound() {
 		separator = seenInterfaceBound ? ", " : " extends ";
 		seenInterfaceBound = true;
 		startType();
@@ -124,7 +124,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitSuperclass() {
+	public SignatureVisitor visitSuperclass() {
 		endFormals();
 		separator = " extends ";
 		startType();
@@ -132,7 +132,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitInterface() {
+	public SignatureVisitor visitInterface() {
 		separator = seenInterface ? ", " : isInterface ? " extends "
 				: " implements ";
 		seenInterface = true;
@@ -141,7 +141,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitParameterType() {
+	public SignatureVisitor visitParameterType() {
 		endFormals();
 		if (seenParameter) {
 			declaration.append(", ");
@@ -154,7 +154,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitReturnType() {
+	public SignatureVisitor visitReturnType() {
 		endFormals();
 		if (seenParameter) {
 			seenParameter = false;
@@ -164,7 +164,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitExceptionType() {
+	public SignatureVisitor visitExceptionType() {
 		if (exceptions == null) {
 			exceptions = new StringBuffer();
 		} else {
@@ -257,7 +257,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	}
 
 	@Override
-	public org.objectweb.asm.signature.SignatureVisitor visitTypeArgument(final char tag) {
+	public SignatureVisitor visitTypeArgument(final char tag) {
 		if (argumentStack % 2 == 0) {
 			++argumentStack;
 			declaration.append('<');

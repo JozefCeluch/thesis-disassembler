@@ -67,7 +67,7 @@ public class AssignmentExpression extends  Expression{
 
 			if (mRightSide.mCastType != null) {
 				mLeftSide.setType(mRightSide.mCastType);
-			} else if (mLeftSide.getType() != null && !mLeftSide.getType().equals(mRightSide.getType())) {
+			} else if (mLeftSide.hasType() && !mLeftSide.getType().equals(mRightSide.getType())) {
 				mRightSide.mCastType = mLeftSide.getType();
 			}
 		}
