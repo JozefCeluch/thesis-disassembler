@@ -57,9 +57,11 @@ public class AssignmentExpression extends  Expression{
 //			if (localVar.hasDebugType()) {
 //				rightSide.setType(localVar.getType());
 //			}
-			if (mRightSide.hasType() && !mLeftSide.hasType()) {
+			if ((mRightSide.hasType() && !DataType.UNKNOWN.equals(mRightSide.getType()))
+					&& (!mLeftSide.hasType() || DataType.UNKNOWN.equals(mLeftSide.getType()))) {
 				mLeftSide.setType(mRightSide.getType());
-			} else if (mLeftSide.hasType() && !mRightSide.hasType()) {
+			} else if ((mLeftSide.hasType() && !DataType.UNKNOWN.equals(mLeftSide.getType()))
+					&& (!mRightSide.hasType() || DataType.UNKNOWN.equals(mRightSide.getType()))) {
 				mRightSide.setType(mLeftSide.getType());
 			}
 
