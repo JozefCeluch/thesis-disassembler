@@ -22,6 +22,10 @@ public class ExpressionStack {
 		mFrameItemMap = new HashMap<>();
 	}
 
+	public ExpressionStack getNew() {
+		return new ExpressionStack(mLabels);
+	}
+
 	public void push(Expression expression) {
 		expression.setLine(mLineNum);
 		expression.prepareForStack(this); //TODO move prepare to expression

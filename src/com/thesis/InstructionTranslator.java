@@ -126,7 +126,7 @@ public class InstructionTranslator {
 		AbstractInsnNode movedNode = node;
 		TryCatchExpression previousExpression = null;
 		for(TryCatchItem item : tryCatchItems) {
-			item.setTryStack(new ExpressionStack(mLabels));
+			item.setTryStack(mStack.getNew());
 			if (previousExpression != null) {
 				item.getTryStack().push(previousExpression);
 			}
@@ -148,7 +148,7 @@ public class InstructionTranslator {
 		}
 
 		// ignore repeated finally blocks
-		ExpressionStack repeatedFinallyCalls = new ExpressionStack(mLabels);
+		ExpressionStack repeatedFinallyCalls = mStack.getNew();
 		while (!tryCatchItem.hasHandlerLabel(mCurrentLabel)) {
 			movedNode = movedNode.getNext();
 			movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
@@ -160,7 +160,7 @@ public class InstructionTranslator {
 
 		// fill catch blocks
 		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			tryCatchItem.addCatchBlock(mCurrentLabel, new ExpressionStack(mLabels));
+			tryCatchItem.addCatchBlock(mCurrentLabel, mStack.getNew());
 			int currentBlockLabel = mCurrentLabel;
 			if (tryCatchItem.getHandlerType(currentBlockLabel) == null) {
 				tryCatchItem.setHasFinallyBlock(true);
@@ -242,7 +242,7 @@ public class InstructionTranslator {
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
 		} else if (isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), new ExpressionStack(mLabels)));
+			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), mStack.getNew()));
 		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(node));
 		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
@@ -404,7 +404,7 @@ public class InstructionTranslator {
 		}
 
 		if (exp.hasEmptyElseBranch() && !exp.isLoop()) {
-			exp.setElseBranch(new ExpressionStack(mLabels));
+			exp.setElseBranch(mStack.getNew());
 			while(mCurrentLabel != exp.getElseBranchEnd()){
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
@@ -449,7 +449,7 @@ public class InstructionTranslator {
 		System.out.println("L" + jumpDestination);
 
 		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(node, jumpDestination, stack.pop(), stack.pop(), new ExpressionStack(mLabels));
+			exp = new MultiConditional(node, jumpDestination, stack.pop(), stack.pop(), mStack.getNew());
 		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
 			Expression stackTop = stack.peek();
 			if (stackTop instanceof MultiConditional && !((MultiConditional) stackTop).isJumpDestinationSet()) {
@@ -457,10 +457,10 @@ public class InstructionTranslator {
 				exp.setJumpDestination(jumpDestination);
 				exp.setInstruction(node);
 			} else {
-				exp = new SingleConditional(node, jumpDestination, stack.pop(), new ExpressionStack(mLabels));
+				exp = new SingleConditional(node, jumpDestination, stack.pop(), mStack.getNew());
 			}
 		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
-			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), new ExpressionStack(mLabels));
+			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), mStack.getNew());
 		} else if (opCode == Opcodes.GOTO) {
 			int frameIndex = stack.getExpressionIndexOfFrame(jumpDestination);
 			if (frameIndex != -1) {
@@ -540,7 +540,7 @@ public class InstructionTranslator {
 	}
 
 	private AbstractInsnNode updateSwitchWithCases(SwitchExpression switchExp, AbstractInsnNode movedNode, int defaultLabel, Map<Integer, String> labelCaseMap) {
-		ExpressionStack caseStack = new ExpressionStack(mLabels);
+		ExpressionStack caseStack = mStack.getNew();
 		int currentLabel = caseStack.getLabelId(mLabel);
 		int switchEndLabel = -1;
 		SwitchExpression.CaseExpression caseExpression = null;
@@ -560,7 +560,7 @@ public class InstructionTranslator {
 					caseStack.push(new BreakExpression(jump));
 				}
 				switchExp.addCase(caseExpression);
-				caseStack = new ExpressionStack(mLabels);
+				caseStack = mStack.getNew();
 				caseExpression = null;
 			}
 
