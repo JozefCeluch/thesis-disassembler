@@ -19,7 +19,6 @@ public class InstructionTranslator {
 
 	private final MethodNode mMethod;
 	private ExpressionStack mStack;
-	private final Map<Label, Integer> mLabels;
 	private List<Block> mStatements;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private Label mLabel;
@@ -29,8 +28,7 @@ public class InstructionTranslator {
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		mStatements = statements;
-		mLabels = new HashMap<>();
-		mStack = new ExpressionStack(mLabels);
+		mStack = new ExpressionStack(new HashMap<>());
 		mMethod = method;
 		mLocalVariables = new HashMap<>();
 		copyLocalVariables();
@@ -56,7 +54,10 @@ public class InstructionTranslator {
 			if (node != null) node = node.getNext();
 		}
 		addLocalVariablesAssignments();
-		//todo do some improvements of the expressions on the expression stack here
+
+
+		mStack.enhance();
+
 		StatementCreator sc = new StatementCreator(mStack);
 		mStatements.addAll(sc.getStatements());
 	}

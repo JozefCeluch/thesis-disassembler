@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.StackEnhancer;
 import org.objectweb.asm.Label;
 
 import java.util.*;
@@ -7,6 +8,8 @@ import java.util.*;
 public class ExpressionStack {
 
 	private static final int NOT_SET = -1;
+
+	private List<StackEnhancer> mEnhancers;
 
 	private final Stack<StackItem> mStack;
 	private int mLineNum;
@@ -20,10 +23,31 @@ public class ExpressionStack {
 		mLabels = labels;
 		mStack = new Stack<>();
 		mFrameItemMap = new HashMap<>();
+		mEnhancers = new ArrayList<>();
+	}
+
+	private ExpressionStack(Map<Label, Integer> labels, List<StackEnhancer> enhancers) {
+		mLabels = labels;
+		mEnhancers = enhancers;
+		mStack = new Stack<>();
+		mFrameItemMap = new HashMap<>();
 	}
 
 	public ExpressionStack getNew() {
-		return new ExpressionStack(mLabels);
+		return new ExpressionStack(mLabels, mEnhancers);
+	}
+
+	public void addEnhancer(StackEnhancer enhancer) {
+		mEnhancers.add(enhancer);
+	}
+
+	public void enhance() {
+		if(mEnhancers.isEmpty()) {
+			return;
+		}
+		for (StackEnhancer enhancer : mEnhancers) {
+			enhancer.enhance(mStack);
+		}
 	}
 
 	public void push(Expression expression) {
