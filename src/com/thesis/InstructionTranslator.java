@@ -24,7 +24,8 @@ public class InstructionTranslator {
 	private Label mLabel;
 	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
-	private int mFrameLabel;
+	private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
+	private List<Integer> mVisitedLabels;
 
 	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
 		mStatements = statements;
@@ -34,6 +35,7 @@ public class InstructionTranslator {
 		copyLocalVariables();
 		mLocalVariables.putAll(arguments);
 		mTryCatchManager = TryCatchManager.newInstance(method.tryCatchBlocks, mStack);
+		mVisitedLabels = new ArrayList<>();
 	}
 
 	private void copyLocalVariables() {
@@ -63,6 +65,8 @@ public class InstructionTranslator {
 	}
 
 	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
+		if (mLabel != null) stack.addLabel(mLabel);
+
 		switch (node.getType()) {
 			case AbstractInsnNode.INSN:
 				visitInsnNode((InsnNode) node, stack);
@@ -383,12 +387,17 @@ public class InstructionTranslator {
 	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		ConditionalExpression exp = makeConditionalExpression(node, stack);
-		if (exp == null) return node;
+		if (exp == null || exp.getThenBranch() == null) {
+			stack.push(exp);
+			return node;
+		}
 
-		if (exp.getStartFrameLocation() == -1)
+		if (exp.getStartFrameLocation() == ConditionalExpression.NO_DESTINATION && mFrameLabel != ConditionalExpression.NO_DESTINATION) {
 			exp.setStartFrameLocation(mFrameLabel);
+			mFrameLabel = ConditionalExpression.NO_DESTINATION;
+		}
 		AbstractInsnNode movedNode = node;
-		while (movedNode.getOpcode() != Opcodes.GOTO && mCurrentLabel != exp.getJumpDestination() && mCurrentLabel != exp.getElseBranchEnd()) {
+		while (!mVisitedLabels.contains(exp.getJumpDestination())) {
 			movedNode = movedNode.getNext();
 			if (isConditionalJump(movedNode)) {
 				movedNode = checkLogicGateExpressionIsOnTop(exp, movedNode);
@@ -397,16 +406,15 @@ public class InstructionTranslator {
 				}
 			}
 			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
-			if (isEndOfThenBlock(movedNode)) {
+			if (isEndOfThenBlock(movedNode) ) {
 				exp.setElseBranchEnd(stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel()));
 				exp.updateThenBranchType();
-				break;
 			}
 		}
 
 		if (exp.hasEmptyElseBranch() && !exp.isLoop()) {
 			exp.setElseBranch(mStack.getNew());
-			while(mCurrentLabel != exp.getElseBranchEnd()){
+			while(!mVisitedLabels.contains(exp.getElseBranchEnd())){ //mCurrentLabel != exp.getElseBranchEnd()
 				movedNode = movedNode.getNext();
 				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
 			}
@@ -481,6 +489,7 @@ public class InstructionTranslator {
 		mLabel = node.getLabel();
 		stack.addLabel(mLabel);
 		mCurrentLabel = stack.getLabelId(mLabel);
+		mVisitedLabels.add(mCurrentLabel);
 		System.out.println("LABEL: " + "L" + mCurrentLabel);
 	}
 
