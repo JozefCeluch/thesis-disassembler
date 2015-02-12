@@ -57,6 +57,7 @@ public class InstructionTranslator {
 		}
 		addLocalVariablesAssignments();
 
+		mStack.addEnhancer(new LoopEnhancer());
 
 		mStack.enhance();
 
