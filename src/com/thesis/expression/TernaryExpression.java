@@ -14,8 +14,8 @@ public class TernaryExpression extends ConditionalExpression {
 	public TernaryExpression(ConditionalExpression expression) {
 		super(expression.mInstruction, expression.getJumpDestination());
 		mCondition = expression;
-		mFirst = mCondition.getThenBranch().getAll().get(0).expression;
-		mSecond = mCondition.getElseBranch().getAll().get(0).expression;
+		mFirst = mCondition.getThenBranch().getAll().get(0).getExpression();
+		mSecond = mCondition.getElseBranch().getAll().get(0).getExpression();
 		if(mSecond instanceof ConditionalExpression) {
 			mSecond = new TernaryExpression((ConditionalExpression) mSecond);
 		}

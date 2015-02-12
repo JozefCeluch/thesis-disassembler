@@ -2,14 +2,30 @@ package com.thesis.expression;
 
 public class StackItem {
 
-	public int labelId;
-	public Expression expression;
-	public int line;
+	private final int labelId;
+	private Expression expression;
+	private final int line;
 
 	public StackItem(Expression expression, int label, int line) {
 		labelId = label;
 		this.expression = expression;
 		this.line = line;
+	}
+
+	public int getLabelId() {
+		return labelId;
+	}
+
+	public Expression getExpression() {
+		return expression;
+	}
+
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
+
+	public int getLine() {
+		return line;
 	}
 
 	@Override

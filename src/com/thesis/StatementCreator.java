@@ -23,22 +23,22 @@ public class StatementCreator {
 	private List<Statement> createStatements(ExpressionStack expressions) {
 		List<Statement> statements = new ArrayList<>();
 		for (StackItem item : expressions.getAll()) {
-			if (item.expression.isVirtual() || item.expression instanceof PrimaryExpression) continue;
+			if (item.getExpression().isVirtual() || item.getExpression() instanceof PrimaryExpression) continue;
 
-			if (item.expression instanceof ConditionalExpression) {
-				if (((ConditionalExpression)item.expression).isLoop()) {
-					statements.add(new WhileLoopStatement((ConditionalExpression) item.expression, item.line));
+			if (item.getExpression() instanceof ConditionalExpression) {
+				if (((ConditionalExpression)item.getExpression()).isLoop()) {
+					statements.add(new WhileLoopStatement((ConditionalExpression) item.getExpression(), item.getLine()));
 				} else {
-					statements.add(handleConditionalExpression((ConditionalExpression) item.expression, item.line, item.labelId));
+					statements.add(handleConditionalExpression((ConditionalExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 				}
-			} else if (item.expression instanceof SwitchExpression) {
-				statements.add(handleSwitchExpression((SwitchExpression) item.expression, item.line, item.labelId));
-			} else if (item.expression instanceof TryCatchExpression) {
-				statements.add(new TryCatchStatement((TryCatchExpression)item.expression, item.line));
-			} else if (item.expression instanceof MonitorExpression) {
-				statements.add(new SynchronizedStatement((MonitorExpression)item.expression, item.line));
+			} else if (item.getExpression() instanceof SwitchExpression) {
+				statements.add(handleSwitchExpression((SwitchExpression) item.getExpression(), item.getLine(), item.getLabelId()));
+			} else if (item.getExpression() instanceof TryCatchExpression) {
+				statements.add(new TryCatchStatement((TryCatchExpression)item.getExpression(), item.getLine()));
+			} else if (item.getExpression() instanceof MonitorExpression) {
+				statements.add(new SynchronizedStatement((MonitorExpression)item.getExpression(), item.getLine()));
 			} else {
-				statements.add(new Statement(item.expression, item.line));
+				statements.add(new Statement(item.getExpression(), item.getLine()));
 			}
 		}
 		return statements;

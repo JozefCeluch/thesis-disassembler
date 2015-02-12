@@ -76,7 +76,7 @@ public class ExpressionStack {
 
 	private void improveStack() {
 		for (int i = mLastImprovementPosition; i < mStack.size(); i++) { //todo think if ok
-			Expression currentExp = mStack.get(i).expression;
+			Expression currentExp = mStack.get(i).getExpression();
 			if (currentExp instanceof UnaryExpression) {
 				if(((UnaryExpression) currentExp).mOpPosition == UnaryExpression.OpPosition.POSTFIX) {
 					mStack.remove(i-1);
@@ -86,7 +86,7 @@ public class ExpressionStack {
 					mLastImprovementPosition = i + 1;
 				}
 			} else if (currentExp instanceof MonitorExpression && mStack.size() > i+1) {
-				Expression followingExp = mStack.get(i+1).expression;
+				Expression followingExp = mStack.get(i+1).getExpression();
 				if (followingExp instanceof TryCatchExpression) {
 					((MonitorExpression) currentExp).setSynchronizedBlock((TryCatchExpression)followingExp);
 					mStack.remove(i+1);
@@ -98,16 +98,16 @@ public class ExpressionStack {
 
 	public Expression peek() {
 		if (mStack.isEmpty()) return null;
-		return mStack.peek().expression;
+		return mStack.peek().getExpression();
 	}
 
 	public Expression pop() {
 		if (mStack.isEmpty()) return null;
-		return mStack.pop().expression;
+		return mStack.pop().getExpression();
 	}
 
 	public Expression get(int index) {
-		return mStack.get(index).expression;
+		return mStack.get(index).getExpression();
 	}
 
 	public void swap() {
