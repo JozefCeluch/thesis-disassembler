@@ -132,8 +132,8 @@ public class ExpressionStack {
 //		mStack.clear();
 //	}
 
-	public void remove(int index) {
-		mStack.remove(index);
+	public Expression remove(int index) {
+		return mStack.remove(index).getExpression();
 	}
 
 	public void setLineNumber(int line) {

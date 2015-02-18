@@ -65,8 +65,7 @@ public class TryCatchExpression extends Expression {
 			mLabel = label;
 			mType = typeString != null ? DataType.getType(Util.javaObjectName(typeString)) : null;
 			mStack = stack;
-			mExpression = (AssignmentExpression) mStack.get(0);
-			mStack.remove(0);
+			mExpression = (AssignmentExpression) mStack.remove(0);
 			if (mType == null && mStack.size() > 0) {
 				mStack.pop();
 			}
