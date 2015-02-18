@@ -2,9 +2,11 @@ import java.lang.Object;
 import java.util.ArrayList;
 
 public class JumpInsnNode_loops {
-	void method() {
-		int i;
-		for (i = 0; i < 5; i += 1) {
+	void forLoopWithooutVarInit(int i) {
+		for (; i < 5; i += 1) {
+			if (i == 3) {
+				continue;
+			}
 			System.out.println("loop iteration " + i);
 		}
 		while (true) {
@@ -12,12 +14,12 @@ public class JumpInsnNode_loops {
 		}
 	}
 
-	void anotherMethod() {
+	void completeForLoop() {
 		for (int i = 0; i < 10; i++) {
 			if (i > 8) {
 				System.out.println("conditional print");
 			}
-			System.out.println("infinite loop iteration ");
+			System.out.println("print");
 		}
 	}
 
@@ -31,7 +33,6 @@ public class JumpInsnNode_loops {
 	void loopWithContinue() {
 		int i = 0;
 		while (i < 10) {
-			i++;
 			if (i == 8) {
 				System.out.println("call continue");
 				continue;
@@ -43,6 +44,7 @@ public class JumpInsnNode_loops {
 					continue;
 				}
 			}
+			i++;
 			System.out.println("infinite loop iteration ");
 		}
 	}
@@ -77,5 +79,26 @@ public class JumpInsnNode_loops {
 			}
 			i++;
 		} while (i < 5 && i > 10);
+	}
+
+	void forLoopWithContinue() {
+		for(int i = 0; i < 10;) {
+			System.out.println("loop start");
+			if (i == 4) {
+				System.out.println("call continue");
+				continue;
+			} else {
+				System.out.println("else branch");
+				if (i > 6) {
+					System.out.println("inner then branch");
+					i++;
+				} else {
+					System.out.println("call inner continue");
+					continue;
+				}
+				System.out.println("end of else branch");
+			}
+			System.out.println("loop end");
+		}
 	}
 }

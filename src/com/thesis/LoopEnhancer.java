@@ -9,8 +9,8 @@ public class LoopEnhancer implements StackEnhancer {
 
 	@Override
 	public void enhance(ExpressionStack expressionStack, Stack<StackItem> stack) {
-		for (int i = 0; i < stack.size(); i++) {
-			Expression exp = stack.get(i).getExpression();
+		for (int i = 0; i < expressionStack.size(); i++) {
+			Expression exp = expressionStack.get(i);
 			if (exp instanceof ConditionalExpression) {
 				updateDoLoops((ConditionalExpression) exp, i, expressionStack, stack);
 			}
