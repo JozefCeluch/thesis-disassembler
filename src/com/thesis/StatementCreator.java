@@ -26,11 +26,7 @@ public class StatementCreator {
 			if (item.getExpression().isVirtual() || item.getExpression() instanceof PrimaryExpression) continue;
 
 			if (item.getExpression() instanceof ConditionalExpression) {
-				if (((ConditionalExpression)item.getExpression()).isLoop()) {
-					statements.add(new WhileLoopStatement((ConditionalExpression) item.getExpression(), item.getLine()));
-				} else {
-					statements.add(handleConditionalExpression((ConditionalExpression) item.getExpression(), item.getLine(), item.getLabelId()));
-				}
+				statements.add(handleConditionalExpression((ConditionalExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 			} else if (item.getExpression() instanceof SwitchExpression) {
 				statements.add(handleSwitchExpression((SwitchExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 			} else if (item.getExpression() instanceof TryCatchExpression) {
@@ -55,6 +51,18 @@ public class StatementCreator {
 	}
 
 	private Statement handleConditionalExpression(ConditionalExpression expression, int line, int label) {
+		if (expression.isLoop()) {
+			switch (expression.getLoopType()) {
+				case NONE:
+					break;
+				case WHILE:
+					return new WhileLoopStatement(expression, line);
+				case FOR:
+					break;
+				case DO_WHILE:
+					return new DoWhileLoopStatement(expression, line);
+			}
+		}
 		if (isIfThenElseStatement(expression)) {
 			IfThenElseStatement ifThenElseStatement = new IfThenElseStatement(expression, line);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
@@ -73,7 +81,7 @@ public class StatementCreator {
 		if (expression instanceof JumpExpression) {
 			return new Statement(expression, line);
 		}
-		return new Statement(new PrimaryExpression(null, "CONDITIONAL EXPRESSION ", DataType.getType("String")),0);
+		return new Statement(new PrimaryExpression(null, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getType("String")),0);
 	}
 
 	private boolean isIfThenStatement(ConditionalExpression expression) {

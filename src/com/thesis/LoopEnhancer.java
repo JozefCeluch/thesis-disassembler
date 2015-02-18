@@ -8,16 +8,34 @@ import java.util.Stack;
 public class LoopEnhancer implements StackEnhancer {
 
 	@Override
-	public void enhance(Stack<StackItem> stack) {
+	public void enhance(ExpressionStack expressionStack, Stack<StackItem> stack) {
+		for (int i = 0; i < stack.size(); i++) {
+			Expression exp = stack.get(i).getExpression();
+			if (exp instanceof ConditionalExpression) {
+				updateDoLoops((ConditionalExpression) exp, i, expressionStack, stack);
+			}
+		}
+
 		for (int i = 0; i < stack.size(); i++) {
 			Expression exp = stack.get(i).getExpression();
 			if (exp instanceof ConditionalExpression) {
 				int loopStartLabel = stack.get(i).getLabelId();
 				int nextLabel = i < stack.size() - 1 ? stack.get(i+1).getLabelId() : -2;
-
 				fixLoopDetection((ConditionalExpression) exp, loopStartLabel, stack.get(i));
+				improveBreakAndContinue((ConditionalExpression) exp, nextLabel, (ConditionalExpression) exp);
+			}
+		}
+	}
 
-				improveBreakAndContinue((ConditionalExpression) exp, loopStartLabel, nextLabel, (ConditionalExpression) exp);
+	private void updateDoLoops(ConditionalExpression exp, int currentStackPosition, ExpressionStack expressionStack, Stack<StackItem> stack) {
+		if ((exp.getThenBranch() != null && !exp.getThenBranch().isEmpty()) || (exp.getElseBranch() != null && !exp.getElseBranch().isEmpty())) return;
+		for (int stackPosition = 0; stackPosition < currentStackPosition; stackPosition++) {
+			if (stack.get(stackPosition).getLabelId() == exp.getJumpDestination()) {
+				exp.setLoopType(ConditionalExpression.LoopType.DO_WHILE);
+				exp.setStartFrameLocation(exp.getJumpDestination());
+				exp.getThenBranch().addAll(expressionStack.substack(stackPosition, currentStackPosition));
+				exp.negate();
+				break;
 			}
 		}
 	}
@@ -30,9 +48,8 @@ public class LoopEnhancer implements StackEnhancer {
 		for (int i = 0; i < expression.getThenBranch().getAll().size(); i++) {
 			StackItem item = expression.getThenBranch().getAll().get(i);
 			fixLoopDetection(topLevelExp, loopStartLabel, item);
-			if (item.getExpression() instanceof UnconditionalJump && ((UnconditionalJump) item.getExpression()).getJumpDestination() == loopStartLabel) {
-//				topLevelExp.getThenBranch().addAll(expression.getThenBranch().substack(i, i+1));
-				topLevelExp.setElseBranchEnd(((UnconditionalJump) item.getExpression()).getJumpDestination());
+			if (item.getExpression() instanceof ConditionalExpression && ((ConditionalExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
+				topLevelExp.setElseBranchEnd(((ConditionalExpression) item.getExpression()).getJumpDestination());
 			}
 		}
 
@@ -40,15 +57,14 @@ public class LoopEnhancer implements StackEnhancer {
 			for (int i = 0; i < expression.getElseBranch().getAll().size(); i++) {
 				StackItem item = expression.getElseBranch().getAll().get(i);
 				fixLoopDetection(topLevelExp, loopStartLabel, item);
-				if (item.getExpression() instanceof UnconditionalJump && ((UnconditionalJump) item.getExpression()).getJumpDestination() == loopStartLabel) {
-//					topLevelExp.getThenBranch().addAll(expression.getElseBranch().substack(i, i+1));
-					topLevelExp.setElseBranchEnd(((UnconditionalJump) item.getExpression()).getJumpDestination());
+				if (item.getExpression() instanceof ConditionalExpression && ((ConditionalExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
+					topLevelExp.setElseBranchEnd(((ConditionalExpression) item.getExpression()).getJumpDestination());
 				}
 			}
 		}
 	}
 
-	private void improveBreakAndContinue(ConditionalExpression exp, int currentLabel, int nextLabel, ConditionalExpression topLevelExpression) {
+	private void improveBreakAndContinue(ConditionalExpression exp, int nextLabel, ConditionalExpression topLevelExpression) {
 		List<StackItem> thenBranch;
 		List<StackItem> elseBranch;
 
@@ -56,7 +72,7 @@ public class LoopEnhancer implements StackEnhancer {
 			thenBranch = exp.getThenBranch().getAll();
 			for (StackItem innerExp : thenBranch) {
 				if (innerExp.getExpression() instanceof ConditionalExpression) {
-					improveBreakAndContinue((ConditionalExpression) innerExp.getExpression(), currentLabel, nextLabel, topLevelExpression);
+					improveBreakAndContinue((ConditionalExpression) innerExp.getExpression(), nextLabel, topLevelExpression);
 				}
 			}
 			addBreak(nextLabel, topLevelExpression, thenBranch);
@@ -67,15 +83,13 @@ public class LoopEnhancer implements StackEnhancer {
 			elseBranch = exp.getElseBranch().getAll();
 			for (StackItem innerExp : elseBranch) {
 				if (innerExp.getExpression() instanceof ConditionalExpression) {
-					improveBreakAndContinue((ConditionalExpression) innerExp.getExpression(), currentLabel, nextLabel, topLevelExpression);
+					improveBreakAndContinue((ConditionalExpression) innerExp.getExpression(), nextLabel, topLevelExpression);
 				}
 			}
 
 			addBreak(nextLabel, topLevelExpression, elseBranch);
 			addContinue(exp, topLevelExpression, elseBranch);
 		}
-
-
 	}
 
 	private void addBreak(int nextLabel, ConditionalExpression topLevelExpression, List<StackItem> branch) {

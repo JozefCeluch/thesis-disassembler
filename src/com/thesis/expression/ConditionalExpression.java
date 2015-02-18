@@ -15,14 +15,14 @@ public abstract class ConditionalExpression extends Expression {
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
 	protected Operand mOperand;
+	protected LoopType mLoopType;
 
 	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
 		super(instruction);
 		mType = DataType.BOOLEAN;
 		mJumpDestination = jumpDestination;
-//		thenBranch = new ExpressionStack();
-//		elseBranch = new ExpressionStack();
 		mOperand = makeOperand(instruction).neg();
+		mLoopType = LoopType.NONE;
 	}
 
 	public ConditionalExpression(int jumpDestination) {
@@ -83,6 +83,17 @@ public abstract class ConditionalExpression extends Expression {
 		this.thenBranch = thenBranch;
 	}
 
+	public LoopType getLoopType() {
+		if (LoopType.NONE.equals(mLoopType) && isLoop()) {
+			mLoopType = LoopType.WHILE;
+		}
+		return mLoopType;
+	}
+
+	public void setLoopType(LoopType loopType) {
+		mLoopType = loopType;
+	}
+
 	public boolean hasEmptyElseBranch() {
 		return mElseBranchEnd != NO_DESTINATION && mElseBranchEnd != mJumpDestination && (elseBranch == null || elseBranch.isEmpty());
 	}
@@ -92,7 +103,8 @@ public abstract class ConditionalExpression extends Expression {
 	}
 
 	public boolean isLoop() {
-		return mElseBranchEnd != NO_DESTINATION && mStartFrameLocation != NO_DESTINATION && mElseBranchEnd == mStartFrameLocation;
+		return mStartFrameLocation != NO_DESTINATION && ((mElseBranchEnd != NO_DESTINATION && mElseBranchEnd == mStartFrameLocation)
+				|| (mJumpDestination != NO_DESTINATION && mJumpDestination == mStartFrameLocation));
 	}
 
 	public void negate() {
@@ -168,5 +180,9 @@ public abstract class ConditionalExpression extends Expression {
 		}
 
 		return Operand.ERR;
+	}
+
+	public enum LoopType {
+		NONE, WHILE, FOR, DO_WHILE;
 	}
 }

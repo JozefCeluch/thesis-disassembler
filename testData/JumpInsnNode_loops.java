@@ -65,4 +65,17 @@ public class JumpInsnNode_loops {
 			}
 		}
 	}
+
+	void doLoop() {
+		int i = 0;
+		do {
+			System.out.println("val of i =" + i);
+			if (i == 2) {
+				System.out.println("TWO");
+			} else {
+				System.out.println("NUMBER");
+			}
+			i++;
+		} while (i < 5 && i > 10);
+	}
 }

@@ -72,4 +72,17 @@ java.lang.System.out.println("end of else branch");
 }
 }
 }
+void doLoop() {
+int i;
+i = 0;
+do {
+java.lang.System.out.println(new java.lang.StringBuilder().append("val of i =").append(i).toString());
+if (i == 2) {
+java.lang.System.out.println("TWO");
+} else {
+java.lang.System.out.println("NUMBER");
+}
+i += 1;
+} while (i < 5 && i > 10)
+}
 }

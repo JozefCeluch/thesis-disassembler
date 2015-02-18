@@ -46,7 +46,7 @@ public class ExpressionStack {
 			return;
 		}
 		for (StackEnhancer enhancer : mEnhancers) {
-			enhancer.enhance(mStack);
+			enhancer.enhance(this, mStack);
 		}
 	}
 
