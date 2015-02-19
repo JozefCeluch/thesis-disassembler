@@ -408,8 +408,14 @@ public class InstructionTranslator {
 			}
 			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
 			if (isEndOfThenBlock(movedNode) ) {
-				exp.setElseBranchEnd(stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel()));
+				int gotoJumpDestination = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
+				exp.setElseBranchEnd(gotoJumpDestination);
 				exp.updateThenBranchType();
+				if (exp.getJumpDestination() == gotoJumpDestination) {
+					break;
+					/*break is needed to correctly recognize all cases in switches with Strings because consists of
+					* non-standard switch where default case is called after each standard case*/
+				}
 			}
 		}
 
