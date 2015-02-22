@@ -21,18 +21,7 @@ public class Util {
 		return type;
 	}
 
-	public static String removeOuterClasses(String name) {
-		if (name.contains("$")) {
-			int lastName = name.lastIndexOf("$");
-			if (name.substring(lastName + 1).matches(".*[^0-9].*")) {
-				return name.substring(lastName + 1);
-			}
-			return name.substring(lastName);
-		}
-		return name;
-	}
-
-	public static DataType getArrayReferenceType(String desc) {
+	private static DataType getArrayReferenceType(String desc) {
 		int dimensions = desc.lastIndexOf('[') + 1;
 		String fullTypeString = desc.substring(dimensions);
 		DataType fullType = getType(fullTypeString);
@@ -43,11 +32,11 @@ public class Util {
 		return arrayType;
 	}
 
-	public static DataType getReferenceType(String desc) {
+	private static DataType getReferenceType(String desc) {
 		return DataType.getType(removeOuterClasses(javaObjectName(desc.substring(1))));
 	}
 
-	public static DataType getPrimitiveType(String desc) {
+	private static DataType getPrimitiveType(String desc) {
 		switch (desc) {
 			case "B":
 				return DataType.BYTE;
@@ -68,9 +57,19 @@ public class Util {
 			case "Z":
 				return DataType.BOOLEAN;
 			default:
-				System.out.println("type: " + desc);
-				throw new IllegalArgumentException("Unknown primitive type");
+				throw new IllegalArgumentException("Unknown primitive type: " + desc);
 		}
+	}
+
+	public static String removeOuterClasses(String name) {
+		if (name.contains("$")) {
+			int lastName = name.lastIndexOf("$");
+			if (name.substring(lastName + 1).matches(".*[^0-9].*")) {
+				return name.substring(lastName + 1);
+			}
+			return name.substring(lastName);
+		}
+		return name;
 	}
 
 	public static String javaObjectName(String objectName) {

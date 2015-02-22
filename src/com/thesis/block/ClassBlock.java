@@ -106,10 +106,20 @@ public class ClassBlock extends Block {
 	}
 
 	protected void appendInnerClasses(List innerClasses) {
-		for (Object innerClass : innerClasses) {
-			InnerClassBlock icb = new InnerClassBlock((InnerClassNode)innerClass, mClassNode.name, this);
-			children.add(icb.disassemble());
+		for (Object object : innerClasses) {
+			InnerClassNode innerClass = (InnerClassNode) object;
+			if (shouldAddInnerClass(innerClass)) {
+				InnerClassBlock icb = new InnerClassBlock(innerClass, mClassNode.name, this);
+				children.add(icb.disassemble());
+			}
 		}
+	}
+
+	private boolean shouldAddInnerClass(InnerClassNode innerClass) {
+		return (innerClass.outerName != null && innerClass.innerName != null &&
+				innerClass.name.matches(mClassNode.name + "\\$" + innerClass.innerName)) ||
+				(innerClass.outerName == null && innerClass.innerName == null
+				&& innerClass.name.matches(mClassNode.name + "\\$[0-9]+$"));
 	}
 
 	@Override
