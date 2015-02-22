@@ -31,14 +31,26 @@ public class MethodBlock extends Block {
 	}
 
 	public void setClassName(String className) {
-		mClassName = className;
+		mClassName = Util.removeOuterClasses(className);
+	}
+
+	public MethodNode getMethodNode() {
+		return mMethodNode;
+	}
+
+	public String getClassName() {
+		return mClassName;
+	}
+
+	public Map<Integer, LocalVariable> getArguments() {
+		return mArguments;
 	}
 
 	public Block disassemble() {
 		appendAllSingleLineAnnotations(mMethodNode.visibleAnnotations, mMethodNode.invisibleAnnotations);
 		//TODO parameter annotations, easy with debug info
 		appendMethodNode(mMethodNode);
-		disassembleCodeBlock(mMethodNode);
+		disassembleCodeBlock();
 		return this;
 	}
 
@@ -48,11 +60,11 @@ public class MethodBlock extends Block {
 		}
 	}
 
-	private void disassembleCodeBlock(MethodNode method) {
+	private void disassembleCodeBlock() {
 		clearBuffer();
-		if (!Util.containsFlag(method.access, Opcodes.ACC_ABSTRACT)){
-			InstructionTranslator translator = new InstructionTranslator(mMethodNode, children, mArguments);
-			translator.addCode();
+		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
+			InstructionTranslator translator = new InstructionTranslator(this);
+			children.addAll(translator.addCode());
 		}
 	}
 
@@ -121,7 +133,7 @@ public class MethodBlock extends Block {
 		}
 
 		if (name.equals("<init>")) {
-			buf.append(Util.removeOuterClasses(mClassName));
+			buf.append(mClassName);
 		} else {
 			buf.append(getReturnType(desc, genericReturn)).append(" ");
 			buf.append(name);

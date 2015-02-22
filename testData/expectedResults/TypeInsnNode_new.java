@@ -8,11 +8,11 @@ InnerClass secondObject;
 int firstNumber;
 InnerClass thirdObject;
 InnerClass fourthObject;
-firstObject = new TypeInsnNode_new.InnerClass(this);
-secondObject = new TypeInsnNode_new.InnerClass(this, 2);
+firstObject = new InnerClass(this);
+secondObject = new InnerClass(this, 2);
 firstNumber = (int) 99;
-thirdObject = new TypeInsnNode_new.InnerClass(this, firstNumber);
-fourthObject = new TypeInsnNode_new.InnerClass(this, 1, 2);
+thirdObject = new InnerClass(this, firstNumber);
+fourthObject = new InnerClass(this, 1, 2);
 }
 class InnerClass {
 private int intVar;

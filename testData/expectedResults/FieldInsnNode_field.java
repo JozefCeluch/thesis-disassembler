@@ -12,7 +12,7 @@ this.stringField = "string literal";
 void assignFields() {
 InnerClass c;
 int localInt;
-c = new FieldInsnNode_field.InnerClass(this, null);
+c = new InnerClass(this, null);
 this.intField = c.number;
 this.intField = 100;
 this.boolField = true;
@@ -20,6 +20,9 @@ this.longField = 43L;
 this.stringField = "another literal";
 localInt = this.intField;
 }
+class $1 {
+}
+
 class InnerClass {
 public int number;
 final  /* synthetic */ FieldInsnNode_field this$0;
@@ -27,9 +30,12 @@ private InnerClass(FieldInsnNode_field arg0) {
 this.this$0 = arg0;
 super();
 }
- /* synthetic */ InnerClass(FieldInsnNode_field x0, 1 x1) {
-super(x0);
+ /* synthetic */ InnerClass(FieldInsnNode_field x0, $1 x1) {
+this(x0);
 }
+class $1 {
+}
+
 }
 
 }

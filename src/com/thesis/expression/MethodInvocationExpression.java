@@ -30,7 +30,7 @@ public class MethodInvocationExpression extends Expression {
 		mType = DataType.getType(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwnerClass = Util.javaObjectName(Util.getFullClassName(instruction.owner));
+		mOwnerClass = Util.javaObjectName(Util.removeOuterClasses(instruction.owner));
 		mCallingMethod = callingMethod;
 	}
 

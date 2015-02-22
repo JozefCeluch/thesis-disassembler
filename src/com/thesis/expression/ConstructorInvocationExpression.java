@@ -9,9 +9,11 @@ import java.io.Writer;
 public class ConstructorInvocationExpression extends MethodInvocationExpression {
 
 	protected NewExpression mNewExpression;
+	protected String mContainingClass;
 
-	public ConstructorInvocationExpression(MethodInsnNode instruction, String callingMethod) {
+	public ConstructorInvocationExpression(MethodInsnNode instruction, String callingMethod, String containingClass) {
 		super(instruction, callingMethod);
+		mContainingClass = containingClass;
 	}
 
 	@Override
@@ -35,10 +37,12 @@ public class ConstructorInvocationExpression extends MethodInvocationExpression 
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if (Util.isConstructor(mCallingMethod)) {
-			writer.write("super");
-		} else {
+		if (!Util.isConstructor(mCallingMethod) || mNewExpression != null) {
 			writer.write(mOwnerClass);
+		} else if (mContainingClass.equals(mOwnerClass)) {
+			writer.write("this");
+		} else {
+			writer.write("super");
 		}
 		writeArguments(writer);
 	}

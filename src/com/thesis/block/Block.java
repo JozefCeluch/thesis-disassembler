@@ -33,6 +33,10 @@ public abstract class Block implements Writable{
 
 	public abstract Block disassemble();
 
+	public List<Block> getChildren() {
+		return children;
+	}
+
 	protected static String getTypeIndicator(String args) {
 		if (args.startsWith("L")) {
 			int positionAfterSemicolon = args.indexOf(';') + 1;

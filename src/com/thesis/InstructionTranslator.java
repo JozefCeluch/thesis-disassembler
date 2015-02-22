@@ -1,6 +1,7 @@
 package com.thesis;
 
 import com.thesis.block.Block;
+import com.thesis.block.MethodBlock;
 import com.thesis.block.Statement;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
@@ -19,22 +20,22 @@ public class InstructionTranslator {
 
 	private final MethodNode mMethod;
 	private ExpressionStack mStack;
-	private List<Block> mStatements;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private Label mLabel;
 	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
 	private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
 	private List<Integer> mVisitedLabels;
+	private MethodBlock mMethodBlock;
 
-	public InstructionTranslator(MethodNode method, List<Block> statements, Map<Integer, LocalVariable> arguments) {
-		mStatements = statements;
+	public InstructionTranslator(MethodBlock methodBlock) {
+		mMethodBlock = methodBlock;
 		mStack = new ExpressionStack(new HashMap<>());
-		mMethod = method;
+		mMethod = methodBlock.getMethodNode();
 		mLocalVariables = new HashMap<>();
 		copyLocalVariables();
-		mLocalVariables.putAll(arguments);
-		mTryCatchManager = TryCatchManager.newInstance(method.tryCatchBlocks, mStack);
+		mLocalVariables.putAll(methodBlock.getArguments());
+		mTryCatchManager = TryCatchManager.newInstance(mMethod.tryCatchBlocks, mStack);
 		mVisitedLabels = new ArrayList<>();
 	}
 
@@ -47,7 +48,7 @@ public class InstructionTranslator {
 		}
 	}
 
-	public void addCode() {
+	public List<Statement> addCode() {
 		System.out.println(" ");
 		System.out.println("METHOD: " + mMethod.name);
 		AbstractInsnNode node = mMethod.instructions.getFirst();
@@ -55,14 +56,14 @@ public class InstructionTranslator {
 			node = pushNodeToStackAsExpression(node, mStack);
 			if (node != null) node = node.getNext();
 		}
-		addLocalVariablesAssignments();
 
 		mStack.addEnhancer(new LoopEnhancer());
-
 		mStack.enhance();
 
+		List<Statement> statements = getLocalVariableAssignments();
 		StatementCreator sc = new StatementCreator(mStack);
-		mStatements.addAll(sc.getStatements());
+		statements.addAll(sc.getStatements());
+		return statements;
 	}
 
 	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
@@ -188,12 +189,14 @@ public class InstructionTranslator {
 		return movedNode;
 	}
 
-	private void addLocalVariablesAssignments() {
-		List<Block> localVars = mLocalVariables.values().stream()
+	private List<Statement> getLocalVariableAssignments() {
+		List<Statement> localVars = mLocalVariables.values().stream()
 				.filter(variable -> !variable.isArgument() && !variable.isAdded())
 				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0)) //todo variable line number
 				.collect(Collectors.toList());
-		mStatements.addAll(0, localVars);
+		List<Statement> result = new ArrayList<>();
+		result.addAll(0, localVars);
+		return result;
 	}
 
 	/**
@@ -369,7 +372,7 @@ public class InstructionTranslator {
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		if (node.getOpcode() == Opcodes.INVOKESPECIAL && Util.isConstructor(node.name)) {
-			stack.push(new ConstructorInvocationExpression(node, mMethod.name));
+			stack.push(new ConstructorInvocationExpression(node, mMethod.name, mMethodBlock.getClassName()));
 		} else {
 			stack.push(new MethodInvocationExpression(node, mMethod.name));
 		}

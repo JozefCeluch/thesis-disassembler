@@ -21,7 +21,7 @@ public class InnerClassBlock extends Block {
 
 	@Override
 	public Block disassemble() {
-		if (mOuterClassName.equals(mInnerClassNode.outerName)) {
+		if (!mOuterClassName.equals(mInnerClassNode.name)) {
 			appendInnerClassNode(mInnerClassNode.name);
 		}
 		return this;

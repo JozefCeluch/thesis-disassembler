@@ -24,7 +24,10 @@ public class Util {
 	public static String removeOuterClasses(String name) {
 		if (name.contains("$")) {
 			int lastName = name.lastIndexOf("$");
-			return name.substring(lastName + 1);
+			if (name.substring(lastName + 1).matches(".*[^0-9].*")) {
+				return name.substring(lastName + 1);
+			}
+			return name.substring(lastName);
 		}
 		return name;
 	}
