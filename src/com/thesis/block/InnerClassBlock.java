@@ -26,7 +26,7 @@ public class InnerClassBlock extends Block {
 	}
 
 	private void appendInnerClassNode(String name) {
-		Parser p = new Parser("testData/"); //todo folder
+		Parser p = Parser.getInstance();
 
 		text.add(p.parseClassFile(name + ".class", getParent())); //todo make extension optional
 		text.add(NL);

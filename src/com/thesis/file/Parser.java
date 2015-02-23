@@ -9,8 +9,18 @@ import java.io.*;
 public class Parser {
 
     private Reader mReader;
+	private static Parser mParser;
 
-    public Parser(String directory) {
+	public static Parser createInstance(String directory) {
+		mParser = new Parser(directory);
+		return mParser;
+	}
+
+	public static Parser getInstance() {
+		return mParser;
+	}
+
+    private Parser(String directory) {
         mReader = new Reader(directory);
     }
 

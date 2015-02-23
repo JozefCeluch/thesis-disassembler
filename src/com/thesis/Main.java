@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 public class Main {
 
 	public static void main(String[] args) {
-		Parser p = new Parser("tests/example");
+		Parser p = Parser.createInstance("tests/example");
 
 		p.parseClassFile("Atom.class");
 
