@@ -21,7 +21,6 @@ this.this$0 = this$0;
 super();
 }
 }
-
 class InnerClass {
 final  /* synthetic */ ClassWithInnerClasses this$0;
 public InnerClass(ClassWithInnerClasses arg0, java.lang.String s) {
@@ -44,7 +43,5 @@ private java.lang.String anotherVeryInnerClassMethod() {
 return ClassWithInnerClasses.access$200(this.this$1.this$0);
 }
 }
-
 }
-
 }

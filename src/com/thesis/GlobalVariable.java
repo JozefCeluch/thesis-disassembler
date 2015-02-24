@@ -1,6 +1,7 @@
 package com.thesis;
 
 import com.thesis.common.DataType;
+import com.thesis.common.Util;
 
 public class GlobalVariable extends Variable {
 
@@ -21,6 +22,6 @@ public class GlobalVariable extends Variable {
 
 	@Override
 	public String toString() {
-		return mOwner!= null ? mOwner.toString() + "." + mName : mName;
+		return mOwner!= null ? Util.javaObjectName(mOwner.toString()) + "." + mName : mName;
 	}
 }

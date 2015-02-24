@@ -5,11 +5,14 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.ClassReader;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Parser {
 
     private Reader mReader;
 	private static Parser mParser;
+	private Map<String, String> mInnerClassMap; // <full inner class name, displayed inner class name>
 
 	public static Parser createInstance(String directory) {
 		mParser = new Parser(directory);
@@ -22,6 +25,7 @@ public class Parser {
 
     private Parser(String directory) {
         mReader = new Reader(directory);
+		mInnerClassMap = new HashMap<>();
     }
 
     public String parseClassFile(String file) {
@@ -50,5 +54,15 @@ public class Parser {
 			e.printStackTrace(); //TODO
 			return null;
 		}
+	}
+
+	public void addInnerClassName(String fullName, String displayName) {
+		mInnerClassMap.put(fullName, displayName);
+	}
+
+	public String getInnerClassDisplayName(String fullName) {
+		String result = mInnerClassMap.get(fullName);
+
+		return result != null ? result : fullName;
 	}
 }

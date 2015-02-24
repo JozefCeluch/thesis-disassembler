@@ -2,6 +2,7 @@ package com.thesis.block;
 
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import com.thesis.file.Parser;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -23,6 +24,7 @@ public class ClassBlock extends Block {
 
 	@Override
 	public Block disassemble() {
+		storeInnerClassesNames(mClassNode.innerClasses);
 
 		appendAllSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations); //todo
 
@@ -41,7 +43,7 @@ public class ClassBlock extends Block {
 			isClass = true;
 		}
 
-		buf.append(Util.removeOuterClasses(mClassNode.name));
+		buf.append(Util.javaObjectName(mClassNode.name));
 		String genericDeclaration = null;
 		if (mClassNode.signature != null) {
 			SignatureVisitor sv = new SignatureVisitor(0);
@@ -115,11 +117,37 @@ public class ClassBlock extends Block {
 		}
 	}
 
+	private void storeInnerClassesNames(List innerClasses) {
+		for (Object innerClass : innerClasses) {
+			saveInnerClassName((InnerClassNode)innerClass);
+		}
+	}
+
+	private void saveInnerClassName(InnerClassNode innerClass) {
+		if (innerClass.innerName != null && innerClass.outerName != null) {
+			Parser.getInstance().addInnerClassName(innerClass.name, innerClass.innerName);
+		} else if (innerClass.name.length() > mClassNode.name.length()) {
+//			Parser.getInstance().addInnerClassName(innerClass.name, innerClass.name.replace(mClassNode.name, ""));
+		}
+
+	}
+
 	private boolean shouldAddInnerClass(InnerClassNode innerClass) {
-		return (innerClass.outerName != null && innerClass.innerName != null &&
-				innerClass.name.matches(mClassNode.name + "\\$" + innerClass.innerName)) ||
-				(innerClass.outerName == null && innerClass.innerName == null
-				&& innerClass.name.matches(mClassNode.name + "\\$[0-9]+$"));
+		if (innerClass.innerName != null && innerClass.outerName != null) {
+			return innerClass.name.equals(mClassNode.name + "$" + innerClass.innerName);
+		} else if (innerClass.outerName == null) {
+			int lastDollarLocation = innerClass.name.lastIndexOf("$");
+			String classNameWithoutInnerClass = innerClass.name.substring(0, lastDollarLocation);
+			String innerClassName = innerClass.name.substring(lastDollarLocation + 1);
+
+			if (innerClass.innerName == null) {
+				return classNameWithoutInnerClass.equals(mClassNode.name) && innerClassName.matches("[0-9]+$");
+			} else {
+				return classNameWithoutInnerClass.equals(mClassNode.name) && innerClassName.matches("[0-9]+.+$");
+			}
+		}
+
+		return false;
 	}
 
 	@Override

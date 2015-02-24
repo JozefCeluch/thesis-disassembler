@@ -1,5 +1,6 @@
 package com.thesis.common;
 
+import com.thesis.file.Parser;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.util.Printer;
 
@@ -25,7 +26,7 @@ public class Util {
 		int dimensions = desc.lastIndexOf('[') + 1;
 		String fullTypeString = desc.substring(dimensions);
 		DataType fullType = getType(fullTypeString);
-		String typeString = removeOuterClasses(fullType.toString());
+		String typeString = javaObjectName(fullType.toString());
 
 		DataType arrayType = DataType.getType(typeString);
 		arrayType.setDimension(dimensions);
@@ -33,7 +34,7 @@ public class Util {
 	}
 
 	private static DataType getReferenceType(String desc) {
-		return DataType.getType(removeOuterClasses(javaObjectName(desc.substring(1))));
+		return DataType.getType(javaObjectName(javaObjectName(desc.substring(1))));
 	}
 
 	private static DataType getPrimitiveType(String desc) {
@@ -61,19 +62,19 @@ public class Util {
 		}
 	}
 
-	public static String removeOuterClasses(String name) {
-		if (name.contains("$")) {
-			int lastName = name.lastIndexOf("$");
-			if (name.substring(lastName + 1).matches(".*[^0-9].*")) {
-				return name.substring(lastName + 1);
-			}
-			return name.substring(lastName);
-		}
-		return name;
-	}
+//	public static String javaObjectName(String name) {
+//		if (name.contains("$")) {
+//			int lastName = name.lastIndexOf("$");
+//			if (name.substring(lastName + 1).matches(".*[^0-9].*")) {
+//				return name.substring(lastName + 1);
+//			}
+//			return name.substring(lastName);
+//		}
+//		return name;
+//	}
 
 	public static String javaObjectName(String objectName) {
-		return objectName.replaceAll("/", ".").replaceAll(";","");
+		return Parser.getInstance().getInnerClassDisplayName(objectName).replaceAll("/", ".").replaceAll(";","");
 	}
 
 	public static String getFullClassName(String objectName) {

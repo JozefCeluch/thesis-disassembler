@@ -2,6 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.LocalVariable;
 import com.thesis.common.DataType;
+import com.thesis.common.Util;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -18,7 +19,7 @@ public class VariableDeclarationExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(mVariable.getType().print() + " " + mVariable.toString());
+		writer.write(Util.javaObjectName(mVariable.getType().print()) + " " + mVariable.toString());
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class ConstructorInvocationExpression extends MethodInvocationExpression 
 	@Override
 	public void write(Writer writer) throws IOException {
 		if (!Util.isConstructor(mCallingMethod) || mNewExpression != null) {
-			writer.write(mOwnerClass);
+			writer.write(Util.javaObjectName(mOwnerClass));
 		} else if (mContainingClass.equals(mOwnerClass)) {
 			writer.write("this");
 		} else {

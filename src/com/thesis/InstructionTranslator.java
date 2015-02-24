@@ -1,6 +1,5 @@
 package com.thesis;
 
-import com.thesis.block.Block;
 import com.thesis.block.MethodBlock;
 import com.thesis.block.Statement;
 import com.thesis.common.DataType;
@@ -331,7 +330,7 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.NEW) {
-			stack.push(new NewExpression(node, DataType.getType(Util.removeOuterClasses(node.desc)))); //TODO probably not remove
+			stack.push(new NewExpression(node, DataType.getType(Util.javaObjectName(node.desc))));
 		}
 		if (opCode == Opcodes.INSTANCEOF) {
 			stack.push(new InstanceOfExpression(node));
@@ -347,6 +346,9 @@ public class InstructionTranslator {
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.PUTFIELD) {
 			Expression value = stack.pop();
+			if (!(stack.peek() instanceof PrimaryExpression)) { //TODO expects Primary expression on top because the previous was popped, maybe implementing DUP and POP is necessary
+				stack.pop();
+			}
 			PrimaryExpression owner = (PrimaryExpression)stack.pop();
 			DataType ownerType = DataType.getType(owner.getValue().toString());
 			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), ownerType);

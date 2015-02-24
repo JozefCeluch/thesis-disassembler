@@ -22,7 +22,6 @@ localInt = this.intField;
 }
 class $1 {
 }
-
 class InnerClass {
 public int number;
 final  /* synthetic */ FieldInsnNode_field this$0;
@@ -33,9 +32,5 @@ super();
  /* synthetic */ InnerClass(FieldInsnNode_field x0, $1 x1) {
 this(x0);
 }
-class $1 {
 }
-
-}
-
 }
