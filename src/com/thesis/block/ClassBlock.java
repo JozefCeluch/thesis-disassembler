@@ -15,7 +15,13 @@ import java.io.Writer;
 import java.util.List;
 
 public class ClassBlock extends Block {
-	ClassNode mClassNode;
+
+	private ClassNode mClassNode;
+	private List<Object> mAnnotations;
+	private String mAccessFlags;
+	private String mName;
+	private String mExtends = "";
+	private String mImplements = "";
 
 	public ClassBlock(ClassNode classNode, Block parent) {
 		mClassNode = classNode;
@@ -26,9 +32,34 @@ public class ClassBlock extends Block {
 	public Block disassemble() {
 		storeInnerClassesNames(mClassNode.innerClasses);
 
-		appendAllSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations); //todo
+		mAnnotations = getSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations);
+		mAccessFlags = getAccessFlags();
+		mName = Util.javaObjectName(mClassNode.name);
 
-		boolean isClass = false;
+		String genericDeclaration = null;
+		if (mClassNode.signature != null) {
+			SignatureVisitor sv = new SignatureVisitor(0);
+			SignatureReader r = new SignatureReader(mClassNode.signature);
+			r.accept(sv);
+			genericDeclaration = sv.getDeclaration();
+		}
+		if (genericDeclaration != null){
+			mExtends = genericDeclaration;
+		} else {
+			mExtends = getSuperClass(mClassNode.superName);
+			if (isClass()) {
+				mImplements = getInterfaces(mClassNode.interfaces);
+			}
+		}
+
+		appendFields(mClassNode.fields);
+		appendMethods(mClassNode.methods);
+		appendInnerClasses(mClassNode.innerClasses);
+
+		return this;
+	}
+
+	private String getAccessFlags() {
 		clearBuffer();
 		addAccess(mClassNode.access & ~Opcodes.ACC_SUPER);
 
@@ -40,47 +71,21 @@ public class ClassBlock extends Block {
 			removeFromBuffer("abstract ");
 		} else if (!Util.containsFlag(mClassNode.access, Opcodes.ACC_ENUM)) {
 			buf.append("class ");
-			isClass = true;
+//			isClass = true;
 		}
-
-		buf.append(Util.javaObjectName(mClassNode.name));
-		String genericDeclaration = null;
-		if (mClassNode.signature != null) {
-			SignatureVisitor sv = new SignatureVisitor(0);
-			SignatureReader r = new SignatureReader(mClassNode.signature);
-			r.accept(sv);
-			genericDeclaration = sv.getDeclaration();
-		}
-
-		if (genericDeclaration != null){
-			buf.append(genericDeclaration);
-		} else {
-			addSuperClass(mClassNode.superName);
-			if (isClass) addInterfaces(mClassNode.interfaces);
-		}
-		text.add(buf.toString());
-		text.add(BLOCK_START);
-
-		appendFields(mClassNode.fields);
-		appendMethods(mClassNode.methods);
-		appendInnerClasses(mClassNode.innerClasses);
-
-		return this;
+		return buf.toString();
 	}
 
-	private void appendAllSingleLineAnnotations(List... annotationLists){
-		for (List annotationNodeList : annotationLists) {
-			text.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
-		}
-	}
-
-	private void addSuperClass(String superName) {
+	private String getSuperClass(String superName) {
+		clearBuffer();
 		if (superName != null && !superName.equals("java/lang/Object")) {
 			buf.append(" extends ").append(Util.javaObjectName(superName)).append(" ");
 		}
+		return buf.toString();
 	}
 
-	private void addInterfaces(List interfaces) {
+	private String getInterfaces(List interfaces) {
+		clearBuffer();
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
@@ -88,6 +93,7 @@ public class ClassBlock extends Block {
 				buf.append(Util.javaObjectName((String) interfaces.get(i)));
 			}
 		}
+		return buf.toString();
 	}
 
 	private void appendMethods(List methods) {
@@ -150,6 +156,10 @@ public class ClassBlock extends Block {
 		return false;
 	}
 
+	private boolean isClass() {
+		return !Util.containsFlag(mClassNode.access, Opcodes.ACC_ANNOTATION | Opcodes.ACC_INTERFACE | Opcodes.ACC_ENUM);
+	}
+
 	@Override
 	public int countParents() {
 		if (!hasParent()) {
@@ -160,12 +170,16 @@ public class ClassBlock extends Block {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		printList(writer, text);
+		printList(writer, mAnnotations);
+		writer.write(mAccessFlags);
+		writer.write(mName);
+		writer.write(mExtends);
+		writer.write(mImplements);
 
+		writer.write(BLOCK_START);
 		for (Block block : children) {
 			block.write(writer);
 		}
-
-		writer.append(BLOCK_END);
+		writer.write(BLOCK_END);
 	}
 }

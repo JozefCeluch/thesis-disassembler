@@ -1,5 +1,9 @@
-@java.lang.Deprecated
+import java.lang.Deprecated;
+
+@Deprecated
 public class EmptyDeprecatedClass {
-public EmptyDeprecatedClass() {
-}
+	@Deprecated
+	public void deprecatedMethod() {
+		System.out.println("DEPRECATED");
+	}
 }

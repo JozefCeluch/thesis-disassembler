@@ -50,14 +50,6 @@ public abstract class Block implements Writable{
 		buf.setLength(0);
 	}
 
-	protected boolean addDeprecatedAnnotationIfNeeded(int access) {
-		if (Util.containsFlag(access, Opcodes.ACC_DEPRECATED)) {
-			buf.append("@Deprecated").append(NL);
-			return true;
-		}
-		return false;
-	}
-
 	protected void addAccess(int access) {
 		if (Util.containsFlag(access, Opcodes.ACC_PRIVATE)) {
 			buf.append("private ");
@@ -91,6 +83,9 @@ public abstract class Block implements Writable{
 		}
 		if (Util.containsFlag(access, Opcodes.ACC_ENUM)) {
 			buf.append("enum ");
+		}
+		if (Util.containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
+			addComment("synthetic");
 		}
 	}
 
@@ -146,5 +141,13 @@ public abstract class Block implements Writable{
 				}
 			}
 		}
+	}
+
+	protected List<Object> getSingleLineAnnotations(List... annotationLists){
+		List<Object> annotations = new ArrayList<>();
+		for (List annotationNodeList : annotationLists) {
+			annotations.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
+		}
+		return annotations;
 	}
 }

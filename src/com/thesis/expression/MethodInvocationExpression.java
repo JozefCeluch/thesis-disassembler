@@ -30,7 +30,7 @@ public class MethodInvocationExpression extends Expression {
 		mType = DataType.getType(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwnerClass = Util.javaObjectName(instruction.owner);
+		mOwnerClass = Util.javaObjectName(instruction.owner, isStatic());
 		mCallingMethod = callingMethod;
 	}
 
@@ -52,7 +52,7 @@ public class MethodInvocationExpression extends Expression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		if (isStatic()) {
-			writer.append(Util.javaObjectName(mOwnerClass)).append('.').write(mName);
+			writer.append(Util.javaObjectName(mOwnerClass, isStatic())).append('.').write(mName);
 		} else {
 			if (!isLocalMethod()) {
 				mOwnerInstance.write(writer);

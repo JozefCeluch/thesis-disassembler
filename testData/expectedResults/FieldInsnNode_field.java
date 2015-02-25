@@ -20,7 +20,7 @@ this.longField = 43L;
 this.stringField = "another literal";
 localInt = this.intField;
 }
-class $1 {
+ /* synthetic */ class FieldInsnNode_field$1 {
 }
 class InnerClass {
 public int number;
@@ -29,7 +29,7 @@ private InnerClass(FieldInsnNode_field arg0) {
 this.this$0 = arg0;
 super();
 }
- /* synthetic */ InnerClass(FieldInsnNode_field x0, $1 x1) {
+ /* synthetic */ InnerClass(FieldInsnNode_field x0, FieldInsnNode_field$1 x1) {
 this(x0);
 }
 }

@@ -24,8 +24,8 @@ public class ParserTest {
 
 	@Test
 	@Parameters({"AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
-			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "ClassWithInnerClasses", "ComplexVariableNames",
-			"MultiANewArrayInsnNode", "TryCatchBlockNode"})
+			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "ComplexVariableNames",
+			"MultiANewArrayInsnNode", "TryCatchBlockNode", "ClassWithInnerClasses", "ClassWithAnonymousClasses"})
 	public void testUngroupedClasses(String name){
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
 	}

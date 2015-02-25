@@ -11,7 +11,19 @@ public class ClassWithAnonymousClasses {
 			private int num1 = number[0];
 			@Override
 			public int interfaceMethod() {
-				return globalNum;
+				SomeInterface innerAnonObj = new SomeInterface() {
+					public int interfaceMethod() {
+						class XA extends A.AA {
+							public XA() {
+								super();
+								innerA = 76;
+							}
+						}
+						A.AA xaaObject = new XA();
+						return 99;
+					}
+				};
+				return innerAnonObj.interfaceMethod();
 			}
 		};
 	}
@@ -20,11 +32,23 @@ public class ClassWithAnonymousClasses {
 		int interfaceMethod();
 	}
 
-	private class A {
-		private int privateIntA = globalNum;
+	public static class A {
+		private static int privateIntA = 88;
+
+		public static int getPrivateA() {
+			return privateIntA;
+		}
+		public static class AA {
+			protected static int innerA = 77;
+			public static int getInnerInt() {
+				return AA.innerA;
+			}
+
+		}
 	}
 
 	private class B {
 		private int privateIntB = ClassWithAnonymousClasses.this.classA.privateIntA;
+		private int anotherInt= ClassWithAnonymousClasses.A.AA.getInnerInt();
 	}
 }

@@ -77,6 +77,13 @@ public class Util {
 		return Parser.getInstance().getInnerClassDisplayName(objectName).replaceAll("/", ".").replaceAll(";","");
 	}
 
+	public static String javaObjectName(String objectName, boolean isStatic) {
+		if (isStatic) {
+			return objectName.replaceAll("/", ".").replaceAll(";","").replace('$','.');
+		}
+		return javaObjectName(objectName);
+	}
+
 	public static String getFullClassName(String objectName) {
 		return objectName.replace(';', '\0').replace('$','.');
 	}
