@@ -17,7 +17,7 @@ default:
 java.lang.System.out.println("default");
 }
 java.lang.System.out.println("AFTER SWITCH");
-number = (int) 999;
+number = 999;
 }
 void moreComplexswitchWithHoles(int number) {
 switch (number) {

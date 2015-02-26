@@ -6,7 +6,7 @@ void methodThree() {
 boolean bool;
 int num1;
 boolean booolThree;
-bool = (boolean) 0;
+bool = false;
 num1 = 5;
 booolThree = num1 > 4 || num1 <= 7 && "s".isEmpty() && bool;
 }
@@ -26,7 +26,7 @@ int number;
 int anotherNum;
 anotherNum = 5;
 if ("i".isEmpty() || anotherNum > 4) {
-number = (int) 23;
+number = 23;
 java.lang.System.out.println("then branch");
 } else {
 java.lang.System.out.println("else branch");

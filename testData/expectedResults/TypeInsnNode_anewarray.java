@@ -13,7 +13,7 @@ java.lang.String[] objectArray() {
 java.lang.String[] strArray;
 int position;
 strArray = new java.lang.String[]{"a", "b", "c"};
-position = (int) 13;
+position = 13;
 strArray[position + 82432] = "r";
 return strArray;
 }

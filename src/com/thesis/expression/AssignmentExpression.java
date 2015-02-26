@@ -51,17 +51,13 @@ public class AssignmentExpression extends  Expression{
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		if (mRightSide != null) return; //the expression already has left side
-		if (!stack.isEmpty() ) { //&& stack.peek().labelId == mLabel
-			mRightSide = stack.pop(); // todo array assignment and type
-//			if (localVar.hasDebugType()) {
-//				rightSide.setType(localVar.getType());
-//			}
-			if ((mRightSide.hasType() && !DataType.UNKNOWN.equals(mRightSide.getType()))
-					&& (!mLeftSide.hasType() || DataType.UNKNOWN.equals(mLeftSide.getType()))) {
+		if (mRightSide != null) return; //the expression already has right side
+		if (!stack.isEmpty() ) {
+			mRightSide = stack.pop();
+
+			if (mRightSide.hasType() && !mLeftSide.hasType()) {
 				mLeftSide.setType(mRightSide.getType());
-			} else if ((mLeftSide.hasType() && !DataType.UNKNOWN.equals(mLeftSide.getType()))
-					&& (!mRightSide.hasType() || DataType.UNKNOWN.equals(mRightSide.getType()))) {
+			} else if (mLeftSide.hasType() && mRightSide instanceof PrimaryExpression && ((PrimaryExpression) mRightSide).isConstant()) {
 				mRightSide.setType(mLeftSide.getType());
 			}
 

@@ -6,12 +6,16 @@ public class Variable {
 
 	protected String mName;
 	protected DataType mType;
+	protected boolean mDebugType;
+
 
 	public Variable() {
+		mDebugType = false;
 		mType = DataType.UNKNOWN;
 	}
 
 	public Variable(String name, DataType type) {
+		mDebugType = false;
 		mName = name;
 		mType = type != null ? type : DataType.UNKNOWN;
 	}
@@ -31,4 +35,9 @@ public class Variable {
 	public boolean hasType() {
 		return mType != null && !mType.toString().isEmpty() && !mType.equals(DataType.UNKNOWN);
 	}
+
+	public boolean hasDebugType(){
+		return mDebugType;
+	}
+
 }

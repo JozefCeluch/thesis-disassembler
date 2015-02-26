@@ -13,7 +13,6 @@ public class LocalVariable extends Variable {
 
 	private int mIndex;
 	private boolean mIsArgument;
-	private boolean mDebugType;
 	private Label mStart;
 	private Label mEnd;
 	private boolean isAdded = false;
@@ -21,7 +20,6 @@ public class LocalVariable extends Variable {
 	public LocalVariable(int index) {
 		super();
 		this.mIndex = index;
-		mDebugType = false;
 	}
 
 	public LocalVariable(String name, int index) {
@@ -48,7 +46,6 @@ public class LocalVariable extends Variable {
 	public LocalVariable(String name, DataType type, int index) {
 		super(name, type);
 		mIndex = index;
-		mDebugType = false;
 	}
 
 	public int getIndex() {
@@ -65,10 +62,6 @@ public class LocalVariable extends Variable {
 
 	public boolean isArgument() {
 		return mIsArgument;
-	}
-
-	public boolean hasDebugType(){
-		return mDebugType;
 	}
 
 	public int getStartLabel(ExpressionStack stack) {

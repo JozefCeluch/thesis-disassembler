@@ -112,7 +112,7 @@ public class PrimaryExpression extends Expression {
 		// no preparation necessary
 	}
 
-	public static void createAndAdd(InsnNode instruction, ExpressionStack stack) {
-		stack.push(new PrimaryExpression(instruction));
+	public boolean isConstant() {
+		return !(mInstruction instanceof VarInsnNode || mInstruction instanceof FieldInsnNode);
 	}
 }

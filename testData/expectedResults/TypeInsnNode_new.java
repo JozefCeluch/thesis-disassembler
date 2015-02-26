@@ -10,7 +10,7 @@ InnerClass thirdObject;
 InnerClass fourthObject;
 firstObject = new InnerClass(this);
 secondObject = new InnerClass(this, 2);
-firstNumber = (int) 99;
+firstNumber = 99;
 thirdObject = new InnerClass(this, firstNumber);
 fourthObject = new InnerClass(this, 1, 2);
 }

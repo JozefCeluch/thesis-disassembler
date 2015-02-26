@@ -17,7 +17,7 @@ class ComplexVariableNames {
 		List<HashMap<Integer, Set<String>>> localComplexList = complexListField;
 		Integer smallNum = new Integer(2);
 		Number number = smallNum;
-		java.lang.Comparable<?> comparable = (java.lang.Comparable<?>) smallNum;
+		java.lang.Comparable<?> comparable = smallNum;
 	}
 
 }
