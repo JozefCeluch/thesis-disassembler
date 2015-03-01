@@ -1,5 +1,7 @@
 package com.thesis.common;
 
+import org.objectweb.asm.Type;
+
 public class DataType {
 
 	private enum SimpleType {
@@ -57,8 +59,17 @@ public class DataType {
 		mDimension = 0;
 	}
 
+	private DataType(Type type) {
+		mTypeString = type.getClassName();
+		mDimension = 0;
+	}
+
 	public static DataType getType(String typeString) {
 			return new DataType(typeString);
+	}
+
+	public static DataType getType(Type type) {
+			return new DataType(type);
 	}
 
 	public boolean isReferenceType() {
@@ -84,7 +95,7 @@ public class DataType {
 				brackets += "[]";
 			}
 		}
-		return mTypeString + brackets;
+		return Util.javaObjectName(mTypeString) + brackets;
 	}
 
 	@Override

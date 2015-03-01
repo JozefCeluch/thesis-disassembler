@@ -383,6 +383,7 @@ public class InstructionTranslator {
 	//	INVOKEDYNAMIC
 	private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
+		stack.push(new LambdaExpression(node));
 	}
 
 	/**

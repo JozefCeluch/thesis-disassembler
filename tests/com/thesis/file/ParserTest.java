@@ -86,6 +86,17 @@ public class ParserTest {
 	}
 
 	@Test
+	@Parameters(method = "getInvokedynamicInsnNodeClasses")
+	public void testInvokedynamicInsnNodeClasses(String name){
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+	}
+
+	public List<Object[]> getInvokedynamicInsnNodeClasses() {
+		return getFilteredClasses(file -> file.isFile()
+				&& file.getPath().endsWith(".java") && file.getPath().contains(File.separator + "InvokedynamicInsnNode_"));
+	}
+
+	@Test
 	@Parameters(method = "getSwitchInsnNodeClasses")
 	public void testSwitchInsnNodeClasses(String name){
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
