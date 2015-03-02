@@ -1,8 +1,10 @@
 package com.thesis.file;
 
 import com.thesis.block.Block;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
 import java.util.HashMap;
@@ -45,8 +47,8 @@ public class Parser {
 			StringWriter stringWriter = new StringWriter();
 			classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
 			Disassembler disassembler = new Disassembler(new PrintWriter(stringWriter));
-//			ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
-//			classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+			ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
+			classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 			disassembler.disassembleClass(classNode, parent);
 			disassembler.print();
 			return stringWriter.toString();
@@ -57,7 +59,9 @@ public class Parser {
 	}
 
 	public void addInnerClassName(String fullName, String displayName) {
-		mInnerClassMap.put(fullName, displayName);
+		if (!mInnerClassMap.containsKey(fullName)) {
+			mInnerClassMap.put(fullName, displayName);
+		}
 	}
 
 	public String getInnerClassDisplayName(String fullName) {

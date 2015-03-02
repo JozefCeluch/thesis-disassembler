@@ -2,6 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class InstanceOfExpression extends Expression {
 
 	public InstanceOfExpression(TypeInsnNode instruction) {
 		super(instruction);
-		rightClass = DataType.getType(Util.javaObjectName(instruction.desc));
+		rightClass = DataType.getType(Type.getObjectType(instruction.desc));
 	}
 
 	@Override

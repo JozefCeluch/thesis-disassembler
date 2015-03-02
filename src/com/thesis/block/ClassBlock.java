@@ -1,9 +1,11 @@
 package com.thesis.block;
 
+import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.file.Parser;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -19,7 +21,7 @@ public class ClassBlock extends Block {
 	private ClassNode mClassNode;
 	private List<Object> mAnnotations;
 	private String mAccessFlags;
-	private String mName;
+	private DataType mClassType;
 	private String mExtends = "";
 	private String mImplements = "";
 
@@ -34,7 +36,7 @@ public class ClassBlock extends Block {
 
 		mAnnotations = getSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations);
 		mAccessFlags = getAccessFlags();
-		mName = Util.javaObjectName(mClassNode.name);
+		mClassType = DataType.getType(Type.getObjectType(mClassNode.name));
 
 		String genericDeclaration = null;
 		if (mClassNode.signature != null) {
@@ -79,7 +81,7 @@ public class ClassBlock extends Block {
 	private String getSuperClass(String superName) {
 		clearBuffer();
 		if (superName != null && !superName.equals("java/lang/Object")) {
-			buf.append(" extends ").append(Util.javaObjectName(superName)).append(" ");
+			buf.append(" extends ").append(DataType.getType(Type.getObjectType(superName)).print()).append(" ");
 		}
 		return buf.toString();
 	}
@@ -90,7 +92,7 @@ public class ClassBlock extends Block {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
 				addComma(i);
-				buf.append(Util.javaObjectName((String) interfaces.get(i)));
+				buf.append(DataType.getType(Type.getObjectType((String) interfaces.get(i))).print());
 			}
 		}
 		return buf.toString();
@@ -99,7 +101,7 @@ public class ClassBlock extends Block {
 	private void appendMethods(List methods) {
 		for (Object method : methods) {
 			MethodBlock methodBlock = new MethodBlock((MethodNode)method, this);
-			methodBlock.setClassName(mClassNode.name);
+			methodBlock.setClassType(mClassType);
 			methodBlock.setClassAccess(mClassNode.access);
 			children.add(methodBlock.disassemble());
 		}
@@ -172,7 +174,7 @@ public class ClassBlock extends Block {
 	public void write(Writer writer) throws IOException {
 		printList(writer, mAnnotations);
 		writer.write(mAccessFlags);
-		writer.write(mName);
+		writer.write(mClassType.print());
 		writer.write(mExtends);
 		writer.write(mImplements);
 

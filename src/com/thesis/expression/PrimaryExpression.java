@@ -3,6 +3,7 @@ package com.thesis.expression;
 import com.thesis.Variable;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.io.IOException;
@@ -22,11 +23,7 @@ public class PrimaryExpression extends Expression {
 
 	public PrimaryExpression(LdcInsnNode node, Object constant, DataType type) {
 		super(node);
-		if (DataType.getType("String").equals(type) || DataType.getType("java.lang.String").equals(type)) {
-			mValue = QUOTE + constant + QUOTE;
-		} else {
-			mValue = constant;
-		}
+		mValue = constant;
 		mType = type;
 	}
 
@@ -64,7 +61,7 @@ public class PrimaryExpression extends Expression {
 					break;
 				default:
 					mValue = Integer.valueOf(val);
-					mType = Util.getType(opCode.substring(0, 1));
+					mType = DataType.getType(Type.getType(opCode.substring(0, 1)));
 			}
 		}
 	}
@@ -83,16 +80,20 @@ public class PrimaryExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		String output = mCastType != null ? "(" + mCastType.toString() + ") " : "";
+		String output = mCastType != null ? "(" + mCastType.print() + ") " : "";
 
 		if (mValue instanceof Variable) {
 			output += mValue.toString();
 		} else if (DataType.BOOLEAN.equals(mType)){
 			output += (int)mValue == 0 ? "false" : "true";
+		} else if (DataType.getType("java.lang.String").equals(mType)) {
+			output += QUOTE + mValue + QUOTE;
+		} else if (DataType.getType("java.lang.Class").equals(mType) && mValue instanceof DataType) {
+			output += ((DataType)mValue).print() + ".class";
 		} else {
 			output += mValue.toString();
-			if (mType.equals(DataType.FLOAT)) output += "F";
-			if (mType.equals(DataType.LONG)) output += "L";
+			if (DataType.FLOAT.equals(mType)) output += "F";
+			if (DataType.LONG.equals(mType)) output += "L";
 		}
 
 		writer.write(output);

@@ -4,6 +4,7 @@ import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.MethodInsnNode;
 
@@ -17,7 +18,7 @@ public class MethodInvocationExpression extends Expression {
 	protected final String mName;
 	protected List<Expression> mArguments;
 	protected int mArgumentCount;
-	protected String mOwnerClass;
+	protected DataType mOwnerClass;
 	protected String mCallingMethod;
 	protected Expression mOwnerInstance;
 
@@ -30,7 +31,7 @@ public class MethodInvocationExpression extends Expression {
 		mType = DataType.getType(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwnerClass = Util.javaObjectName(instruction.owner, isStatic());
+		mOwnerClass = DataType.getType(Type.getObjectType(instruction.owner));
 		mCallingMethod = callingMethod;
 	}
 
@@ -52,7 +53,7 @@ public class MethodInvocationExpression extends Expression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		if (isStatic()) {
-			writer.append(Util.javaObjectName(mOwnerClass, isStatic())).append('.').write(mName);
+			writer.append(mOwnerClass.print(isStatic())).append('.').write(mName);
 		} else {
 			if (!isLocalMethod()) {
 				mOwnerInstance.write(writer);

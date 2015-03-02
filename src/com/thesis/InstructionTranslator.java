@@ -330,7 +330,7 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.NEW) {
-			stack.push(new NewExpression(node, DataType.getType(Util.javaObjectName(node.desc))));
+			stack.push(new NewExpression(node, DataType.getType(Type.getObjectType(node.desc))));
 		}
 		if (opCode == Opcodes.INSTANCEOF) {
 			stack.push(new InstanceOfExpression(node));
@@ -351,21 +351,21 @@ public class InstructionTranslator {
 			}
 			PrimaryExpression owner = (PrimaryExpression)stack.pop();
 			DataType ownerType = DataType.getType(owner.getValue().toString());
-			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), ownerType);
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), ownerType);
 			stack.push(new AssignmentExpression(node, new LeftHandSide(node,field), value));
 		}
 		if (opCode == Opcodes.GETFIELD) {
 			PrimaryExpression owner = (PrimaryExpression) stack.pop();
 			DataType ownerType = DataType.getType(owner.getValue().toString());
-			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), ownerType);
-			stack.push(new PrimaryExpression(node, field,Util.getType(node.desc)));
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), ownerType);
+			stack.push(new PrimaryExpression(node, field, field.getType()));
 		}
 		if (opCode == Opcodes.GETSTATIC) {
-			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(Util.javaObjectName(node.owner))), Util.getType(node.desc)));
+			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), DataType.getType(Type.getObjectType(node.owner))), DataType.getType(Type.getType(node.desc))));
 		}
 		if (opCode == Opcodes.PUTSTATIC) {
 			Expression value = stack.pop();
-			GlobalVariable field = new GlobalVariable(node.name, Util.getType(node.desc), DataType.getType(node.owner));
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), DataType.getType(node.owner));
 			stack.push(new AssignmentExpression(node, new LeftHandSide(node, field), value));
 		}
 	}
@@ -374,7 +374,7 @@ public class InstructionTranslator {
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		if (node.getOpcode() == Opcodes.INVOKESPECIAL && Util.isConstructor(node.name)) {
-			stack.push(new ConstructorInvocationExpression(node, mMethod.name, mMethodBlock.getClassName()));
+			stack.push(new ConstructorInvocationExpression(node, mMethod.name, mMethodBlock.getClassType()));
 		} else {
 			stack.push(new MethodInvocationExpression(node, mMethod.name));
 		}
@@ -522,7 +522,7 @@ public class InstructionTranslator {
 		} else if (constant instanceof String) {
 			type = DataType.getType("java.lang.String");
 		} else {
-			constant = Util.getType(((Type) constant).getDescriptor()).toString() + ".class"; //todo think is this correct?
+			constant = DataType.getType((Type) constant); //todo think is this correct?
 			type = DataType.getType("java.lang.Class");
 		}
 		stack.push(new PrimaryExpression(node, constant, type));

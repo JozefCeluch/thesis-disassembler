@@ -3,6 +3,7 @@ package com.thesis.expression;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.MultiANewArrayInsnNode;
@@ -84,10 +85,7 @@ public class ArrayCreationExpression extends Expression {
 		if (desc == null || desc.isEmpty()) {
 			return DataType.UNKNOWN;
 		}
-		if (desc.startsWith("[") || desc.startsWith("L")) {
-			return Util.getType(desc);
-		}
-		return DataType.getType(Util.javaObjectName(desc));
+		return DataType.getType(Type.getObjectType(desc));
 	}
 
 	private static DataType convertTypeCodeToType(int code) {

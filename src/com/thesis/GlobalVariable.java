@@ -22,6 +22,6 @@ public class GlobalVariable extends Variable {
 
 	@Override
 	public String toString() {
-		return mOwner!= null ? Util.javaObjectName(mOwner.toString()) + "." + mName : mName;
+		return mOwner!= null ? mOwner.print() + "." + mName : mName;
 	}
 }

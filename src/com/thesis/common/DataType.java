@@ -62,6 +62,10 @@ public class DataType {
 	private DataType(Type type) {
 		mTypeString = type.getClassName();
 		mDimension = 0;
+		while (mTypeString.endsWith("[]")) {
+			mTypeString = mTypeString.substring(0, mTypeString.length() - 2);
+			mDimension++;
+		}
 	}
 
 	public static DataType getType(String typeString) {
@@ -89,13 +93,24 @@ public class DataType {
 	}
 
 	public String print(){
+		return Util.javaObjectName(mTypeString) + printBrackets();
+	}
+
+	private String printBrackets() {
 		String brackets = "";
 		if (isArrayType()) {
 			for (int i = 0; i < mDimension; i++) {
 				brackets += "[]";
 			}
 		}
-		return Util.javaObjectName(mTypeString) + brackets;
+		return brackets;
+	}
+
+	public String print(boolean isStatic) {
+		if(isStatic) {
+			return mTypeString.replace('$','.') + printBrackets();
+		}
+		return print();
 	}
 
 	@Override

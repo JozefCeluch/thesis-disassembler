@@ -7,6 +7,7 @@ import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.expression.ReturnExpression;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.*;
 
@@ -16,17 +17,16 @@ import java.util.*;
 
 public class MethodBlock extends Block {
 	MethodNode mMethodNode;
-	private String mClassName;
+	private DataType mClassType;
 	private int mClassAccess;
 	private Map<Integer, LocalVariable> mArguments;
 
 	private List<Object> mAnnotations;
 	private String mAccessFlags;
-	private DataType mReturnType;
+	private String mGenericReturnType;
 	private String mName;
-	private String mMethodArgs;
-	private String mExceptions;
-	private String mAbstractMethodDeclarationEnd;
+	private String mGenericArgs;
+	private String mGenericExceptions;
 
 	public MethodBlock(MethodNode methodNode, Block parent) {
 		mMethodNode = methodNode;
@@ -38,16 +38,16 @@ public class MethodBlock extends Block {
 		mClassAccess = classAccess;
 	}
 
-	public void setClassName(String className) {
-		mClassName = Util.javaObjectName(className);
+	public void setClassType(DataType classType) {
+		mClassType = classType;
 	}
 
 	public MethodNode getMethodNode() {
 		return mMethodNode;
 	}
 
-	public String getClassName() {
-		return mClassName;
+	public DataType getClassType() {
+		return mClassType;
 	}
 
 	public Map<Integer, LocalVariable> getArguments() {
@@ -72,41 +72,35 @@ public class MethodBlock extends Block {
 
 	private void appendMethodNode(MethodNode method) {
 		clearBuffer();
-
-		StringBuilder genericDecl = new StringBuilder();
-		StringBuilder genericReturn = new StringBuilder();
-		StringBuilder genericExceptions = new StringBuilder();
-
-		parseSignature(method, genericDecl, genericReturn, genericExceptions);
+		parseSignature(method);
 
 		mAccessFlags = getAccessFlags(method.access);
-
-		mReturnType = getReturnType(method.desc, genericReturn.toString());
-		mName = Util.isConstructor(method.name) ? mClassName : method.name;
+		mName = Util.isConstructor(method.name) ? mClassType.print() : method.name;
 
 		generateArguments(method);
-
-		mMethodArgs = getMethodArgs(method, genericDecl.toString());
-		mExceptions = getExceptions(method.exceptions, genericExceptions.toString());
-		mAbstractMethodDeclarationEnd = getAbstractMethodDeclarationEnding(method);
 	}
 
-	private void parseSignature(MethodNode method, StringBuilder genericDecl, StringBuilder genericReturn, StringBuilder genericExceptions) {
-		if (method.signature != null) {
-			SignatureVisitor visitor = new SignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
-			visitor.setLocalVariableNodes(method.localVariables);
-			visitor.setStatic(Util.containsFlag(method.access, Opcodes.ACC_STATIC));
-			SignatureReader signatureReader = new SignatureReader(method.signature);
-			signatureReader.accept(visitor);
-			if (visitor.getDeclaration() != null) genericDecl.append(visitor.getDeclaration());
-			if (visitor.getReturnType() != null) genericReturn.append(visitor.getReturnType());
-			if (visitor.getExceptions() != null) genericExceptions.append(visitor.getExceptions());
-			mArguments.putAll(visitor.getArguments());
-			if (genericDecl.indexOf("<") == 0) {
-				int gtPosition = genericDecl.indexOf(">") + 1;
-				genericReturn.insert(0, " ");
-				genericReturn.insert(0, genericDecl.substring(0, gtPosition));
-				genericDecl.replace(0, gtPosition, "");
+	private void parseSignature(MethodNode method) {
+		if (method.signature == null) {
+			return;
+		}
+		SignatureVisitor visitor = new SignatureVisitor(0, method.visibleParameterAnnotations, method.invisibleParameterAnnotations);
+		visitor.setLocalVariableNodes(method.localVariables);
+		visitor.setStatic(Util.containsFlag(method.access, Opcodes.ACC_STATIC));
+		SignatureReader signatureReader = new SignatureReader(method.signature);
+		signatureReader.accept(visitor);
+
+		mGenericExceptions = visitor.getExceptions();
+		mArguments.putAll(visitor.getArguments());
+
+		mGenericReturnType = visitor.getReturnType();
+
+		if (visitor.getDeclaration() != null) {
+			mGenericArgs = visitor.getDeclaration();
+			if (mGenericArgs.indexOf("<") == 0) {
+				int gtPosition = mGenericArgs.indexOf(">") + 1;
+				mGenericReturnType = mGenericArgs.substring(0, gtPosition) + " " + mGenericReturnType;
+				mGenericArgs = mGenericArgs.substring(gtPosition);
 			}
 		}
 	}
@@ -136,8 +130,7 @@ public class MethodBlock extends Block {
 		if (Util.isNotEmpty(genericReturn)){
 			return DataType.getType(genericReturn);
 		} else {
-			int closingBracketPosition = desc.lastIndexOf(')');
-			return Util.getType(desc.substring(closingBracketPosition + 1));
+			return DataType.getType(Type.getReturnType(desc));
 		}
 	}
 
@@ -172,30 +165,23 @@ public class MethodBlock extends Block {
 	private void generateArguments(MethodNode method) {
 		boolean isStatic = Util.containsFlag(mMethodNode.access, Opcodes.ACC_STATIC);
 		if (!isStatic) {
-			LocalVariable thisArgument = new LocalVariable("this", DataType.getType(mClassName), 0);
+			LocalVariable thisArgument = new LocalVariable("this", mClassType, 0);
 			thisArgument.setIsArgument(true);
 			mArguments.put(0, thisArgument);
 		}
 
-		int closingBracketPosition = method.desc.lastIndexOf(')');
-		String args = method.desc.substring(1, closingBracketPosition);
-		String[] splitArgs = splitMethodArguments(args);
-
-		for (int i = 0; i < splitArgs.length; i++) {
-			if (!splitArgs[i].isEmpty()) {
-				addArgument(splitArgs[i], i, method.localVariables, isStatic);
-			}
+		Type methodType = Type.getMethodType(method.desc);
+		for (int i = 0; i < methodType.getArgumentTypes().length; i++) {
+			addArgument(methodType.getArgumentTypes()[i], i, method.localVariables, isStatic);
 		}
 	}
 
-	private void addArgument(String typeCode, int index, List localVariables, boolean isStatic) {
+	private void addArgument(Type type, int index, List localVariables, boolean isStatic) {
 		LocalVariableNode variableNode = Util.variableAtIndex(isStatic ? index : index + 1, localVariables);
 
 		LocalVariable variable;
 		if (variableNode == null) {
-			DataType type = Util.getType(typeCode);
-			String name = Util.ARGUMENT_NAME_BASE + index;
-			variable =  new LocalVariable(name, type, isStatic ? index : index + 1);
+			variable =  new LocalVariable(Util.ARGUMENT_NAME_BASE + index, DataType.getType(type), isStatic ? index : index + 1);
 		} else {
 			variable = new LocalVariable(variableNode);
 		}
@@ -213,7 +199,6 @@ public class MethodBlock extends Block {
 		if (parameterAnnotationsList == null) return;
 		if (parameterAnnotationsList[currentParameter] != null)
 			addAllTypeAnnotations(parameterAnnotationsList[currentParameter]);
-
 	}
 
 	private void addAllTypeAnnotations(List... annotationLists){
@@ -231,35 +216,11 @@ public class MethodBlock extends Block {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
 					addComma(i);
-					buf.append(Util.javaObjectName((String)exceptions.get(i)));
+					buf.append(Type.getObjectType((String)exceptions.get(i)).getClassName());
 				}
 			}
 		}
 		return buf.toString();
-	}
-
-	private String[] splitMethodArguments(final String args) {
-		if (args.isEmpty()) {
-			return new String[0];
-		}
-		List<String> argumentList = new ArrayList<>();
-		for (int i = 0; i < args.length();) {
-			String brackets = "";
-			int bracketEnd = i;
-
-			if (args.charAt(i) == '[') {
-				while (args.charAt(bracketEnd) == '['){
-					bracketEnd++;
-				}
-				brackets = args.substring(i, bracketEnd);
-			}
-
-			String arg = brackets + getTypeIndicator(args.substring(bracketEnd));
-			argumentList.add(arg);
-			i += arg.length();
-		}
-
-		return argumentList.toArray(new String[argumentList.size()]);
 	}
 
 	private String getAbstractMethodDeclarationEnding(MethodNode method) {
@@ -282,11 +243,11 @@ public class MethodBlock extends Block {
 	public void write(Writer writer) throws IOException {
 		printList(writer, mAnnotations);
 		writer.write(mAccessFlags);
-		writer.write(Util.isConstructor(mMethodNode.name) ? "" : (mReturnType.print() + " "));
+		writer.write(Util.isConstructor(mMethodNode.name) ? "" : (getReturnType(mMethodNode.desc, mGenericReturnType).print() + " "));
 		writer.write(mName);
-		writer.write(mMethodArgs);
-		writer.write(mExceptions);
-		writer.write(mAbstractMethodDeclarationEnd);
+		writer.write(getMethodArgs(mMethodNode, mGenericArgs));
+		writer.write(getExceptions(mMethodNode.exceptions, mGenericExceptions));
+		writer.write(getAbstractMethodDeclarationEnding(mMethodNode));
 
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			writer.write(BLOCK_START);

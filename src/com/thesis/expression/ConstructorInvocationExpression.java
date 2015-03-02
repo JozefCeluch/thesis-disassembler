@@ -1,5 +1,6 @@
 package com.thesis.expression;
 
+import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.tree.MethodInsnNode;
 
@@ -9,9 +10,9 @@ import java.io.Writer;
 public class ConstructorInvocationExpression extends MethodInvocationExpression {
 
 	protected NewExpression mNewExpression;
-	protected String mContainingClass;
+	protected DataType mContainingClass;
 
-	public ConstructorInvocationExpression(MethodInsnNode instruction, String callingMethod, String containingClass) {
+	public ConstructorInvocationExpression(MethodInsnNode instruction, String callingMethod, DataType containingClass) {
 		super(instruction, callingMethod);
 		mContainingClass = containingClass;
 	}
@@ -38,7 +39,7 @@ public class ConstructorInvocationExpression extends MethodInvocationExpression 
 	@Override
 	public void write(Writer writer) throws IOException {
 		if (!Util.isConstructor(mCallingMethod) || mNewExpression != null) {
-			writer.write(Util.javaObjectName(mOwnerClass));
+			writer.write(mOwnerClass.print());
 		} else if (mContainingClass.equals(mOwnerClass)) {
 			writer.write("this");
 		} else {

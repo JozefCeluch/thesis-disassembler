@@ -3,8 +3,8 @@ package com.thesis.block;
 import com.thesis.LocalVariable;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
-import com.thesis.common.Util;
 import com.thesis.expression.*;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.FieldNode;
 
@@ -56,7 +56,7 @@ public class Field extends Statement {
 			r.acceptType(sv);
 			return DataType.getType(sv.getDeclaration());
 		} else {
-			return Util.getType(desc);
+			return DataType.getType(Type.getType(desc));
 		}
 	}
 
