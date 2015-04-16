@@ -30,10 +30,11 @@ java.lang.System.out.println(new java.lang.StringBuilder().append("value is").ap
 void onlyFinally() {
 int number;
 java.lang.Object var2;
+number = 0;
 try {
 number = java.lang.Integer.valueOf("3").intValue();
 } finally {
-java.lang.System.out.println("called finally");
+java.lang.System.out.println(new java.lang.StringBuilder().append("called finally with ").append(number).toString());
 }
 }
 }

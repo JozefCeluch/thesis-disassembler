@@ -30,10 +30,11 @@ class TryCatchBlockNode {
 	}
 
 	void onlyFinally() {
+		int number = 0;
 		try {
-			int number = Integer.valueOf("3");
+			number = Integer.valueOf("3");
 		} finally {
-			System.out.println("called finally");
+			System.out.println("called finally with " + number);
 		}
 	}
 }

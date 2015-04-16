@@ -5,9 +5,14 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +26,8 @@ public class ParserTest {
 
 	private static String TEST_FOLDER = "testData" + File.separator;
 	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
+
+	private final JavaCompiler mJavaCompiler = ToolProvider.getSystemJavaCompiler();
 
 	@Test
 	@Parameters({"AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
@@ -109,9 +116,12 @@ public class ParserTest {
 
 	@Test
 	@Parameters(method = "param1, param2, param3, param4, param5, param6, param7, param8, param9")
-	public void testClassesWithDependencies(String name, String dependencies) {
-		String compileString = TEST_FOLDER + name + ".java " + dependencies;
-		if (compileClass(compileString) != 0 ) {
+	public void testClassesWithDependencies(String name, String... dependencies) {
+		String compileString = TEST_FOLDER + name + ".java";
+		ArrayList<String> filesNames = new ArrayList<>(Arrays.asList(dependencies));
+		filesNames.add(0, compileString);
+		boolean success = compileClass(filesNames.toArray(new String[filesNames.size()]));
+		if (!success) {
 			fail("COMPILATION FAILED");
 		}
 		assertEquals("Classes do not equal", getJavaClassContent(name), Parser.createInstance(TEST_FOLDER).parseClassFile(name + ".class"));
@@ -126,13 +136,11 @@ public class ParserTest {
 	public Object param8(){return $($("ClassWithFields", makeDependencyString("SimpleAnnotation", "RepeatableAnnotation")));}
 	public Object param9(){return $($("ComplexAnnotation", makeDependencyString("EmptyInterfaceAnnotation", "EmptyEnum")));}
 
-	private String makeDependencyString(String... deps) {
-		String depString = "";
+	private String[] makeDependencyString(String... deps) {
 		for (int i=0; i < deps.length; i++) {
-			deps[i] = TEST_FOLDER + deps[i] + ".java ";
-			depString += deps[i];
+			deps[i] = TEST_FOLDER + deps[i] + ".java";
 		}
-		return depString;
+		return deps;
 	}
 
 	private List<Object[]> getFilteredClasses(final FileFilter filter) {
@@ -147,7 +155,7 @@ public class ParserTest {
 				.collect(Collectors.toList());
 	}
 
-	private static String getJavaClassContent(String fileName) {
+	private String getJavaClassContent(String fileName) {
 		byte[] fileContents = new byte[0];
 		try {
 			fileContents = Files.readAllBytes(Paths.get(RESULTS_FOLDER + fileName + ".java"));
@@ -157,10 +165,10 @@ public class ParserTest {
 		return new String(fileContents);
 	}
 
-	private static String compileAndParseClass(String name, Parser parser) {
-		int compilationResult = compileClass(TEST_FOLDER + name + ".java");
-		if (compilationResult != 0) {
-			System.out.println("COMPILATION ERROR: " + name + ", " + compilationResult);
+	private String compileAndParseClass(String name, Parser parser) {
+		boolean success = compileClass(TEST_FOLDER + name + ".java");
+		if (!success) {
+			System.out.println("COMPILATION ERROR: " + name);
 			return null;
 		}
 		System.out.println("COMPILATION SUCCESS: " + name);
@@ -168,21 +176,23 @@ public class ParserTest {
 		return parser.parseClassFile(name + ".class");
 	}
 
-	private static int compileClass(String name) {
-		Process process;
+	private boolean compileClass(String... names) {
+		List<String> options = new ArrayList<>();
+		options.add("-g");
+
+		StandardJavaFileManager fileManager = mJavaCompiler.getStandardFileManager(null, null, null);
+		Iterable<? extends JavaFileObject> fileObjects = fileManager.getJavaFileObjects(names);
+		JavaCompiler.CompilationTask task = mJavaCompiler.getTask(null, null, null, options, null, fileObjects);
+		Boolean result = task.call();
 		try {
-			System.out.println("COMPILING: " + name);
-			process = Runtime.getRuntime().exec("javac -g " + name);
-			printLines(name + " stderr:", process.getErrorStream());
-			process.waitFor();
-		} catch (IOException | InterruptedException  e) {
-			System.out.println("Compilation unsuccessful");
-			return -1;
+			fileManager.close();
+		} catch (IOException e) {
+			System.out.println("Error closing the file manager");
 		}
-		return process.exitValue();
+		return result != null && result;
 	}
 
-	private static void printLines(String name, InputStream ins) throws IOException{
+	private void printLines(String name, InputStream ins) throws IOException{
 		String line;
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(ins));
