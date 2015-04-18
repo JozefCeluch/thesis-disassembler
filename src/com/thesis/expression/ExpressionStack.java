@@ -19,22 +19,28 @@ public class ExpressionStack {
 	private int mVisitedFrame = NOT_SET;
 	private Map<Integer, StackItem> mFrameItemMap;
 
-	public ExpressionStack(Map<Label, Integer> labels) {
-		mLabels = labels;
+	public ExpressionStack() {
+		mLabels = new HashMap<>();
 		mStack = new Stack<>();
 		mFrameItemMap = new HashMap<>();
 		mEnhancers = new ArrayList<>();
 	}
 
-	private ExpressionStack(Map<Label, Integer> labels, List<StackEnhancer> enhancers) {
-		mLabels = labels;
-		mEnhancers = enhancers;
+	private ExpressionStack(ExpressionStack original) {
+		mLabels = original.mLabels;
+		mEnhancers = original.mEnhancers;
+
+		mLineNum = original.mLineNum;
+		mLabels = original.mLabels;
+		mLabel = original.mLabel;
+		mLastImprovementPosition = original.mLastImprovementPosition;
+
 		mStack = new Stack<>();
 		mFrameItemMap = new HashMap<>();
 	}
 
 	public ExpressionStack getNew() {
-		return new ExpressionStack(mLabels, mEnhancers);
+		return new ExpressionStack(this);
 	}
 
 	public void addEnhancer(StackEnhancer enhancer) {
@@ -162,12 +168,8 @@ public class ExpressionStack {
 	}
 
 	public ExpressionStack duplicate() {
-		ExpressionStack copy = new ExpressionStack(mLabels);
+		ExpressionStack copy = getNew();
 		copy.mStack.addAll(this.mStack);
-		copy.mLineNum = this.mLineNum;
-		copy.mLabels = this.mLabels;
-		copy.mLabel = this.mLabel;
-		copy.mLastImprovementPosition = this.mLastImprovementPosition;
 		return copy;
 	}
 
@@ -184,7 +186,7 @@ public class ExpressionStack {
 	}
 
 	public ExpressionStack substack(int startIndex, int endIndex) {
-		ExpressionStack subStack = new ExpressionStack(mLabels);
+		ExpressionStack subStack = getNew();
 		for(int i = 0; i < endIndex - startIndex; i++ ) {
 			subStack.mStack.push(mStack.remove(startIndex));
 		}
