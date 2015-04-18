@@ -45,8 +45,7 @@ public class LoopEnhancer implements StackEnhancer {
 			return;
 		}
 		ConditionalExpression expression = ((ConditionalExpression) stackItem.getExpression());
-		for (int i = 0; i < expression.getThenBranch().getAll().size(); i++) {
-			StackItem item = expression.getThenBranch().getAll().get(i);
+		for (StackItem item : expression.getThenBranch().getAll()) {
 			fixLoopDetection(topLevelExp, loopStartLabel, item);
 			if (item.getExpression() instanceof ConditionalExpression && ((ConditionalExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
 				topLevelExp.setElseBranchEnd(((ConditionalExpression) item.getExpression()).getJumpDestination());
@@ -54,8 +53,7 @@ public class LoopEnhancer implements StackEnhancer {
 		}
 
 		if (((ConditionalExpression) stackItem.getExpression()).getElseBranch() != null) {
-			for (int i = 0; i < expression.getElseBranch().getAll().size(); i++) {
-				StackItem item = expression.getElseBranch().getAll().get(i);
+			for (StackItem item : expression.getElseBranch().getAll()) {
 				fixLoopDetection(topLevelExp, loopStartLabel, item);
 				if (item.getExpression() instanceof ConditionalExpression && ((ConditionalExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
 					topLevelExp.setElseBranchEnd(((ConditionalExpression) item.getExpression()).getJumpDestination());
