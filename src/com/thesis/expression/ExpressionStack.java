@@ -146,8 +146,12 @@ public class ExpressionStack {
 		mLineNum = line;
 	}
 
-	public void addLabel(Label label) {
-		mLabel = getLabelId(label);
+	public void setLabel(int label) {
+		mLabel = label;
+	}
+
+	public int getLabel() {
+		return mLabel;
 	}
 
 	public int size() {
