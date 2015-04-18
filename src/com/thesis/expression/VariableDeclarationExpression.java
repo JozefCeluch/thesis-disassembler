@@ -12,7 +12,7 @@ public class VariableDeclarationExpression extends Expression {
 	private LocalVariable mVariable;
 
 	public VariableDeclarationExpression(LocalVariable variable) {
-		super(null);
+		super(0);
 		mVariable = variable;
 		mType = variable.getType();
 	}

@@ -12,7 +12,7 @@ public class TernaryExpression extends ConditionalExpression {
 	private Expression mSecond;
 
 	public TernaryExpression(ConditionalExpression expression) {
-		super(expression.mInstruction, expression.getJumpDestination());
+		super(expression.mOpCode, expression.getJumpDestination());
 		mCondition = expression;
 		mFirst = mCondition.getThenBranch().getAll().get(0).getExpression();
 		mSecond = mCondition.getElseBranch().getAll().get(0).getExpression();

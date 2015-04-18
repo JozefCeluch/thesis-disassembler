@@ -2,7 +2,6 @@ package com.thesis.common;
 
 import com.thesis.LocalVariable;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.LocalVariableNode;
 
 import java.util.HashMap;
@@ -179,7 +178,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	public void visitBaseType(final char descriptor) {
 		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
-		DataType type = DataType.getType(Type.getType(String.valueOf(descriptor)));
+		DataType type = DataType.getTypeFromDesc(String.valueOf(descriptor));
 		declaration.append(type.toString());
 		currentArgument.setType(type);
 		endType();
@@ -190,7 +189,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
 		declaration.append(name);
-		currentArgument.setType(DataType.getType(name));
+		currentArgument.setType(DataType.getTypeFromObject(name));
 		endType();
 	}
 
@@ -331,7 +330,7 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 			currentArgument.setName(name);
 			increaseIndex();
 			if (currentArgument.getType() == null) {
-				currentArgument.setType(DataType.getType(currentArgType.toString()));
+				currentArgument.setType(DataType.getTypeFromObject(currentArgType.toString()));
 			}
 
 			declaration.append(" ").append(name);

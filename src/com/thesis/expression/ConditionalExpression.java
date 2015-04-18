@@ -17,21 +17,17 @@ public abstract class ConditionalExpression extends Expression {
 	protected Operand mOperand;
 	protected LoopType mLoopType;
 
-	public ConditionalExpression(AbstractInsnNode instruction, int jumpDestination) {
-		super(instruction);
+	public ConditionalExpression(int opCode, int jumpDestination) {
+		super(opCode);
 		mType = DataType.BOOLEAN;
 		mJumpDestination = jumpDestination;
-		mOperand = makeOperand(instruction).neg();
+		mOperand = makeOperand(opCode).neg();
 		mLoopType = LoopType.NONE;
 	}
 
-	public ConditionalExpression(int jumpDestination) {
-		this(null, jumpDestination);
-	}
-
 	@Override
-	public void setInstruction(AbstractInsnNode instruction) {
-		super.setInstruction(instruction);
+	public void setOpCode(int instruction) {
+		super.setOpCode(instruction);
 		mOperand = makeOperand(instruction).neg();
 	}
 
@@ -155,11 +151,7 @@ public abstract class ConditionalExpression extends Expression {
 		return mType;
 	}
 
-	private static Operand makeOperand(AbstractInsnNode instruction) {
-		if (instruction == null) {
-			return Operand.ERR;
-		}
-		int opcode = instruction.getOpcode();
+	private static Operand makeOperand(int opcode) {
 		if (opcode == Opcodes.IFEQ || opcode == Opcodes.IF_ACMPEQ || opcode == Opcodes.IF_ICMPEQ || opcode == Opcodes.IFNULL) {
 			return Operand.EQUAL;
 		}

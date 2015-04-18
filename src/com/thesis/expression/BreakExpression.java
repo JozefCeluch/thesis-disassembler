@@ -7,12 +7,12 @@ import java.io.Writer;
 
 public class BreakExpression extends JumpExpression {
 
-	public BreakExpression(JumpInsnNode instruction, int jumpLocation) {
-		super(instruction, jumpLocation);
+	public BreakExpression(int opCode, int jumpLocation) {
+		super(opCode, jumpLocation);
 	}
 
 	public BreakExpression(UnconditionalJump jump) {
-		super(jump.mInstruction, jump.mJumpDestination);
+		super(jump.mOpCode, jump.mJumpDestination);
 	}
 
 	@Override

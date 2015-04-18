@@ -10,9 +10,9 @@ public class NewExpression extends Expression {
 
 	private Expression mExpression;
 
-	public NewExpression(AbstractInsnNode instruction, DataType type) {
-		super(instruction);
-		mType = type;
+	public NewExpression(int opCode, String desc) {
+		super(opCode);
+		mType = DataType.getTypeFromObject(desc);
 	}
 
 	@Override

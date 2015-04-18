@@ -2,11 +2,9 @@ package com.thesis;
 
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
-import com.thesis.common.Util;
 import com.thesis.expression.ExpressionStack;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.LocalVariableNode;
 
@@ -29,13 +27,13 @@ public class LocalVariable extends Variable {
 	}
 
 	public LocalVariable(LocalVariableNode variableNode) {
-		super(variableNode.name, DataType.getType(Type.getType(variableNode.desc)));
+		super(variableNode.name, DataType.getTypeFromDesc(variableNode.desc));
 
 		if (variableNode.signature != null && !variableNode.signature.isEmpty()) {
 			SignatureVisitor visitor = new SignatureVisitor(Opcodes.ACC_PRIVATE);
 			SignatureReader reader = new SignatureReader(variableNode.signature);
 			reader.acceptType(visitor);
-			mType = DataType.getType(visitor.getDeclaration());
+			mType = DataType.getTypeFromObject(visitor.getDeclaration());
 		}
 		mIndex = variableNode.index;
 		mStart = variableNode.start.getLabel();

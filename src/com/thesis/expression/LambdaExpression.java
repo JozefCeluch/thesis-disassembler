@@ -4,7 +4,6 @@ import com.thesis.common.DataType;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -17,17 +16,17 @@ public class LambdaExpression extends Expression{
 	private String mName;
 	private List<Argument> mArguments = new ArrayList<>();
 
-	public LambdaExpression(InvokeDynamicInsnNode instruction) {
-		super(instruction);
+	public LambdaExpression(String name, String desc, Handle bsm, Object... bsmArgs) {
+		super(Opcodes.INVOKEDYNAMIC);
 
-		mOwner = DataType.getType(Type.getObjectType(instruction.bsm.getOwner()));
-		mName = instruction.bsm.getName();
+		mOwner = DataType.getTypeFromObject(bsm.getOwner());
+		mName = bsm.getName();
 
 		mArguments.add(0, new ArgumentImpl("/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup()"));
-		mArguments.add(1, new StringArgument(instruction.name));
-		mArguments.add(2, new MethodType(instruction.desc));
+		mArguments.add(1, new StringArgument(name));
+		mArguments.add(2, new MethodType(desc));
 
-		appendArgsAtPosition(mArguments, 3, instruction.bsmArgs);
+		appendArgsAtPosition(mArguments, 3, bsmArgs);
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class LambdaExpression extends Expression{
 
 	static class MethodHandle implements Argument {
 
-		private static final DataType METHOD_HANDLES = DataType.getType("java.lang.invoke.MethodHandles");
+		private static final DataType METHOD_HANDLES = DataType.getTypeFromObject("java.lang.invoke.MethodHandles");
 		private static final String LOOKUP = "lookup()";
 
 		private int mTag;
@@ -85,7 +84,7 @@ public class LambdaExpression extends Expression{
 			Collections.addAll(args, t.getArgumentTypes());
 
 			mArguments = new ArrayList<>();
-			mArguments.add(new ClassArgument(DataType.getType(Type.getObjectType(handle.getOwner()))));
+			mArguments.add(new ClassArgument(DataType.getTypeFromObject(handle.getOwner())));
 			mArguments.add(new StringArgument(handle.getName()));
 			mArguments.add(new MethodType(args));
 		}
@@ -129,7 +128,7 @@ public class LambdaExpression extends Expression{
 
 	static class MethodType implements Argument {
 
-		private static DataType METHOD_TYPE = DataType.getType("java.lang.invoke.MethodType");
+		private static DataType METHOD_TYPE = DataType.getTypeFromObject("java.lang.invoke.MethodType");
 		private static String METHOD = "methodType";
 		private List<ClassArgument> mTypes = new ArrayList<>();
 
@@ -144,7 +143,7 @@ public class LambdaExpression extends Expression{
 		}
 
 		private static void addType(List<ClassArgument> dataTypes, Type type) {
-			dataTypes.add(new ClassArgument(DataType.getType(type.getReturnType().getClassName())));
+			dataTypes.add(new ClassArgument(DataType.getTypeFromObject(type.getReturnType().getClassName())));
 		}
 
 		public MethodType(String desc) {

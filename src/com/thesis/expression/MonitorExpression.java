@@ -12,13 +12,13 @@ public class MonitorExpression extends Expression {
 	private Expression mSyncObjectExpression;
 	private ExpressionStack mSynchronizedBlock;
 
-	public MonitorExpression(InsnNode instruction) {
-		super(instruction);
+	public MonitorExpression(int opCode) {
+		super(opCode);
 		mSynchronizedBlock = null;
 	}
 
 	public boolean isMonitorEnter() {
-		return mInstruction.getOpcode() == Opcodes.MONITORENTER;
+		return mOpCode == Opcodes.MONITORENTER;
 	}
 
 	public void setSynchronizedBlock(TryCatchExpression tryCatchExpression) {

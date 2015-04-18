@@ -128,7 +128,7 @@ public class MethodBlock extends Block {
 
 	private DataType getReturnType(String desc, String genericReturn) {
 		if (Util.isNotEmpty(genericReturn)){
-			return DataType.getType(genericReturn);
+			return DataType.getTypeFromObject(genericReturn);
 		} else {
 			return DataType.getType(Type.getReturnType(desc));
 		}

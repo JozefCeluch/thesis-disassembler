@@ -12,8 +12,8 @@ public class ArrayAssignmentExpression extends Expression {
 	private Expression mIndex;
 	private Expression mValue;
 
-	public ArrayAssignmentExpression(InsnNode instruction, Expression index, Expression value) {
-		super(instruction);
+	public ArrayAssignmentExpression(int opCode, Expression index, Expression value) {
+		super(opCode);
 		mIndex = index;
 		mValue = value;
 	}
@@ -26,7 +26,7 @@ public class ArrayAssignmentExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		stack.push(mIndex, false);
-		stack.push(new ArrayAccessExpression((InsnNode)mInstruction));
+		stack.push(new ArrayAccessExpression(mOpCode));
 		mArray = (ArrayAccessExpression) stack.pop();
 	}
 

@@ -11,8 +11,8 @@ public class ArrayAccessExpression extends Expression {
 	private Expression indexExpression;
 	private Expression arrayRef;
 
-	public ArrayAccessExpression(InsnNode node) {
-		super(node);
+	public ArrayAccessExpression(int opCode) {
+		super(opCode);
 	}
 
 	public void setIndexExpression(Expression indexExpression) {

@@ -10,8 +10,8 @@ public class ArrayLengthExpression extends Expression {
 
 	private Expression mExpression;
 
-	public ArrayLengthExpression(InsnNode instruction) {
-		super(instruction);
+	public ArrayLengthExpression(int opCode) {
+		super(opCode);
 	}
 
 	@Override

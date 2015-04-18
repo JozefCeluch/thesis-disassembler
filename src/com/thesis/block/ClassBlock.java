@@ -5,7 +5,6 @@ import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.file.Parser;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -36,7 +35,7 @@ public class ClassBlock extends Block {
 
 		mAnnotations = getSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations);
 		mAccessFlags = getAccessFlags();
-		mClassType = DataType.getType(Type.getObjectType(mClassNode.name));
+		mClassType = DataType.getTypeFromObject(mClassNode.name);
 
 		String genericDeclaration = null;
 		if (mClassNode.signature != null) {
@@ -81,7 +80,7 @@ public class ClassBlock extends Block {
 	private String getSuperClass(String superName) {
 		clearBuffer();
 		if (superName != null && !superName.equals("java/lang/Object")) {
-			buf.append(" extends ").append(DataType.getType(Type.getObjectType(superName)).print()).append(" ");
+			buf.append(" extends ").append(DataType.getTypeFromObject(superName).print()).append(" ");
 		}
 		return buf.toString();
 	}
@@ -92,7 +91,7 @@ public class ClassBlock extends Block {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
 				addComma(i);
-				buf.append(DataType.getType(Type.getObjectType((String) interfaces.get(i))).print());
+				buf.append(DataType.getTypeFromObject((String) interfaces.get(i)).print());
 			}
 		}
 		return buf.toString();

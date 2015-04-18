@@ -12,8 +12,8 @@ public class ArithmeticExpression extends Expression {
 	private Expression mLeftSide;
 	private Expression mRightSide;
 
-	public ArithmeticExpression(AbstractInsnNode instruction) {
-		super(instruction);
+	public ArithmeticExpression(int opCode) {
+		super(opCode);
 	}
 
 	public void setLeftSide(Expression leftSide) {
@@ -24,8 +24,8 @@ public class ArithmeticExpression extends Expression {
 		mRightSide = rightSide;
 	}
 
-	private Operand makeOperand(){
-		String opcode = Printer.OPCODES[mInstruction.getOpcode()];
+	private Operand makeOperand(){ //TODO just compare the opcodes not strings
+		String opcode = Printer.OPCODES[mOpCode];
 		if (opcode.endsWith("MUL")){
 			return Operand.MULTIPLY;
 		}

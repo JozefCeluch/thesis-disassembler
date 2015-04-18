@@ -6,7 +6,7 @@ import java.io.Writer;
 public class ContinueExpression extends JumpExpression {
 
 	public ContinueExpression(UnconditionalJump jump) {
-		super(jump.mInstruction, jump.mJumpDestination);
+		super(jump.mOpCode, jump.mJumpDestination);
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import org.objectweb.asm.tree.FieldNode;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Field extends Statement {
@@ -36,7 +35,7 @@ public class Field extends Statement {
 		mType = getType(mFieldNode.desc, mFieldNode.signature);
 		LocalVariable variable = new LocalVariable(mFieldNode.name, mType, 0);
 		if (mFieldNode.value != null) {
-			mExpression = new AssignmentExpression(null, new LeftHandSide(null, variable), new PrimaryExpression(mFieldNode.value, mType));
+			mExpression = new AssignmentExpression(0, new LeftHandSide(0, variable), new PrimaryExpression(mFieldNode.value, mType));
 		} else {
 			mExpression = new VariableDeclarationExpression(variable);
 		}
@@ -54,9 +53,9 @@ public class Field extends Statement {
 			SignatureVisitor sv = new SignatureVisitor(0);
 			SignatureReader r = new SignatureReader(signature);
 			r.acceptType(sv);
-			return DataType.getType(sv.getDeclaration());
+			return DataType.getTypeFromObject(sv.getDeclaration());
 		} else {
-			return DataType.getType(Type.getType(desc));
+			return DataType.getTypeFromDesc(desc);
 		}
 	}
 

@@ -49,4 +49,12 @@ public class Util {
 	public static boolean isConstructor(String name) {
 		return name.equals("<init>");
 	}
+
+	/**
+	 * min and max are inclusive
+	 * @return true if num is between min and max
+	 */
+	public static boolean isBetween(int num, int min, int max) {
+		return num >= min && num <= max;
+	}
 }

@@ -216,11 +216,11 @@ public class InstructionTranslator {
 	private void visitInsnNode(InsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
-		if (isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
-			stack.push(new PrimaryExpression(node));
-		} else if (isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
-			stack.push(new ArrayAccessExpression(node));
-		} else if (isBetween(opCode, Opcodes.IASTORE, Opcodes.SASTORE)) {
+		if (Util.isBetween(opCode, Opcodes.ACONST_NULL, Opcodes.DCONST_1)) {
+			stack.push(new ConstantPrimaryExpression(opCode));
+		} else if (Util.isBetween(opCode, Opcodes.IALOAD, Opcodes.SALOAD)) {
+			stack.push(new ArrayAccessExpression(opCode));
+		} else if (Util.isBetween(opCode, Opcodes.IASTORE, Opcodes.SASTORE)) {
 			Expression value = stack.pop();
 			Expression index = stack.pop();
 			Expression stackTop = stack.peek();
@@ -228,39 +228,39 @@ public class InstructionTranslator {
 				ArrayCreationExpression arrayExpression = (ArrayCreationExpression) stackTop;
 				arrayExpression.addMember(value);
 			} else if (stackTop instanceof PrimaryExpression) {
-				stack.push(new ArrayAssignmentExpression(node, index, value));
+				stack.push(new ArrayAssignmentExpression(opCode, index, value));
 			}
 
-		} else if (isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
+		} else if (Util.isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
 //			pop should not remove the expression from the stack //TODO
-		} else if (isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
+		} else if (Util.isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
 //			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
 			stack.swap();
-		} else if (isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
+		} else if (Util.isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || Util.isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
 			Expression top = stack.peek();
 			top.setType(DataType.INT);
 			setCorrectCastType(opCode, top);
-		} else if (isBetween(opCode, Opcodes.F2L, Opcodes.F2D)) {
+		} else if (Util.isBetween(opCode, Opcodes.F2L, Opcodes.F2D)) {
 			Expression top = stack.peek();
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
-		} else if (isBetween(opCode, Opcodes.D2L, Opcodes.D2F)) {
+		} else if (Util.isBetween(opCode, Opcodes.D2L, Opcodes.D2F)) {
 			Expression top = stack.peek();
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
-		} else if (isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(node, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), mStack.getNew()));
-		} else if (isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
-			stack.push(new ArithmeticExpression(node));
-		} else if (isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
-			stack.push(new ReturnExpression(node));
+		} else if (Util.isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
+			stack.push(new MultiConditional(opCode, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), mStack.getNew()));
+		} else if (Util.isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
+			stack.push(new ArithmeticExpression(opCode));
+		} else if (Util.isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
+			stack.push(new ReturnExpression(opCode));
 		} else if (opCode == Opcodes.ARRAYLENGTH) {
-			stack.push(new ArrayLengthExpression(node));
+			stack.push(new ArrayLengthExpression(opCode));
 		} else if (opCode == Opcodes.ATHROW) {
-			stack.push(new ThrowExpression(node));
+			stack.push(new ThrowExpression(opCode));
 		} else if (opCode == Opcodes.MONITORENTER || opCode == Opcodes.MONITOREXIT) {
-			stack.push(new MonitorExpression(node));
+			stack.push(new MonitorExpression(opCode));
 		} else {
 			//NOP, do nothing
 		}
@@ -296,13 +296,13 @@ public class InstructionTranslator {
 		int opCode = node.getOpcode();
 		switch (opCode) {
 			case Opcodes.BIPUSH:
-				stack.push(new PrimaryExpression(node, node.operand, DataType.BYTE));
+				stack.push(new PrimaryExpression(opCode, node.operand, DataType.BYTE));
 				break;
 			case Opcodes.SIPUSH:
-				stack.push(new PrimaryExpression(node, node.operand, DataType.SHORT));
+				stack.push(new PrimaryExpression(opCode, node.operand, DataType.SHORT));
 				break;
 			case Opcodes.NEWARRAY:
-				stack.push(new ArrayCreationExpression(node));
+				stack.push(new ArrayCreationExpression(opCode, node.operand));
 				break;
 		}
 	}
@@ -311,16 +311,16 @@ public class InstructionTranslator {
 	private void visitVarInsnNode(VarInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
-		if (isBetween(opCode, Opcodes.ILOAD, Opcodes.ALOAD)) {
+		if (Util.isBetween(opCode, Opcodes.ILOAD, Opcodes.ALOAD)) {
 			LocalVariable var = mLocalVariables.get(node.var);
-			stack.push(new PrimaryExpression(node, var, var.getType()));
+			stack.push(new VariablePrimaryExpression(opCode, var));
 		}
-		if (isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
+		if (Util.isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
 			if (!mLocalVariables.containsKey(node.var)) {
 				mLocalVariables.put(node.var, new LocalVariable("var" + node.var, DataType.UNKNOWN, node.var)); //TODO set type according to the instruction
 			}
 			LocalVariable localVar = mLocalVariables.get(node.var);
-			stack.push(new AssignmentExpression(node, new LeftHandSide(node, localVar)));
+			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar)));
 		}
 		// RET is deprecated since Java 6
 	}
@@ -330,13 +330,13 @@ public class InstructionTranslator {
 		printNodeInfo(node);
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.NEW) {
-			stack.push(new NewExpression(node, DataType.getType(Type.getObjectType(node.desc))));
+			stack.push(new NewExpression(opCode, node.desc));
 		}
 		if (opCode == Opcodes.INSTANCEOF) {
-			stack.push(new InstanceOfExpression(node));
+			stack.push(new InstanceOfExpression(opCode, node.desc));
 		}
 		if (opCode == Opcodes.ANEWARRAY) {
-			stack.push(new ArrayCreationExpression(node));
+			stack.push(new ArrayCreationExpression(opCode, node.desc));
 		}
 	}
 
@@ -350,23 +350,24 @@ public class InstructionTranslator {
 				stack.pop();
 			}
 			PrimaryExpression owner = (PrimaryExpression)stack.pop();
-			DataType ownerType = DataType.getType(owner.getValue().toString());
-			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), ownerType);
-			stack.push(new AssignmentExpression(node, new LeftHandSide(node,field), value));
+			DataType ownerType = DataType.getTypeFromObject(owner.getValue().toString());
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getTypeFromDesc(node.desc), ownerType);
+			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode,field), value));
 		}
 		if (opCode == Opcodes.GETFIELD) {
 			PrimaryExpression owner = (PrimaryExpression) stack.pop();
-			DataType ownerType = DataType.getType(owner.getValue().toString());
-			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), ownerType);
-			stack.push(new PrimaryExpression(node, field, field.getType()));
+			DataType ownerType = DataType.getTypeFromObject(owner.getValue().toString());
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getTypeFromDesc(node.desc), ownerType);
+			stack.push(new VariablePrimaryExpression(opCode, field));
 		}
 		if (opCode == Opcodes.GETSTATIC) {
-			stack.push(new PrimaryExpression(node, new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), DataType.getType(Type.getObjectType(node.owner))), DataType.getType(Type.getType(node.desc))));
+			GlobalVariable staticField = new GlobalVariable(node.name, DataType.getTypeFromDesc(node.desc), DataType.getType(Type.getObjectType(node.owner)));
+			stack.push(new VariablePrimaryExpression(opCode, staticField));
 		}
 		if (opCode == Opcodes.PUTSTATIC) {
 			Expression value = stack.pop();
-			GlobalVariable field = new GlobalVariable(node.name, DataType.getType(Type.getType(node.desc)), DataType.getType(node.owner));
-			stack.push(new AssignmentExpression(node, new LeftHandSide(node, field), value));
+			GlobalVariable field = new GlobalVariable(node.name, DataType.getTypeFromDesc(node.desc), DataType.getTypeFromObject(node.owner));
+			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, field), value));
 		}
 	}
 
@@ -374,16 +375,16 @@ public class InstructionTranslator {
 	private void visitMethodInsnNode(MethodInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		if (node.getOpcode() == Opcodes.INVOKESPECIAL && Util.isConstructor(node.name)) {
-			stack.push(new ConstructorInvocationExpression(node, mMethod.name, mMethodBlock.getClassType()));
+			stack.push(new ConstructorInvocationExpression(node.getOpcode(), node.name, node.desc, node.owner, mMethod.name, mMethodBlock.getClassType()));
 		} else {
-			stack.push(new MethodInvocationExpression(node, mMethod.name));
+			stack.push(new MethodInvocationExpression(node.getOpcode(), node.name, node.desc, node.owner, mMethod.name));
 		}
 	}
 
 	//	INVOKEDYNAMIC
 	private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		stack.push(new LambdaExpression(node));
+		stack.push(new LambdaExpression(node.name, node.desc, node.bsm, node.bsmArgs));
 	}
 
 	/**
@@ -470,25 +471,25 @@ public class InstructionTranslator {
 		int opCode = node.getOpcode();
 		System.out.println("L" + jumpDestination);
 
-		if (isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(node, jumpDestination, stack.pop(), stack.pop(), mStack.getNew());
-		} else if (isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
+		if (Util.isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
+			exp = new MultiConditional(opCode, jumpDestination, stack.pop(), stack.pop(), mStack.getNew());
+		} else if (Util.isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
 			Expression stackTop = stack.peek();
 			if (stackTop instanceof MultiConditional && !((MultiConditional) stackTop).isJumpDestinationSet()) {
 				exp = (MultiConditional)stack.pop();
 				exp.setJumpDestination(jumpDestination);
-				exp.setInstruction(node);
+				exp.setOpCode(node.getOpcode());
 			} else {
-				exp = new SingleConditional(node, jumpDestination, stack.pop(), mStack.getNew());
+				exp = new SingleConditional(opCode, jumpDestination, stack.pop(), mStack.getNew());
 			}
-		} else if (isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
-			exp = new MultiConditional(node, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), mStack.getNew());
+		} else if (Util.isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
+			exp = new MultiConditional(opCode, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), mStack.getNew());
 		} else if (opCode == Opcodes.GOTO) {
 			int frameIndex = stack.getExpressionIndexOfFrame(jumpDestination);
 			if (frameIndex != -1) {
-				exp = new UnconditionalJump(node, jumpDestination, stack.substack(frameIndex, stack.size()));
+				exp = new UnconditionalJump(opCode, jumpDestination, stack.substack(frameIndex, stack.size()));
 			} else {
-				exp = new UnconditionalJump(node, jumpDestination);
+				exp = new UnconditionalJump(opCode, jumpDestination);
 			}
 		}
 		if (opCode != Opcodes.GOTO && exp != null && node.getNext() != null && node.getNext() instanceof LabelNode) {
@@ -520,26 +521,26 @@ public class InstructionTranslator {
 		} else if (constant instanceof Long) {
 			type = DataType.LONG;
 		} else if (constant instanceof String) {
-			type = DataType.getType("java.lang.String");
+			type = DataType.getTypeFromObject("java.lang.String");
 		} else {
-			constant = DataType.getType((Type) constant); //todo think is this correct?
-			type = DataType.getType("java.lang.Class");
+			constant = DataType.getType((Type) node.cst); //todo think is this correct?
+			type = DataType.getTypeFromObject("java.lang.Class");
 		}
-		stack.push(new PrimaryExpression(node, constant, type));
+		stack.push(new PrimaryExpression(node.getOpcode(), constant, type));
 	}
 
 	private void visitIincInsnNode(IincInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
 		LocalVariable variable = mLocalVariables.get(node.var);
 		if (node.getPrevious() != null && node.getPrevious().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node, variable, DataType.INT, UnaryExpression.OpPosition.POSTFIX));
+			stack.push(new UnaryExpression(node.getOpcode(), variable, DataType.INT, UnaryExpression.OpPosition.POSTFIX));
 			return;
 		}
 		if (node.getNext() != null && node.getNext().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node, variable, DataType.INT, UnaryExpression.OpPosition.PREFIX));
+			stack.push(new UnaryExpression(node.getOpcode(), variable, DataType.INT, UnaryExpression.OpPosition.PREFIX));
 			return;
 		}
-		stack.push(new AssignmentExpression(node, new LeftHandSide(node, variable), new PrimaryExpression(node, node.incr, DataType.INT)));
+		stack.push(new AssignmentExpression(node.getOpcode(), new LeftHandSide(node.getOpcode(), variable), new PrimaryExpression(node.getOpcode(), node.incr, DataType.INT)));
 	}
 
 	//	TABLESWITCH
@@ -556,7 +557,7 @@ public class InstructionTranslator {
 		}
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
-		SwitchExpression switchExp = new SwitchExpression(node);
+		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
 		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
 		return movedNode;
@@ -606,7 +607,7 @@ public class InstructionTranslator {
 		}
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
-		SwitchExpression switchExp = new SwitchExpression(node);
+		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
 		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
 		return movedNode;
@@ -615,7 +616,7 @@ public class InstructionTranslator {
 	//	MULTIANEWARRAY
 	private void visitMultiANewArrayInsnNode(MultiANewArrayInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		stack.push(new ArrayCreationExpression(node));
+		stack.push(new ArrayCreationExpression(node.getOpcode(), node.desc, node.dims));
 	}
 
 	private void visitFrameNode(FrameNode node, ExpressionStack stack) {
@@ -652,14 +653,6 @@ public class InstructionTranslator {
 		System.out.println("STACK: " + mStack.size());
 		String result = "code: " + opCode + " " + fields;
 		System.out.println(result);
-	}
-
-	/**
-	 * min and max are inclusive
-	 * @return true if num is between min and max
-	 */
-	private static boolean isBetween(int num, int min, int max) {
-		return num >= min && num <= max;
 	}
 
 }

@@ -2,7 +2,6 @@ package com.thesis.expression;
 
 import com.thesis.common.DataType;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.InsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -11,9 +10,9 @@ public class ReturnExpression extends Expression {
 
 	private Expression mExpression;
 
-	public ReturnExpression(InsnNode node) {
-		super(node);
-		mType = getReturnType(node.getOpcode());
+	public ReturnExpression(int opCode) {
+		super(opCode);
+		mType = getReturnType(opCode);
 	}
 
 	public void setExpression(Expression expression) {

@@ -81,7 +81,8 @@ public class StatementCreator {
 		if (expression instanceof JumpExpression) {
 			return new Statement(expression, line);
 		}
-		return new Statement(new PrimaryExpression(null, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getType("java.lang.String")),0);
+		//TODO throw exception
+		return new Statement(new PrimaryExpression(0, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getTypeFromObject("java.lang.String")),0);
 	}
 
 	private boolean isIfThenStatement(ConditionalExpression expression) {

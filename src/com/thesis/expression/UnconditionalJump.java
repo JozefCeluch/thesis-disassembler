@@ -10,13 +10,13 @@ public class UnconditionalJump extends JumpExpression {
 
 	private boolean mIsVirtual;
 
-	public UnconditionalJump(JumpInsnNode instruction, int jumpLocation) {
-		super(instruction, jumpLocation);
+	public UnconditionalJump(int opCode, int jumpLocation) {
+		super(opCode, jumpLocation);
 		mIsVirtual = true;
 	}
 
-	public UnconditionalJump(JumpInsnNode insnNode, int jumpLocation, ExpressionStack stack) {
-		super(insnNode, jumpLocation);
+	public UnconditionalJump(int opCode, int jumpLocation, ExpressionStack stack) {
+		super(opCode, jumpLocation);
 		mIsVirtual = false;
 		mElseBranchEnd = jumpLocation;
 		mStartFrameLocation = jumpLocation;

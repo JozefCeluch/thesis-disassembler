@@ -9,13 +9,13 @@ import java.io.StringWriter;
 
 public abstract class Expression implements Writable {
 
-	protected AbstractInsnNode mInstruction;
+	protected int mOpCode;
 	protected DataType mType;
 	protected DataType mCastType;
 	protected int mLine;
 
-	public Expression(AbstractInsnNode instruction) {
-		mInstruction = instruction;
+	public Expression(int opCode) {
+		mOpCode = opCode;
 	}
 
 	abstract public DataType getType();
@@ -36,8 +36,8 @@ public abstract class Expression implements Writable {
 		mLine = line;
 	}
 
-	public void setInstruction(AbstractInsnNode instruction) {
-		mInstruction = instruction;
+	public void setOpCode(int opCode) {
+		mOpCode = opCode;
 	}
 
 	public boolean hasType() {

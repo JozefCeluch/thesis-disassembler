@@ -2,18 +2,17 @@ package com.thesis.expression;
 
 import com.thesis.Variable;
 import com.thesis.common.DataType;
-import org.objectweb.asm.tree.IincInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
 
 public class UnaryExpression extends Expression {
-
+//TODO make private?
 	Variable mVariable;
 	OpPosition mOpPosition;
 
-	public UnaryExpression(IincInsnNode node, Variable variable, DataType type, OpPosition pos) {
-		super(node);
+	public UnaryExpression(int opCode, Variable variable, DataType type, OpPosition pos) {
+		super(opCode);
 		mType = type;
 		mVariable = variable;
 		mOpPosition = pos;
@@ -36,7 +35,7 @@ public class UnaryExpression extends Expression {
 		writer.write(mOpPosition == OpPosition.PREFIX ? mVariable.toString() : "++");
 	}
 
-	public static enum OpPosition {
+	public enum OpPosition {
 		PREFIX, POSTFIX
 	}
 }

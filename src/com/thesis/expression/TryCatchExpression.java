@@ -2,7 +2,6 @@ package com.thesis.expression;
 
 import com.thesis.TryCatchItem;
 import com.thesis.common.DataType;
-import com.thesis.common.Util;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ public class TryCatchExpression extends Expression {
 	private ExpressionStack mFinallyStack;
 
 	public TryCatchExpression(TryCatchItem tryCatchItem) {
-		super(null);
+		super(0);
 		mCatchExpressions = new ArrayList<>();
 
 		mCatchExpressions.addAll(
@@ -62,9 +61,9 @@ public class TryCatchExpression extends Expression {
 		private ExpressionStack mStack;
 
 		public CatchExpression(int label, String typeString, ExpressionStack stack) {
-			super(null);
+			super(0);
 			mLabel = label;
-			mType = typeString != null ? DataType.getType(Type.getObjectType(typeString)) : null;
+			mType = typeString != null ? DataType.getTypeFromObject(typeString) : null;
 			mStack = stack;
 			mExpression = (AssignmentExpression) mStack.remove(0);
 			if (mType == null && mStack.size() > 0) {

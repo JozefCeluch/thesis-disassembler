@@ -11,8 +11,8 @@ public class LeftHandSide extends Expression {
 
 	private Variable mVariable;
 
-	public LeftHandSide(AbstractInsnNode node, Variable variable) {
-		super(node);
+	public LeftHandSide(int opCode, Variable variable) {
+		super(opCode);
 		mVariable = variable;
 	}
 

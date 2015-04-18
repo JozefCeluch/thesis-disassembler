@@ -11,7 +11,7 @@ public class LogicGateExpression extends ConditionalExpression {
 	private ConditionalExpression  mRight;
 
 	public LogicGateExpression(ConditionalExpression left, ConditionalExpression right) {
-		super(right.getJumpDestination());
+		super(0, right.getJumpDestination());
 		mRight = right;
 		mLeft = left;
 		mType = DataType.BOOLEAN;

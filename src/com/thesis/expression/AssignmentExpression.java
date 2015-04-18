@@ -2,8 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.Variable;
 import com.thesis.common.DataType;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.IincInsnNode;
+import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -13,14 +12,14 @@ public class AssignmentExpression extends  Expression{
 	private LeftHandSide mLeftSide;
 	private Expression mRightSide;
 
-	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide) {
-		super(instruction);
+	public AssignmentExpression(int opCode, LeftHandSide leftSide) {
+		super(opCode);
 		mLeftSide = leftSide;
 		mType = mLeftSide.getType();
 	}
 
-	public AssignmentExpression(AbstractInsnNode instruction, LeftHandSide leftSide, Expression rightSide) {
-		this(instruction, leftSide);
+	public AssignmentExpression(int opCode, LeftHandSide leftSide, Expression rightSide) {
+		this(opCode, leftSide);
 		rightSide.setType(leftSide.getType());
 		mRightSide = rightSide;
 	}
@@ -71,7 +70,7 @@ public class AssignmentExpression extends  Expression{
 
 	private String makeCorrectOperator() {
 		String op;
-		if (mInstruction instanceof IincInsnNode) {
+		if (mOpCode == Opcodes.IINC) {
 			op = " += ";
 		} else {
 			op = " = ";

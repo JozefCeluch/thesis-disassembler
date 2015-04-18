@@ -12,8 +12,8 @@ public class ConstructorInvocationExpression extends MethodInvocationExpression 
 	protected NewExpression mNewExpression;
 	protected DataType mContainingClass;
 
-	public ConstructorInvocationExpression(MethodInsnNode instruction, String callingMethod, DataType containingClass) {
-		super(instruction, callingMethod);
+	public ConstructorInvocationExpression(int opCode, String name, String desc, String owner, String callingMethod, DataType containingClass) {
+		super(opCode, name, desc, owner, callingMethod);
 		mContainingClass = containingClass;
 	}
 

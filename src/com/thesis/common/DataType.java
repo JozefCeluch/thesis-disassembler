@@ -68,12 +68,18 @@ public class DataType {
 		}
 	}
 
-	public static DataType getType(String typeString) {
-			return new DataType(typeString);
+	public static DataType getTypeFromDesc(String desc) {
+		if (desc == null || desc.isEmpty()) return UNKNOWN;
+		return new DataType(Type.getType(desc));
+	}
+
+	public static DataType getTypeFromObject(String objectType) {
+		if (objectType == null || objectType.isEmpty()) return UNKNOWN;
+		return new DataType(Type.getObjectType(objectType));
 	}
 
 	public static DataType getType(Type type) {
-			return new DataType(type);
+		return new DataType(type);
 	}
 
 	public boolean isReferenceType() {

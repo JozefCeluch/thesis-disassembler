@@ -14,13 +14,8 @@ public class SwitchExpression extends Expression {
 	private Expression mValue;
 	private List<CaseExpression> mCaseList;
 
-	public SwitchExpression(TableSwitchInsnNode instruction) {
-		super(instruction);
-		mCaseList = new ArrayList<>();
-	}
-
-	public SwitchExpression(LookupSwitchInsnNode instruction) {
-		super(instruction);
+	public SwitchExpression(int opCode) {
+		super(opCode);
 		mCaseList = new ArrayList<>();
 	}
 
@@ -62,7 +57,7 @@ public class SwitchExpression extends Expression {
 		private int mDefaultLabel;
 		//TODO value can be number, String or enum
 		public CaseExpression(Object value, int label, int defaultLabel, ExpressionStack stack) {
-			super(null);
+			super(0);
 			mValue = value;
 			mStack = stack;
 			mLabel = label;

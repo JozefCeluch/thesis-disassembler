@@ -4,10 +4,6 @@ import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.IntInsnNode;
-import org.objectweb.asm.tree.MultiANewArrayInsnNode;
-import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -20,26 +16,26 @@ public class ArrayCreationExpression extends Expression {
 	private List<Expression> mItems;
 	private int mDimensions;
 
-	protected ArrayCreationExpression(AbstractInsnNode node, DataType type) {
-		super(node);
+	protected ArrayCreationExpression(int opCode, DataType type) {
+		super(opCode);
 		mType = type;
 		mItems = new ArrayList<>();
 		mLengths = new ArrayList<>();
 		mDimensions = 1;
 	}
 
-	public ArrayCreationExpression(IntInsnNode node) {
-		this(node, convertTypeCodeToType(node.operand));
+	public ArrayCreationExpression(int opCode, int operand) {
+		this(opCode, convertTypeCodeToType(operand));
 	}
 
-	public ArrayCreationExpression(TypeInsnNode node) {
-		this(node, convertTypeStringToType(node.desc));
+	public ArrayCreationExpression(int opCode, String desc) {
+		this(opCode, convertTypeStringToType(desc));
 		mDimensions = mType.getDimension() + 1;
 	}
 
-	public ArrayCreationExpression(MultiANewArrayInsnNode node) {
-		this(node, convertTypeStringToType(node.desc));
-		mDimensions = node.dims;
+	public ArrayCreationExpression(int opCode, String desc, int dims) {
+		this(opCode, convertTypeStringToType(desc));
+		mDimensions = dims;
 	}
 
 	public void addMember(Expression expression) {
@@ -53,7 +49,7 @@ public class ArrayCreationExpression extends Expression {
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-		if (mInstruction.getOpcode() == Opcodes.MULTIANEWARRAY) {
+		if (mOpCode == Opcodes.MULTIANEWARRAY) {
 			for (int i = 0; i < mDimensions; i++) {
 				mLengths.add(0, stack.pop());
 			}
@@ -85,7 +81,7 @@ public class ArrayCreationExpression extends Expression {
 		if (desc == null || desc.isEmpty()) {
 			return DataType.UNKNOWN;
 		}
-		return DataType.getType(Type.getObjectType(desc));
+		return DataType.getTypeFromObject(desc);
 	}
 
 	private static DataType convertTypeCodeToType(int code) {

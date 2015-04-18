@@ -10,8 +10,8 @@ public class ThrowExpression extends Expression {
 
 	private Expression mExpression;
 
-	public ThrowExpression(InsnNode node) {
-		super(node);
+	public ThrowExpression(int opCode) {
+		super(opCode);
 	}
 
 	@Override

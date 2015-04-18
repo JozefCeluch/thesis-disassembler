@@ -6,7 +6,6 @@ import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -22,16 +21,16 @@ public class MethodInvocationExpression extends Expression {
 	protected String mCallingMethod;
 	protected Expression mOwnerInstance;
 
-	public MethodInvocationExpression(MethodInsnNode instruction, String callingMethod) {
-		super(instruction);
-		mName = instruction.name;
+	public MethodInvocationExpression(int opCode, String name, String desc, String owner, String callingMethod) {
+		super(opCode);
+		mName = name;
 		SignatureVisitor v = new SignatureVisitor(0, null, null);
-		SignatureReader r = new SignatureReader(instruction.desc);
+		SignatureReader r = new SignatureReader(desc);
 		r.accept(v);
-		mType = DataType.getType(v.getReturnType());
+		mType = DataType.getTypeFromObject(v.getReturnType());
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
-		mOwnerClass = DataType.getType(Type.getObjectType(instruction.owner));
+		mOwnerClass = DataType.getType(Type.getObjectType(owner));
 		mCallingMethod = callingMethod;
 	}
 
@@ -74,7 +73,7 @@ public class MethodInvocationExpression extends Expression {
 	}
 
 	private boolean isStatic() {
-		return mInstruction.getOpcode() == Opcodes.INVOKESTATIC;
+		return mOpCode == Opcodes.INVOKESTATIC;
 	}
 
 	private boolean isLocalMethod() {
