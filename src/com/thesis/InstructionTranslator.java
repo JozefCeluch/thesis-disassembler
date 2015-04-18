@@ -6,7 +6,6 @@ import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
 import com.thesis.expression.TryCatchExpression;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -20,7 +19,6 @@ public class InstructionTranslator {
 	private final MethodNode mMethod;
 	private ExpressionStack mStack;
 	private Map<Integer, LocalVariable> mLocalVariables;
-	private Label mLabel;
 	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
 	private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
@@ -29,7 +27,7 @@ public class InstructionTranslator {
 
 	public InstructionTranslator(MethodBlock methodBlock) {
 		mMethodBlock = methodBlock;
-		mStack = new ExpressionStack(new HashMap<>());
+		mStack = new ExpressionStack();
 		mMethod = methodBlock.getMethodNode();
 		mLocalVariables = new HashMap<>();
 		copyLocalVariables();
@@ -66,7 +64,6 @@ public class InstructionTranslator {
 	}
 
 	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
-		if (mLabel != null) stack.addLabel(mLabel);
 
 		switch (node.getType()) {
 			case AbstractInsnNode.INSN:
@@ -440,6 +437,7 @@ public class InstructionTranslator {
 		} else {
 			stack.push(exp);
 		}
+		stack.setLabel(mCurrentLabel);
 		return movedNode;
 	}
 
@@ -500,9 +498,9 @@ public class InstructionTranslator {
 
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
 		printNodeInfo(node);
-		mLabel = node.getLabel();
-		stack.addLabel(mLabel);
-		mCurrentLabel = stack.getLabelId(mLabel);
+		printNodeInfo(node, stack);
+		mCurrentLabel= stack.getLabelId(node.getLabel());
+		stack.setLabel(mCurrentLabel);
 		mVisitedLabels.add(mCurrentLabel);
 		System.out.println("LABEL: " + "L" + mCurrentLabel);
 	}
@@ -565,19 +563,17 @@ public class InstructionTranslator {
 
 	private AbstractInsnNode updateSwitchWithCases(SwitchExpression switchExp, AbstractInsnNode movedNode, int defaultLabel, Map<Integer, String> labelCaseMap) {
 		ExpressionStack caseStack = mStack.getNew();
-		int currentLabel = caseStack.getLabelId(mLabel);
 		int switchEndLabel = -1;
 		SwitchExpression.CaseExpression caseExpression = null;
 
-		while (currentLabel != switchEndLabel && (movedNode = movedNode.getNext()) != null) {
+		while (mCurrentLabel != switchEndLabel && (movedNode = movedNode.getNext()) != null) {
 			movedNode = pushNodeToStackAsExpression(movedNode, caseStack);
-			currentLabel = caseStack.getLabelId(mLabel);
 
-			if (labelCaseMap.containsKey(currentLabel) && caseExpression == null) {
-				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(currentLabel), currentLabel, defaultLabel, caseStack);
+			if (labelCaseMap.containsKey(mCurrentLabel) && caseExpression == null) {
+				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(mCurrentLabel), mCurrentLabel, defaultLabel, caseStack);
 			}
 
-			if (caseExpression != null && labelCaseMap.containsKey(currentLabel) && caseExpression.getLabel() != currentLabel) {
+			if (caseExpression != null && labelCaseMap.containsKey(mCurrentLabel) && caseExpression.getLabel() != mCurrentLabel) {
 				if (caseStack.peek() instanceof UnconditionalJump) {
 					UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
 					switchEndLabel = jump.getJumpDestination();
