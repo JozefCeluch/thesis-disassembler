@@ -15,6 +15,12 @@ public class MultiConditional extends ConditionalExpression {
 		right = rightExpression;
 	}
 
+	public MultiConditional(int opCode, int jumpDestination, Expression rightExpression , Expression leftExpression) {
+		super(opCode, jumpDestination);
+		left = leftExpression;
+		right = rightExpression;
+	}
+
 	@Override
 	public void write(Writer writer) throws IOException {
 		left.write(writer);

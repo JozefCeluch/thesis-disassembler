@@ -50,13 +50,14 @@ public class InstructionTranslator {
 	public List<Statement> addCode() {
 		System.out.println(" ");
 		System.out.println("METHOD: " + mMethod.name);
+
+		mStack.addEnhancer(new LoopEnhancer());
 		mState.setCurrentNode(mMethod.instructions.getFirst());
 		while (mState.getCurrentNode() != null) {
 			pushNodeToStackAsExpression(mState.getCurrentNode(), mStack);
 			mState.moveNode();
 		}
 
-		mStack.addEnhancer(new LoopEnhancer());
 		mStack.enhance();
 
 		List<Statement> statements = getLocalVariableAssignments();
@@ -126,22 +127,23 @@ public class InstructionTranslator {
 		List<TryCatchItem> tryCatchItems = mTryCatchManager.getItemsWithStartId(mState.getCurrentLabel());
 		if (tryCatchItems.isEmpty()) return;
 
-		TryCatchExpression previousExpression = null;
+		TryCatchExpression tryCatchExpression = null;
 		for(TryCatchItem item : tryCatchItems) {
-			item.setTryStack(mStack.getNew());
-			if (previousExpression != null) {
-				item.getTryStack().push(previousExpression);
-			}
-			processTryCatchBlock(item);
-			previousExpression = new TryCatchExpression(item);
+			prepareTryCatchItem(item, tryCatchExpression);
+			tryCatchExpression = new TryCatchExpression(item);
 		}
-		stack.push(previousExpression);
+		stack.push(tryCatchExpression);
 	}
 
-	private void processTryCatchBlock(TryCatchItem tryCatchItem) {
+	private void prepareTryCatchItem(TryCatchItem tryCatchItem, TryCatchExpression innerTryCatchBlock) {
 		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return;
 
 		// fill try block
+		tryCatchItem.setTryStack(mStack.getNew());
+		if (innerTryCatchBlock != null) {
+			tryCatchItem.getTryStack().push(innerTryCatchBlock);
+		}
+
 		while (tryCatchItem.getEndId() != mState.getCurrentLabel()) {
 			mState.moveNode();
 			pushNodeToStackAsExpression(mState.getCurrentNode(), tryCatchItem.getTryStack());
@@ -243,7 +245,7 @@ public class InstructionTranslator {
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
 		} else if (Util.isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(opCode, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop(), mStack.getNew()));
+			stack.push(new MultiConditional(opCode, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop()));
 		} else if (Util.isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(opCode));
 		} else if (Util.isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {
@@ -388,11 +390,11 @@ public class InstructionTranslator {
 	private void visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node, stack);
 		ConditionalExpression exp = makeConditionalExpression(node, stack);
-		if (exp == null || exp.getThenBranch() == null) {
+		if (exp == null || exp instanceof UnconditionalJump) {
 			stack.push(exp);
 			return;
 		}
-
+		exp.setThenBranch(mStack.getNew());
 		if (exp.getStartFrameLocation() == ConditionalExpression.NO_DESTINATION && mState.getFrameLabel() != ConditionalExpression.NO_DESTINATION) {
 			exp.setStartFrameLocation(mState.getFrameLabel());
 			mState.setFrameLabel(ConditionalExpression.NO_DESTINATION);
@@ -400,8 +402,7 @@ public class InstructionTranslator {
 		while (!mState.isLabelVisited(exp.getJumpDestination())) {
 			mState.moveNode();
 			if (isConditionalJump(mState.getCurrentNode())) {
-				checkLogicGateExpressionIsOnTop(exp);
-				if (exp.containsLogicGateExpression()) {
+				if (checkLogicGateExpressionIsOnTop(exp)) {
 					exp = new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop());
 				}
 			}
@@ -443,15 +444,17 @@ public class InstructionTranslator {
 		return movedNode instanceof JumpInsnNode && movedNode.getOpcode() != Opcodes.GOTO;
 	}
 
-	private void checkLogicGateExpressionIsOnTop(ConditionalExpression exp) {
+	private boolean checkLogicGateExpressionIsOnTop(ConditionalExpression exp) {
 		ExpressionStack thenBranchBackup = exp.getThenBranch().duplicate();
-		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode)mState.getCurrentNode(), exp.getThenBranch());
+		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode) mState.getCurrentNode(), exp.getThenBranch());
 		exp.getThenBranch().push(innerExp);
 		if (exp.containsLogicGateExpression()) {
 			mState.moveNode();
+			return true;
 		} else {
 			exp.setThenBranch(thenBranchBackup);
-			visitJumpInsnNode((JumpInsnNode)mState.getCurrentNode(), exp.getThenBranch());
+			visitJumpInsnNode((JumpInsnNode) mState.getCurrentNode(), exp.getThenBranch());
+			return exp.containsLogicGateExpression();
 		}
 	}
 
@@ -463,18 +466,18 @@ public class InstructionTranslator {
 		System.out.println("L" + jumpDestination);
 
 		if (Util.isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
-			exp = new MultiConditional(opCode, jumpDestination, stack.pop(), stack.pop(), mStack.getNew());
+			exp = new MultiConditional(opCode, jumpDestination, stack.pop(), stack.pop());
 		} else if (Util.isBetween(opCode, Opcodes.IFEQ, Opcodes.IFLE)) {
 			Expression stackTop = stack.peek();
 			if (stackTop instanceof MultiConditional && !((MultiConditional) stackTop).isJumpDestinationSet()) {
-				exp = (MultiConditional)stack.pop();
+				exp = (MultiConditional) stack.pop();
 				exp.setJumpDestination(jumpDestination);
 				exp.setOpCode(node.getOpcode());
 			} else {
-				exp = new SingleConditional(opCode, jumpDestination, stack.pop(), mStack.getNew());
+				exp = new SingleConditional(opCode, jumpDestination, stack.pop());
 			}
 		} else if (Util.isBetween(opCode, Opcodes.IFNULL, Opcodes.IFNONNULL)) {
-			exp = new MultiConditional(opCode, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop(), mStack.getNew());
+			exp = new MultiConditional(opCode, jumpDestination, new PrimaryExpression("null", DataType.UNKNOWN), stack.pop());
 		} else if (opCode == Opcodes.GOTO) {
 			int frameIndex = stack.getExpressionIndexOfFrame(jumpDestination);
 			if (frameIndex != -1) {
@@ -548,22 +551,27 @@ public class InstructionTranslator {
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
 		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
+		mState.moveNode();
 		updateSwitchWithCases(switchExp, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
 	}
 
 	private void updateSwitchWithCases(SwitchExpression switchExp, int defaultLabel, Map<Integer, String> labelCaseMap) {
-		ExpressionStack caseStack = mStack.getNew();
 		int switchEndLabel = -1;
+		ExpressionStack caseStack = null;
 		SwitchExpression.CaseExpression caseExpression = null;
-		mState.moveNode();
 
 		while (mState.getCurrentLabel() != switchEndLabel && mState.getCurrentNode() != null) {
+			if (caseStack == null) {
+				caseStack = mStack.getNew();
+			}
+
 			pushNodeToStackAsExpression(mState.getCurrentNode(), caseStack);
 			mState.moveNode();
 
 			if (labelCaseMap.containsKey(mState.getCurrentLabel()) && caseExpression == null) {
 				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(mState.getCurrentLabel()), mState.getCurrentLabel(), defaultLabel, caseStack);
+				switchExp.addCase(caseExpression);
 			}
 
 			if (caseExpression != null && labelCaseMap.containsKey(mState.getCurrentLabel()) && caseExpression.getLabel() != mState.getCurrentLabel()) {
@@ -572,14 +580,10 @@ public class InstructionTranslator {
 					switchEndLabel = jump.getJumpDestination();
 					caseStack.push(new BreakExpression(jump));
 				}
-				switchExp.addCase(caseExpression);
-				caseStack = mStack.getNew();
+				caseStack = null;
 				caseExpression = null;
 			}
 
-		}
-		if (caseExpression != null) {
-			switchExp.addCase(caseExpression);
 		}
 	}
 
@@ -596,6 +600,7 @@ public class InstructionTranslator {
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
 		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
+		mState.moveNode();
 		updateSwitchWithCases(switchExp, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
 	}

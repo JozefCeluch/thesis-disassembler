@@ -10,9 +10,8 @@ public class SingleConditional extends ConditionalExpression {
 
 	private Expression mLeftExpression;
 
-	public SingleConditional(int opCode, int jumpDestination, Expression leftExpression, ExpressionStack then) {
+	public SingleConditional(int opCode, int jumpDestination, Expression leftExpression) {
 		super(opCode, jumpDestination);
-		super.thenBranch = then;
 		mLeftExpression = leftExpression;
 	}
 
