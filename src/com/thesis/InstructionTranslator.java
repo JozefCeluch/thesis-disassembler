@@ -17,21 +17,21 @@ import java.util.stream.Collectors;
 public class InstructionTranslator {
 
 	private final MethodNode mMethod;
-	private ExpressionStack mStack;
 	private Map<Integer, LocalVariable> mLocalVariables;
-	private int mCurrentLabel;
 	private TryCatchManager mTryCatchManager;
-	private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
-	private List<Integer> mVisitedLabels;
 	private MethodBlock mMethodBlock;
 
+	private ExpressionStack mStack;
+	private State mState;
+
 	public InstructionTranslator(MethodBlock methodBlock) {
+		mState = new State();
 		mMethodBlock = methodBlock;
 		mStack = new ExpressionStack();
+		mState.setStack(mStack);
 		mMethod = methodBlock.getMethodNode();
 		copyLocalVariables();
 		mTryCatchManager = TryCatchManager.newInstance(mMethod.tryCatchBlocks, mStack);
-		mVisitedLabels = new ArrayList<>();
 	}
 
 	private void copyLocalVariables() {
@@ -50,10 +50,10 @@ public class InstructionTranslator {
 	public List<Statement> addCode() {
 		System.out.println(" ");
 		System.out.println("METHOD: " + mMethod.name);
-		AbstractInsnNode node = mMethod.instructions.getFirst();
-		while (node != null) {
-			node = pushNodeToStackAsExpression(node, mStack);
-			if (node != null) node = node.getNext();
+		mState.setCurrentNode(mMethod.instructions.getFirst());
+		while (mState.getCurrentNode() != null) {
+			pushNodeToStackAsExpression(mState.getCurrentNode(), mStack);
+			mState.moveNode();
 		}
 
 		mStack.addEnhancer(new LoopEnhancer());
@@ -65,7 +65,7 @@ public class InstructionTranslator {
 		return statements;
 	}
 
-	private AbstractInsnNode pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
+	private void pushNodeToStackAsExpression(AbstractInsnNode node, ExpressionStack stack) {
 		switch (node.getType()) {
 			case AbstractInsnNode.INSN:
 				visitInsnNode((InsnNode) node, stack);
@@ -89,11 +89,11 @@ public class InstructionTranslator {
 				visitInvokeDynamicInsnNode((InvokeDynamicInsnNode) node, stack);
 				break;
 			case AbstractInsnNode.JUMP_INSN:
-				node = visitJumpInsnNode((JumpInsnNode) node, stack);
+				visitJumpInsnNode((JumpInsnNode) node, stack);
 				break;
 			case AbstractInsnNode.LABEL:
 				visitLabelNode((LabelNode) node, stack);
-				node = createTryCatchBlocks(node, stack);
+				createTryCatchBlocks(stack);
 				break;
 			case AbstractInsnNode.LDC_INSN:
 				visitLdcInsnNode((LdcInsnNode) node, stack);
@@ -102,10 +102,10 @@ public class InstructionTranslator {
 				visitIincInsnNode((IincInsnNode) node, stack);
 				break;
 			case AbstractInsnNode.TABLESWITCH_INSN:
-				node = visitTableSwitchInsnNode((TableSwitchInsnNode) node, stack);
+				visitTableSwitchInsnNode((TableSwitchInsnNode) node, stack);
 				break;
 			case AbstractInsnNode.LOOKUPSWITCH_INSN:
-				node = visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
+				visitLookupSwitchInsnNode((LookupSwitchInsnNode)node, stack);
 				break;
 			case AbstractInsnNode.MULTIANEWARRAY_INSN:
 				visitMultiANewArrayInsnNode((MultiANewArrayInsnNode)node, stack);
@@ -119,44 +119,41 @@ public class InstructionTranslator {
 			default:
 				printNodeInfo(node, stack);
 		}
-		return node;
 	}
 
-	private AbstractInsnNode createTryCatchBlocks(AbstractInsnNode node, ExpressionStack stack) {
-		if (mTryCatchManager.isEmpty()) return node;
-		List<TryCatchItem> tryCatchItems = mTryCatchManager.getItemsWithStartId(mCurrentLabel);
-		if (tryCatchItems.isEmpty()) return node;
+	private void createTryCatchBlocks(ExpressionStack stack) {
+		if (mTryCatchManager.isEmpty()) return;
+		List<TryCatchItem> tryCatchItems = mTryCatchManager.getItemsWithStartId(mState.getCurrentLabel());
+		if (tryCatchItems.isEmpty()) return;
 
-		AbstractInsnNode movedNode = node;
 		TryCatchExpression previousExpression = null;
 		for(TryCatchItem item : tryCatchItems) {
 			item.setTryStack(mStack.getNew());
 			if (previousExpression != null) {
 				item.getTryStack().push(previousExpression);
 			}
-			movedNode = processTryCatchBlock(movedNode, item);
+			processTryCatchBlock(item);
 			previousExpression = new TryCatchExpression(item);
 		}
 		stack.push(previousExpression);
-		return movedNode;
 	}
 
-	private AbstractInsnNode processTryCatchBlock(AbstractInsnNode node, TryCatchItem tryCatchItem) {
-		AbstractInsnNode movedNode = node;
-		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return node;
+	private void processTryCatchBlock(TryCatchItem tryCatchItem) {
+		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return;
 
 		// fill try block
-		while (tryCatchItem.getEndId() != mCurrentLabel) {
-			movedNode = movedNode.getNext();
-			movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getTryStack());
+		while (tryCatchItem.getEndId() != mState.getCurrentLabel()) {
+			mState.moveNode();
+			pushNodeToStackAsExpression(mState.getCurrentNode(), tryCatchItem.getTryStack());
 		}
 
 		// ignore repeated finally blocks
 		ExpressionStack repeatedFinallyCalls = mStack.getNew();
-		while (!tryCatchItem.hasHandlerLabel(mCurrentLabel)) {
-			movedNode = movedNode.getNext();
-			movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
+		while (!tryCatchItem.hasHandlerLabel(mState.getCurrentLabel())) {
+			mState.moveNode();
+			pushNodeToStackAsExpression(mState.getCurrentNode(), repeatedFinallyCalls);
 		}
+
 		int tryCatchBlockEnd = ConditionalExpression.NO_DESTINATION;
 		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
 			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
@@ -164,26 +161,24 @@ public class InstructionTranslator {
 
 		// fill catch blocks
 		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			tryCatchItem.addCatchBlock(mCurrentLabel, mStack.getNew());
-			int currentBlockLabel = mCurrentLabel;
+			tryCatchItem.addCatchBlock(mState.getCurrentLabel(), mStack.getNew());
+			int currentBlockLabel = mState.getCurrentLabel();
 			if (tryCatchItem.getHandlerType(currentBlockLabel) == null) {
 				tryCatchItem.setHasFinallyBlock(true);
 				tryCatchItem.setFinallyBlockStart(currentBlockLabel);
 			}
-			while (mCurrentLabel == currentBlockLabel || !(tryCatchItem.hasHandlerLabel(mCurrentLabel)
-					|| mTryCatchManager.hasCatchHandlerEnd(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
-				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, tryCatchItem.getCatchBlock(currentBlockLabel));
+			while (mState.getCurrentLabel() == currentBlockLabel || !(tryCatchItem.hasHandlerLabel(mState.getCurrentLabel())
+					|| mTryCatchManager.hasCatchHandlerEnd(mState.getCurrentLabel()) || mState.getCurrentLabel() == tryCatchBlockEnd)) {
+				mState.moveNode();
+				pushNodeToStackAsExpression(mState.getCurrentNode(), tryCatchItem.getCatchBlock(currentBlockLabel));
 			}
 
 			// ignore repeated finally blocks
-			while (!(tryCatchItem.hasHandlerLabel(mCurrentLabel) || mCurrentLabel == tryCatchBlockEnd)) {
-				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, repeatedFinallyCalls);
+			while (!(tryCatchItem.hasHandlerLabel(mState.getCurrentLabel()) || mState.getCurrentLabel() == tryCatchBlockEnd)) {
+				mState.moveNode();
+				pushNodeToStackAsExpression(mState.getCurrentNode(), repeatedFinallyCalls);
 			}
 		}
-
-		return movedNode;
 	}
 
 	private List<Statement> getLocalVariableAssignments() {
@@ -390,30 +385,29 @@ public class InstructionTranslator {
 	 * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
 	 * GOTO, JSR (deprecated since Java 6).
 	 */
-	private AbstractInsnNode visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
+	private void visitJumpInsnNode(JumpInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node, stack);
 		ConditionalExpression exp = makeConditionalExpression(node, stack);
 		if (exp == null || exp.getThenBranch() == null) {
 			stack.push(exp);
-			return node;
+			return;
 		}
 
-		if (exp.getStartFrameLocation() == ConditionalExpression.NO_DESTINATION && mFrameLabel != ConditionalExpression.NO_DESTINATION) {
-			exp.setStartFrameLocation(mFrameLabel);
-			mFrameLabel = ConditionalExpression.NO_DESTINATION;
+		if (exp.getStartFrameLocation() == ConditionalExpression.NO_DESTINATION && mState.getFrameLabel() != ConditionalExpression.NO_DESTINATION) {
+			exp.setStartFrameLocation(mState.getFrameLabel());
+			mState.setFrameLabel(ConditionalExpression.NO_DESTINATION);
 		}
-		AbstractInsnNode movedNode = node;
-		while (!mVisitedLabels.contains(exp.getJumpDestination())) {
-			movedNode = movedNode.getNext();
-			if (isConditionalJump(movedNode)) {
-				movedNode = checkLogicGateExpressionIsOnTop(exp, movedNode);
+		while (!mState.isLabelVisited(exp.getJumpDestination())) {
+			mState.moveNode();
+			if (isConditionalJump(mState.getCurrentNode())) {
+				checkLogicGateExpressionIsOnTop(exp);
 				if (exp.containsLogicGateExpression()) {
 					exp = new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop());
 				}
 			}
-			movedNode = pushNodeToStackAsExpression(movedNode, exp.getThenBranch());
-			if (isEndOfThenBlock(movedNode) ) {
-				int gotoJumpDestination = stack.getLabelId(((JumpInsnNode) movedNode).label.getLabel());
+			pushNodeToStackAsExpression(mState.getCurrentNode(), exp.getThenBranch());
+			if (isEndOfThenBlock(mState.getCurrentNode()) ) {
+				int gotoJumpDestination = stack.getLabelId(((JumpInsnNode) mState.getCurrentNode()).label.getLabel());
 				exp.setElseBranchEnd(gotoJumpDestination);
 				exp.updateThenBranchType();
 				if (exp.getJumpDestination() == gotoJumpDestination) {
@@ -426,9 +420,9 @@ public class InstructionTranslator {
 
 		if (exp.hasEmptyElseBranch() && !exp.isLoop()) {
 			exp.setElseBranch(mStack.getNew());
-			while(!mVisitedLabels.contains(exp.getElseBranchEnd())){ //mCurrentLabel != exp.getElseBranchEnd()
-				movedNode = movedNode.getNext();
-				movedNode = pushNodeToStackAsExpression(movedNode, exp.getElseBranch());
+			while(!mState.isLabelVisited(exp.getElseBranchEnd())) { //mCurrentLabel != exp.getElseBranchEnd()
+				mState.moveNode();
+				pushNodeToStackAsExpression(mState.getCurrentNode(), exp.getElseBranch());
 			}
 			exp.updateElseBranchType();
 		}
@@ -438,8 +432,7 @@ public class InstructionTranslator {
 		} else {
 			stack.push(exp);
 		}
-		stack.setLabel(mCurrentLabel);
-		return movedNode;
+		stack.setLabel(mState.getCurrentLabel());
 	}
 
 	private boolean isEndOfThenBlock(AbstractInsnNode movedNode) {
@@ -450,17 +443,16 @@ public class InstructionTranslator {
 		return movedNode instanceof JumpInsnNode && movedNode.getOpcode() != Opcodes.GOTO;
 	}
 
-	private AbstractInsnNode checkLogicGateExpressionIsOnTop(ConditionalExpression exp, AbstractInsnNode movedNode) {
+	private void checkLogicGateExpressionIsOnTop(ConditionalExpression exp) {
 		ExpressionStack thenBranchBackup = exp.getThenBranch().duplicate();
-		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode)movedNode, exp.getThenBranch());
+		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode)mState.getCurrentNode(), exp.getThenBranch());
 		exp.getThenBranch().push(innerExp);
 		if (exp.containsLogicGateExpression()) {
-			movedNode = movedNode.getNext();
+			mState.moveNode();
 		} else {
 			exp.setThenBranch(thenBranchBackup);
-			movedNode = visitJumpInsnNode((JumpInsnNode)movedNode, exp.getThenBranch());
+			visitJumpInsnNode((JumpInsnNode)mState.getCurrentNode(), exp.getThenBranch());
 		}
-		return movedNode;
 	}
 
 	private ConditionalExpression makeConditionalExpression(JumpInsnNode node, ExpressionStack stack) {
@@ -499,10 +491,10 @@ public class InstructionTranslator {
 
 	private void visitLabelNode(LabelNode node, ExpressionStack stack) {
 		printNodeInfo(node, stack);
-		mCurrentLabel= stack.getLabelId(node.getLabel());
-		stack.setLabel(mCurrentLabel);
-		mVisitedLabels.add(mCurrentLabel);
-		System.out.println("LABEL: " + "L" + mCurrentLabel);
+		mState.setCurrentLabel(stack.getLabelId(node.getLabel()));
+		stack.setLabel(mState.getCurrentLabel());
+		mState.addLabelToVisited(mState.getCurrentLabel());
+		System.out.println("LABEL: " + "L" + mState.getCurrentLabel());
 	}
 
 	// LDC
@@ -542,7 +534,7 @@ public class InstructionTranslator {
 	}
 
 	//	TABLESWITCH
-	private AbstractInsnNode visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
+	private void visitTableSwitchInsnNode(TableSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node, stack);
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
 
@@ -556,24 +548,25 @@ public class InstructionTranslator {
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
 		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
-		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
+		updateSwitchWithCases(switchExp, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
-		return movedNode;
 	}
 
-	private AbstractInsnNode updateSwitchWithCases(SwitchExpression switchExp, AbstractInsnNode movedNode, int defaultLabel, Map<Integer, String> labelCaseMap) {
+	private void updateSwitchWithCases(SwitchExpression switchExp, int defaultLabel, Map<Integer, String> labelCaseMap) {
 		ExpressionStack caseStack = mStack.getNew();
 		int switchEndLabel = -1;
 		SwitchExpression.CaseExpression caseExpression = null;
+		mState.moveNode();
 
-		while (mCurrentLabel != switchEndLabel && (movedNode = movedNode.getNext()) != null) {
-			movedNode = pushNodeToStackAsExpression(movedNode, caseStack);
+		while (mState.getCurrentLabel() != switchEndLabel && mState.getCurrentNode() != null) {
+			pushNodeToStackAsExpression(mState.getCurrentNode(), caseStack);
+			mState.moveNode();
 
-			if (labelCaseMap.containsKey(mCurrentLabel) && caseExpression == null) {
-				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(mCurrentLabel), mCurrentLabel, defaultLabel, caseStack);
+			if (labelCaseMap.containsKey(mState.getCurrentLabel()) && caseExpression == null) {
+				caseExpression = new SwitchExpression.CaseExpression(labelCaseMap.get(mState.getCurrentLabel()), mState.getCurrentLabel(), defaultLabel, caseStack);
 			}
 
-			if (caseExpression != null && labelCaseMap.containsKey(mCurrentLabel) && caseExpression.getLabel() != mCurrentLabel) {
+			if (caseExpression != null && labelCaseMap.containsKey(mState.getCurrentLabel()) && caseExpression.getLabel() != mState.getCurrentLabel()) {
 				if (caseStack.peek() instanceof UnconditionalJump) {
 					UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
 					switchEndLabel = jump.getJumpDestination();
@@ -588,11 +581,10 @@ public class InstructionTranslator {
 		if (caseExpression != null) {
 			switchExp.addCase(caseExpression);
 		}
-		return movedNode;
 	}
 
 	// LOOKUPSWITCH
-	private AbstractInsnNode visitLookupSwitchInsnNode(LookupSwitchInsnNode node, ExpressionStack stack) {
+	private void visitLookupSwitchInsnNode(LookupSwitchInsnNode node, ExpressionStack stack) {
 		printNodeInfo(node, stack);
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
 		Map<Integer, String> labelCaseMap = new HashMap<>();
@@ -604,9 +596,8 @@ public class InstructionTranslator {
 		labelCaseMap.put(defaultLabel, SwitchExpression.CaseExpression.DEFAULT);
 
 		SwitchExpression switchExp = new SwitchExpression(node.getOpcode());
-		AbstractInsnNode movedNode = updateSwitchWithCases(switchExp, node, defaultLabel, labelCaseMap);
+		updateSwitchWithCases(switchExp, defaultLabel, labelCaseMap);
 		stack.push(switchExp);
-		return movedNode;
 	}
 
 	//	MULTIANEWARRAY
@@ -621,14 +612,15 @@ public class InstructionTranslator {
 		System.out.println("local: " + Arrays.deepToString(node.local.toArray()));
 		System.out.println("stack: " + Arrays.deepToString(node.stack.toArray()));
 
-		mFrameLabel = mCurrentLabel;
-		stack.addFrame(mCurrentLabel);
+		mState.setFrameLabel(mState.getCurrentLabel());
+		stack.addFrame(mState.getCurrentLabel());
 	}
 
 	private void visitLineNumberNode(LineNumberNode node, ExpressionStack stack) {
 		System.out.println("LINE: " + node.line);
 		printNodeInfo(node, stack);
 		stack.setLineNumber(node.line);
+//		mState.setCurrentLine(node.line);
 	}
 
 	private void printNodeInfo(AbstractInsnNode node, ExpressionStack stack) {
@@ -648,8 +640,75 @@ public class InstructionTranslator {
 		}
 //		System.out.println("STACK: " + mStack.size());
 		String result = "code: " + opCode + " " + fields;
-		result += "\nCURRENT LABEL: " + mCurrentLabel + ",  STACK: " + stack.getLabel();
+		result += "\nCURRENT LABEL: " + mState.getCurrentLabel() + ",  STACK: " + stack.getLabel();
 		System.out.println(result);
 	}
 
+	private static class State {
+		private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
+		private int mCurrentLabel;
+		private int mCurrentLine;
+		private List<Integer> mVisitedLabels;
+		private AbstractInsnNode mCurrentNode;
+
+		private ExpressionStack mStack;
+		private Stack<ExpressionStack> mActiveStacks;
+
+		public State() {
+			mVisitedLabels = new ArrayList<>();
+			mActiveStacks = new Stack<>();
+		}
+
+		public void setStack(ExpressionStack stack) {
+			if (!mActiveStacks.isEmpty()) {
+				throw new RuntimeException("there is a stack already");
+			}
+			mStack = stack;
+			mActiveStacks.push(mStack);
+		}
+
+		public int getFrameLabel() {
+			return mFrameLabel;
+		}
+
+		public void setFrameLabel(int frameLabel) {
+			mFrameLabel = frameLabel;
+		}
+
+		public int getCurrentLabel() {
+			return mCurrentLabel;
+		}
+
+		public void setCurrentLabel(int currentLabel) {
+			mCurrentLabel = currentLabel;
+		}
+
+		public boolean isLabelVisited(int label) {
+			return mVisitedLabels.contains(label);
+		}
+
+		public void addLabelToVisited(int label) {
+			mVisitedLabels.add(label);
+		}
+
+		public AbstractInsnNode getCurrentNode() {
+			return mCurrentNode;
+		}
+
+		public void setCurrentNode(AbstractInsnNode currentNode) {
+			mCurrentNode = currentNode;
+		}
+
+		public AbstractInsnNode moveNode() {
+			if (mCurrentNode != null) {
+				mCurrentNode = mCurrentNode.getNext();
+			}
+			return mCurrentNode;
+		}
+
+		public void setCurrentLine(int currentLine) {
+			mCurrentLine = currentLine;
+//			getActiveStack().setLineNumber(mCurrentLine);
+		}
+	}
 }
