@@ -1,8 +1,5 @@
 package com.thesis.expression;
 
-import com.thesis.common.DataType;
-import org.objectweb.asm.tree.JumpInsnNode;
-
 import java.io.IOException;
 import java.io.Writer;
 
@@ -15,12 +12,12 @@ public class UnconditionalJump extends JumpExpression {
 		mIsVirtual = true;
 	}
 
-	public UnconditionalJump(int opCode, int jumpLocation, ExpressionStack stack) {
-		super(opCode, jumpLocation);
+	@Override
+	public void setThenBranch(ExpressionStack thenBranch) {
+		super.setThenBranch(thenBranch);
 		mIsVirtual = false;
-		mElseBranchEnd = jumpLocation;
-		mStartFrameLocation = jumpLocation;
-		thenBranch = stack;
+		mElseBranchEnd = mJumpDestination;
+		mStartFrameLocation = mJumpDestination;
 	}
 
 	@Override
