@@ -1,7 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.Variable;
-import com.thesis.common.DataType;
+import com.thesis.expression.variable.Variable;
 
 import java.io.IOException;
 import java.io.Writer;

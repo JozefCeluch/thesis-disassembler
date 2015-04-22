@@ -1,7 +1,6 @@
-package com.thesis;
+package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
-import com.thesis.common.Util;
 
 public class GlobalVariable extends Variable {
 

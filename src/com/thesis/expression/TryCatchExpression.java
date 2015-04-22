@@ -1,8 +1,8 @@
 package com.thesis.expression;
 
-import com.thesis.TryCatchItem;
+import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.TryCatchItem;
 import com.thesis.common.DataType;
-import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.Writer;

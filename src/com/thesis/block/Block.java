@@ -1,6 +1,6 @@
 package com.thesis.block;
 
-import com.thesis.Writable;
+import com.thesis.common.Writable;
 import com.thesis.common.AnnotationParser;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;

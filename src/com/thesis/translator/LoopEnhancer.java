@@ -1,6 +1,8 @@
-package com.thesis;
+package com.thesis.translator;
 
 import com.thesis.expression.*;
+import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.expression.stack.StackItem;
 
 import java.util.List;
 import java.util.Stack;

@@ -1,4 +1,4 @@
-package com.thesis;
+package com.thesis.common;
 
 import java.io.IOException;
 import java.io.Writer;

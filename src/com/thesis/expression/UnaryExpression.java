@@ -1,21 +1,33 @@
 package com.thesis.expression;
 
-import com.thesis.Variable;
+import com.thesis.expression.variable.Variable;
 import com.thesis.common.DataType;
+import com.thesis.expression.stack.ExpressionStack;
 
 import java.io.IOException;
 import java.io.Writer;
 
 public class UnaryExpression extends Expression {
-//TODO make private?
 	Variable mVariable;
-	OpPosition mOpPosition;
+	private OpPosition mOpPosition;
 
 	public UnaryExpression(int opCode, Variable variable, DataType type, OpPosition pos) {
 		super(opCode);
 		mType = type;
 		mVariable = variable;
 		mOpPosition = pos;
+	}
+
+	public boolean isPrefix() {
+		return OpPosition.PREFIX.equals(mOpPosition);
+	}
+
+	public boolean isPostfix() {
+		return OpPosition.POSTFIX.equals(mOpPosition);
+	}
+
+	public Variable getVariable() {
+		return mVariable;
 	}
 
 	@Override

@@ -1,11 +1,13 @@
-package com.thesis;
+package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
 import com.thesis.block.Statement;
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.expression.*;
-import com.thesis.expression.TryCatchExpression;
+import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.expression.variable.GlobalVariable;
+import com.thesis.expression.variable.LocalVariable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -21,10 +23,10 @@ public class InstructionTranslator {
 	private TryCatchManager mTryCatchManager;
 	private MethodBlock mMethodBlock;
 
-	private State mState;
+	private MethodState mState;
 
 	public InstructionTranslator(MethodBlock methodBlock) {
-		mState = new State();
+		mState = new MethodState(this);
 		mMethodBlock = methodBlock;
 		mMethod = methodBlock.getMethodNode();
 		copyLocalVariables();
@@ -63,7 +65,7 @@ public class InstructionTranslator {
 		return statements;
 	}
 
-	private void pushNodeToStackAsExpression(AbstractInsnNode node) {
+	void pushNodeToStackAsExpression(AbstractInsnNode node) {
 		switch (node.getType()) {
 			case AbstractInsnNode.INSN:
 				visitInsnNode((InsnNode) node);
@@ -91,7 +93,7 @@ public class InstructionTranslator {
 				break;
 			case AbstractInsnNode.LABEL:
 				visitLabelNode((LabelNode) node);
-				createTryCatchBlocks();
+				mTryCatchManager.createTryCatchBlocks(mState);
 				break;
 			case AbstractInsnNode.LDC_INSN:
 				visitLdcInsnNode((LdcInsnNode) node);
@@ -116,70 +118,6 @@ public class InstructionTranslator {
 				break;
 			default:
 				printNodeInfo(node);
-		}
-	}
-
-	private void createTryCatchBlocks() {
-		if (mTryCatchManager.isEmpty()) return;
-		List<TryCatchItem> tryCatchItems = mTryCatchManager.getItemsWithStartId(mState.getCurrentLabel());
-		if (tryCatchItems.isEmpty()) return;
-
-		TryCatchExpression tryCatchExpression = null;
-		for(TryCatchItem item : tryCatchItems) {
-			prepareTryCatchItem(item, tryCatchExpression);
-			tryCatchExpression = new TryCatchExpression(item);
-		}
-		mState.getActiveStack().push(tryCatchExpression);
-	}
-
-	private void prepareTryCatchItem(TryCatchItem tryCatchItem, TryCatchExpression innerTryCatchBlock) {
-		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return;
-
-		// fill try block
-		tryCatchItem.setTryStack(mState.startNewStack());
-		if (innerTryCatchBlock != null) {
-			tryCatchItem.getTryStack().push(innerTryCatchBlock);
-		}
-
-		while (tryCatchItem.getEndId() != mState.getCurrentLabel()) {
-			mState.moveNode();
-			pushNodeToStackAsExpression(mState.getCurrentNode());
-		}
-		mState.finishStack();
-		// ignore repeated finally blocks
-		ExpressionStack repeatedFinallyCalls = mState.startNewStack();
-		while (!tryCatchItem.hasHandlerLabel(mState.getCurrentLabel())) {
-			mState.moveNode();
-			pushNodeToStackAsExpression(mState.getCurrentNode());
-		}
-
-		int tryCatchBlockEnd = ConditionalExpression.NO_DESTINATION;
-		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
-		}
-		mState.finishStack();
-		// fill catch blocks
-		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			tryCatchItem.addCatchBlock(mState.getCurrentLabel(), mState.startNewStack());
-			int currentBlockLabel = mState.getCurrentLabel();
-			if (tryCatchItem.getHandlerType(currentBlockLabel) == null) {
-				tryCatchItem.setHasFinallyBlock(true);
-				tryCatchItem.setFinallyBlockStart(currentBlockLabel);
-			}
-			while (mState.getCurrentLabel() == currentBlockLabel || !(tryCatchItem.hasHandlerLabel(mState.getCurrentLabel())
-					|| mTryCatchManager.hasCatchHandlerEnd(mState.getCurrentLabel()) || mState.getCurrentLabel() == tryCatchBlockEnd)) {
-				mState.moveNode();
-				pushNodeToStackAsExpression(mState.getCurrentNode());
-			}
-			mState.finishStack();
-
-			mState.startNewStack();
-			// ignore repeated finally blocks
-			while (!(tryCatchItem.hasHandlerLabel(mState.getCurrentLabel()) || mState.getCurrentLabel() == tryCatchBlockEnd)) {
-				mState.moveNode();
-				pushNodeToStackAsExpression(mState.getCurrentNode());
-			}
-			mState.finishStack();
 		}
 	}
 
@@ -227,10 +165,6 @@ public class InstructionTranslator {
 				stack.push(new ArrayAssignmentExpression(opCode, index, value));
 			}
 
-		} else if (Util.isBetween(opCode, Opcodes.POP, Opcodes.POP2)) {
- //			pop should not remove the expression from the stack //TODO
-		} else if (Util.isBetween(opCode, Opcodes.DUP, Opcodes.DUP2_X2)) {
-//			stack.push(stack.peek()); //TODO
 		} else if (opCode == Opcodes.SWAP) {
 			stack.swap();
 		} else if (Util.isBetween(opCode, Opcodes.I2L, Opcodes.I2D) || Util.isBetween(opCode, Opcodes.I2B, Opcodes.I2S)) {
@@ -257,9 +191,8 @@ public class InstructionTranslator {
 			stack.push(new ThrowExpression(opCode));
 		} else if (opCode == Opcodes.MONITORENTER || opCode == Opcodes.MONITOREXIT) {
 			stack.push(new MonitorExpression(opCode));
-		} else {
-			//NOP, do nothing
 		}
+		//NOP, POP - POP2, DUP - DUP2 do nothing
 		//todo to add missing
 	}
 
@@ -669,89 +602,4 @@ public class InstructionTranslator {
 		System.out.println(result);
 	}
 
-	private static class State {
-		private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
-		private int mCurrentLabel;
-		private int mCurrentLine;
-		private Set<Integer> mVisitedLabels;
-		private AbstractInsnNode mCurrentNode;
-
-		private ExpressionStack mStack;
-		private Stack<ExpressionStack> mActiveStacks;
-
-		public State() {
-			mVisitedLabels = new HashSet<>();
-			mActiveStacks = new Stack<>();
-			mStack = new ExpressionStack();
-			mActiveStacks.push(mStack);
-		}
-
-		public ExpressionStack getFinalStack() {
-			return mStack;
-		}
-
-		public ExpressionStack startNewStack() {
-			ExpressionStack newStack = mActiveStacks.peek().getNew();
-			mActiveStacks.push(newStack);
-			return newStack;
-		}
-
-		public ExpressionStack getActiveStack() {
-			return mActiveStacks.peek();
-		}
-
-		public void finishStack() {
-			mActiveStacks.pop();
-			ExpressionStack top = mActiveStacks.peek();
-			top.setLineNumber(mCurrentLine);
-		}
-
-		public void replaceActiveStack(ExpressionStack newStack) {
-			finishStack();
-			mActiveStacks.push(newStack);
-		}
-
-		public int getFrameLabel() {
-			return mFrameLabel;
-		}
-
-		public void setFrameLabel(int frameLabel) {
-			mFrameLabel = frameLabel;
-			getActiveStack().addFrame(frameLabel);
-		}
-
-		public int getCurrentLabel() {
-			return mCurrentLabel;
-		}
-
-		public void setCurrentLabel(int currentLabel) {
-			mCurrentLabel = currentLabel;
-			getActiveStack().setLabel(currentLabel);
-			mVisitedLabels.add(currentLabel);
-		}
-
-		public boolean isLabelVisited(int label) {
-			return mVisitedLabels.contains(label);
-		}
-
-		public AbstractInsnNode getCurrentNode() {
-			return mCurrentNode;
-		}
-
-		public void setCurrentNode(AbstractInsnNode currentNode) {
-			mCurrentNode = currentNode;
-		}
-
-		public AbstractInsnNode moveNode() {
-			if (mCurrentNode != null) {
-				mCurrentNode = mCurrentNode.getNext();
-			}
-			return mCurrentNode;
-		}
-
-		public void setCurrentLine(int currentLine) {
-			mCurrentLine = currentLine;
-			getActiveStack().setLineNumber(mCurrentLine);
-		}
-	}
 }

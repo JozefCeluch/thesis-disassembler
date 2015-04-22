@@ -1,6 +1,7 @@
-package com.thesis.expression;
+package com.thesis.expression.stack;
 
-import com.thesis.StackEnhancer;
+import com.thesis.expression.*;
+import com.thesis.translator.StackEnhancer;
 import org.objectweb.asm.Label;
 
 import java.util.*;
@@ -84,7 +85,7 @@ public class ExpressionStack {
 		for (int i = mLastImprovementPosition; i < mStack.size(); i++) { //todo think if ok
 			Expression currentExp = mStack.get(i).getExpression();
 			if (currentExp instanceof UnaryExpression) {
-				if(((UnaryExpression) currentExp).mOpPosition == UnaryExpression.OpPosition.POSTFIX) {
+				if(((UnaryExpression) currentExp).isPostfix()) {
 					mStack.remove(i-1);
 					mLastImprovementPosition = i - 1;
 				} else if (i + 1 < mStack.size()) {

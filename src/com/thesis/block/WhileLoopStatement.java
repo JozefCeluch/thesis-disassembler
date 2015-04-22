@@ -1,8 +1,7 @@
 package com.thesis.block;
 
-import com.thesis.StatementCreator;
+import com.thesis.translator.StatementCreator;
 import com.thesis.expression.ConditionalExpression;
-import com.thesis.expression.Expression;
 import com.thesis.expression.UnconditionalJump;
 
 import java.io.IOException;

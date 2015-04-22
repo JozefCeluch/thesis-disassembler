@@ -1,4 +1,6 @@
-package com.thesis.expression;
+package com.thesis.expression.stack;
+
+import com.thesis.expression.Expression;
 
 public class StackItem {
 

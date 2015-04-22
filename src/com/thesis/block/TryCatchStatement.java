@@ -1,6 +1,6 @@
 package com.thesis.block;
 
-import com.thesis.StatementCreator;
+import com.thesis.translator.StatementCreator;
 import com.thesis.expression.TryCatchExpression;
 
 import java.io.IOException;

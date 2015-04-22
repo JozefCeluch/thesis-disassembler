@@ -1,6 +1,6 @@
-package com.thesis;
+package com.thesis.translator;
 
-import com.thesis.expression.ExpressionStack;
+import com.thesis.expression.stack.ExpressionStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;

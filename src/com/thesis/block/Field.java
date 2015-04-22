@@ -1,10 +1,9 @@
 package com.thesis.block;
 
-import com.thesis.LocalVariable;
+import com.thesis.expression.variable.LocalVariable;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.expression.*;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.FieldNode;
 

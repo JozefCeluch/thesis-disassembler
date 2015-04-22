@@ -1,8 +1,8 @@
-package com.thesis;
+package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
-import com.thesis.expression.ExpressionStack;
+import com.thesis.expression.stack.ExpressionStack;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;

@@ -1,7 +1,7 @@
 package com.thesis.block;
 
-import com.thesis.InstructionTranslator;
-import com.thesis.LocalVariable;
+import com.thesis.translator.InstructionTranslator;
+import com.thesis.expression.variable.LocalVariable;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;

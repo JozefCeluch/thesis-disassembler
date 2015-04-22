@@ -1,6 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import com.thesis.expression.stack.ExpressionStack;
 
 import java.io.IOException;
 import java.io.Writer;

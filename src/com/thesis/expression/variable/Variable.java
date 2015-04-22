@@ -1,4 +1,4 @@
-package com.thesis;
+package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
 
@@ -7,7 +7,6 @@ public class Variable {
 	protected String mName;
 	protected DataType mType;
 	protected boolean mDebugType;
-
 
 	public Variable() {
 		mDebugType = false;

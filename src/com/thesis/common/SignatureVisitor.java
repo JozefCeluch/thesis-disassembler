@@ -1,6 +1,6 @@
 package com.thesis.common;
 
-import com.thesis.LocalVariable;
+import com.thesis.expression.variable.LocalVariable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.LocalVariableNode;
 

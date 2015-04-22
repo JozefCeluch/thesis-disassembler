@@ -1,8 +1,8 @@
 package com.thesis.expression;
 
-import com.thesis.Variable;
+import com.thesis.expression.variable.Variable;
 import com.thesis.common.DataType;
-import org.objectweb.asm.tree.AbstractInsnNode;
+import com.thesis.expression.stack.ExpressionStack;
 
 import java.io.IOException;
 import java.io.Writer;
