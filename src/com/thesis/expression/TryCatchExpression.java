@@ -1,8 +1,8 @@
 package com.thesis.expression;
 
 import com.thesis.expression.stack.ExpressionStack;
-import com.thesis.translator.TryCatchItem;
 import com.thesis.common.DataType;
+import com.thesis.translator.TryCatchManager;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -16,7 +16,7 @@ public class TryCatchExpression extends Expression {
 	private List<CatchExpression> mCatchExpressions;
 	private ExpressionStack mFinallyStack;
 
-	public TryCatchExpression(TryCatchItem tryCatchItem) {
+	public TryCatchExpression(TryCatchManager.Item tryCatchItem) {
 		super(0);
 		mCatchExpressions = new ArrayList<>();
 

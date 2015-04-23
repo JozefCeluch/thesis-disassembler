@@ -17,18 +17,12 @@ public class MethodState {
 
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
-	private InstructionTranslator mTranslator;
 
-	public MethodState(InstructionTranslator translator) {
-		mTranslator = translator;
+	public MethodState() {
 		mVisitedLabels = new HashSet<>();
 		mActiveStacks = new Stack<>();
 		mStack = new ExpressionStack();
 		mActiveStacks.push(mStack);
-	}
-
-	public InstructionTranslator getTranslator() {
-		return mTranslator;
 	}
 
 	public ExpressionStack getFinalStack() {

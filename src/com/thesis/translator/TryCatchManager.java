@@ -1,18 +1,17 @@
 package com.thesis.translator;
 
-import com.thesis.expression.ConditionalExpression;
-import com.thesis.expression.TryCatchExpression;
-import com.thesis.expression.UnconditionalJump;
 import com.thesis.expression.stack.ExpressionStack;
 import org.objectweb.asm.tree.TryCatchBlockNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TryCatchManager {
 
-	private List<TryCatchItem> mTryCatchItems;
-	private List<TryCatchItem> mCatchBlockHandlers;
+	private List<Item> mItems;
+	private List<Item> mCatchBlockHandlers;
 
 	/**
 	 * Use the newInstance method
@@ -23,30 +22,30 @@ public class TryCatchManager {
 	//region INIT
 	public static TryCatchManager newInstance(List tryCatchBlocks, ExpressionStack stack) {
 		TryCatchManager manager = new TryCatchManager();
-		List<TryCatchItem> tryCatchItems = new ArrayList<>();
-		List<TryCatchItem> catchBlockHandlers = new ArrayList<>();
+		List<Item> tryCatchItems = new ArrayList<>();
+		List<Item> catchBlockHandlers = new ArrayList<>();
 		if (tryCatchBlocks != null) {
 			for (Object block : tryCatchBlocks) {
 				TryCatchBlockNode node = (TryCatchBlockNode) block;
-				TryCatchItem item = new TryCatchItem(stack.getLabelId(node.start.getLabel()), stack.getLabelId(node.end.getLabel()),
+				Item item = new Item(stack.getLabelId(node.start.getLabel()), stack.getLabelId(node.end.getLabel()),
 						stack.getLabelId(node.handler.getLabel()), node.type);
 				addNewItemToList(tryCatchItems, catchBlockHandlers, item);
 			}
 		}
-		manager.setTryCatchItems(tryCatchItems);
+		manager.setItems(tryCatchItems);
 		manager.setCatchBlockHandlers(catchBlockHandlers);
 		return manager;
 	}
 
-	private static void addNewItemToList(List<TryCatchItem> tryCatchItems, List<TryCatchItem> catchBlockHandlers, TryCatchItem newItem) {
+	private static void addNewItemToList(List<Item> tryCatchItems, List<Item> catchBlockHandlers, Item newItem) {
 		boolean foundMatch = false;
 		boolean isCatchBlockHandler = false;
-		for (TryCatchItem tryCatchItem : tryCatchItems) {
-			if (tryCatchItem.matches(newItem)) {
+		for (Item item : tryCatchItems) {
+			if (item.matches(newItem)) {
 				foundMatch = true;
-				tryCatchItem.addHandlers(newItem.getHandlerLocations(), newItem.getHandlerTypes());
+				item.addHandlers(newItem.getHandlerLocations(), newItem.getHandlerTypes());
 			}
-			if (tryCatchItem.getHandlerLocations().contains(newItem.getStartId())) {
+			if (item.getHandlerLocations().contains(newItem.getStartId())) {
 				isCatchBlockHandler = true;
 			}
 			if (foundMatch && isCatchBlockHandler) break;
@@ -61,94 +60,131 @@ public class TryCatchManager {
 	}
 	//endregion
 
-	public void createTryCatchBlocks(MethodState state) {
-		if (isEmpty()) return;
-		List<TryCatchItem> tryCatchItems = getItemsWithStartId(state.getCurrentLabel());
-		if (tryCatchItems.isEmpty()) return;
-
-		TryCatchExpression tryCatchExpression = null;
-		for(TryCatchItem item : tryCatchItems) {
-			prepareTryCatchItem(state, item, tryCatchExpression);
-			tryCatchExpression = new TryCatchExpression(item);
-		}
-		state.getActiveStack().push(tryCatchExpression);
+	private void setItems(List<Item> items) {
+		mItems = items;
 	}
 
-	private void prepareTryCatchItem(MethodState state, TryCatchItem tryCatchItem, TryCatchExpression innerTryCatchBlock) {
-		if (tryCatchItem.getCatchBlockCount() == tryCatchItem.getHandlerTypes().size()) return;
-
-		// fill try block
-		tryCatchItem.setTryStack(state.startNewStack());
-		if (innerTryCatchBlock != null) {
-			tryCatchItem.getTryStack().push(innerTryCatchBlock);
-		}
-
-		while (tryCatchItem.getEndId() != state.getCurrentLabel()) {
-			state.moveNode();
-			state.getTranslator().pushNodeToStackAsExpression(state.getCurrentNode());
-		}
-		state.finishStack();
-		// ignore repeated finally blocks
-		ExpressionStack repeatedFinallyCalls = state.startNewStack();
-		while (!tryCatchItem.hasHandlerLabel(state.getCurrentLabel())) {
-			state.moveNode();
-			state.getTranslator().pushNodeToStackAsExpression(state.getCurrentNode());
-		}
-
-		int tryCatchBlockEnd = ConditionalExpression.NO_DESTINATION;
-		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
-		}
-		state.finishStack();
-		// fill catch blocks
-		for (int i = 0; i < tryCatchItem.getHandlerCount(); i++) {
-			tryCatchItem.addCatchBlock(state.getCurrentLabel(), state.startNewStack());
-			int currentBlockLabel = state.getCurrentLabel();
-			if (tryCatchItem.getHandlerType(currentBlockLabel) == null) {
-				tryCatchItem.setHasFinallyBlock(true);
-				tryCatchItem.setFinallyBlockStart(currentBlockLabel);
-			}
-			while (state.getCurrentLabel() == currentBlockLabel || !(tryCatchItem.hasHandlerLabel(state.getCurrentLabel())
-					|| hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				state.moveNode();
-				state.getTranslator().pushNodeToStackAsExpression(state.getCurrentNode());
-			}
-			state.finishStack();
-
-			state.startNewStack();
-			// ignore repeated finally blocks
-			while (!(tryCatchItem.hasHandlerLabel(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				state.moveNode();
-				state.getTranslator().pushNodeToStackAsExpression(state.getCurrentNode());
-			}
-			state.finishStack();
-		}
-	}
-
-	private void setTryCatchItems(List<TryCatchItem> tryCatchItems) {
-		mTryCatchItems = tryCatchItems;
-	}
-
-	private void setCatchBlockHandlers(List<TryCatchItem> catchBlockHandlers) {
+	private void setCatchBlockHandlers(List<Item> catchBlockHandlers) {
 		mCatchBlockHandlers = catchBlockHandlers;
 	}
 
-	private boolean isEmpty() {
-		return mTryCatchItems == null || mTryCatchItems.isEmpty();
+	public boolean isEmpty() {
+		return mItems == null || mItems.isEmpty();
 	}
 
-	private List<TryCatchItem> getItemsWithStartId(int labelId) {
-		List<TryCatchItem> result = new ArrayList<>();
-		for (TryCatchItem item : mTryCatchItems) {
+	public List<Item> getItemsWithStartId(int labelId) {
+		List<Item> result = new ArrayList<>();
+		for (Item item : mItems) {
 			if (item.getStartId() == labelId) result.add(item);
 		}
 		return result;
 	}
 
-	private boolean hasCatchHandlerEnd(int labelId) {
-		for(TryCatchItem item : mCatchBlockHandlers) {
+	public boolean hasCatchHandlerEnd(int labelId) {
+		for(Item item : mCatchBlockHandlers) {
 			if (item.getEndId() == labelId) return true;
 		}
 		return false;
+	}
+
+	public static class Item {
+
+		private int mStartId;
+		private int mEndId;
+		private List<Integer> mHandlerLocations = new ArrayList<>();
+		private Map<Integer, String> mHandlerTypes = new HashMap<>(); // labelId, type
+		private ExpressionStack mTryStack;
+		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //labelId, stack
+		private boolean mHasFinallyBlock;
+		private int mFinallyBlockStart;
+
+		public Item(int startId, int endId, int handlerId, String exception) {
+			mStartId = startId;
+			mEndId = endId;
+			mHandlerLocations.add(handlerId);
+			mHandlerTypes.put(handlerId, exception);
+		}
+
+		public int getStartId() {
+			return mStartId;
+		}
+
+		public int getEndId() {
+			return mEndId;
+		}
+
+		public ExpressionStack getTryStack() {
+			return mTryStack;
+		}
+
+		public void setTryStack(ExpressionStack tryStack) {
+			mTryStack = tryStack;
+		}
+
+		public boolean hasFinallyBlock() {
+			return mHasFinallyBlock;
+		}
+
+		public void setHasFinallyBlock(boolean hasFinallyBlock) {
+			this.mHasFinallyBlock = hasFinallyBlock;
+		}
+
+		public int getFinallyBlockStart() {
+			return mFinallyBlockStart;
+		}
+
+		public void setFinallyBlockStart(int finallyBlockStart) {
+			mFinallyBlockStart = finallyBlockStart;
+		}
+
+		public Map<Integer, String> getHandlerTypes() {
+			return mHandlerTypes;
+		}
+
+		public List<Integer> getHandlerLocations() {
+			return mHandlerLocations;
+		}
+
+		public int getHandlerCount() {
+			return mHandlerTypes.size();
+		}
+
+		public int getCatchBlockCount() {
+			return mCatchStacks.size();
+		}
+
+		public void addHandlers(List<Integer> handlerLocations, Map<Integer,String> handlers) {
+			mHandlerLocations.addAll(handlerLocations);
+			mHandlerTypes.putAll(handlers);
+		}
+
+		public void removeHandler(int location) {
+			mHandlerLocations.remove(mHandlerLocations.indexOf(location));
+			mCatchStacks.remove(location);
+		}
+
+		public boolean matches(Item other) {
+			return this.mStartId == other.mStartId && this.mEndId == other.mEndId;
+		}
+
+		public boolean hasHandlerLabel(int label) {
+			for(int key : mHandlerTypes.keySet()) {
+				if (key == label) return true;
+			}
+			return false;
+		}
+
+		public void addCatchBlock(int handlerId, ExpressionStack catchStack) {
+			mCatchStacks.put(handlerId, catchStack);
+		}
+
+		public ExpressionStack getCatchBlock(int handlerId) {
+			return mCatchStacks.get(handlerId);
+		}
+
+		public String getHandlerType(int handlerId) {
+			return mHandlerTypes.get(handlerId);
+		}
+
 	}
 }
