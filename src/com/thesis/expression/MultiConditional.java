@@ -5,7 +5,14 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
-public class MultiConditional extends ConditionalExpression {
+/**
+ * Expression that represents a comparison of two values
+ * <p>
+ * used for the following instructions:
+ * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE, IFNULL, IFNONNULL,
+ * LCMP, FCMPL, FCMPG, DCMPL, DCMPG
+ */
+public class MultiConditional extends JumpExpression {
 
 	private Expression left;
 	private Expression right;

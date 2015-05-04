@@ -1,12 +1,11 @@
 package com.thesis.translator.handler;
 
 import com.thesis.exception.IncorrectNodeException;
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
 import com.thesis.expression.UnconditionalJump;
 import com.thesis.expression.stack.ExpressionStack;
 import com.thesis.translator.MethodState;
-import com.thesis.translator.TryCatchManager;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 
@@ -68,7 +67,7 @@ public class LabelNodeHandler extends AbstractHandler {
 			nodeMoved();
 		}
 
-		int tryCatchBlockEnd = ConditionalExpression.NO_DESTINATION;
+		int tryCatchBlockEnd = JumpExpression.NO_DESTINATION;
 		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
 			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
 		}

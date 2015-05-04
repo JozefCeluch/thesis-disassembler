@@ -4,7 +4,7 @@ import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.AssignmentExpression;
-import com.thesis.expression.LeftHandSide;
+import com.thesis.expression.AssignmentExpression.LeftHandSide;
 import com.thesis.expression.VariablePrimaryExpression;
 import com.thesis.expression.stack.ExpressionStack;
 import com.thesis.expression.variable.LocalVariable;
@@ -15,6 +15,9 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 import java.util.Map;
 
+/**
+ * ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
+ */
 public class VarInsnNodeHandler extends AbstractHandler {
 
 	private Map<Integer, LocalVariable> mLocalVariables;
@@ -24,7 +27,6 @@ public class VarInsnNodeHandler extends AbstractHandler {
 		mLocalVariables = localVariables;
 	}
 
-	//	ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

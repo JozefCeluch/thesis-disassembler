@@ -7,6 +7,12 @@ import org.objectweb.asm.Opcodes;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the return keyword
+ * <p>
+ * used for the following instructions:
+ * IRETURN, LRETURN, FRETURN, DRETURN, ARETURN, RETURN
+ */
 public class ReturnExpression extends Expression {
 
 	private Expression mExpression;

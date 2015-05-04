@@ -69,7 +69,7 @@ public class InsnNodeHandler extends AbstractHandler {
 			top.setType(DataType.FLOAT);
 			setCorrectCastType(opCode, top);
 		} else if (Util.isBetween(opCode, Opcodes.FCMPL, Opcodes.DCMPG) || opCode == Opcodes.LCMP) {
-			stack.push(new MultiConditional(opCode, ConditionalExpression.NO_DESTINATION, stack.pop(), stack.pop()));
+			stack.push(new MultiConditional(opCode, JumpExpression.NO_DESTINATION, stack.pop(), stack.pop()));
 		} else if (Util.isBetween(opCode, Opcodes.IADD, Opcodes.LXOR)) {
 			stack.push(new ArithmeticExpression(opCode));
 		} else if (Util.isBetween(opCode, Opcodes.IRETURN, Opcodes.RETURN)) {

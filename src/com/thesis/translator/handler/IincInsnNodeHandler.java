@@ -3,7 +3,7 @@ package com.thesis.translator.handler;
 import com.thesis.common.DataType;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.AssignmentExpression;
-import com.thesis.expression.LeftHandSide;
+import com.thesis.expression.AssignmentExpression.LeftHandSide;
 import com.thesis.expression.PrimaryExpression;
 import com.thesis.expression.UnaryExpression;
 import com.thesis.expression.stack.ExpressionStack;
@@ -15,6 +15,9 @@ import org.objectweb.asm.tree.IincInsnNode;
 
 import java.util.Map;
 
+/**
+ * IINC
+ */
 public class IincInsnNodeHandler extends AbstractHandler {
 
 	private Map<Integer, LocalVariable> mLocalVariables;
@@ -30,16 +33,23 @@ public class IincInsnNodeHandler extends AbstractHandler {
 		checkType(node, IincInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
-		LocalVariable variable = mLocalVariables.get(((IincInsnNode)node).var);
+		LocalVariable variable = mLocalVariables.get(((IincInsnNode) node).var);
+		
+		UnaryExpression.OpPosition opPosition = getUnaryOperandPosition(node);
+		if (opPosition != null) {
+			stack.push(new UnaryExpression(node.getOpcode(), variable, DataType.INT, opPosition));
+		} else {
+			stack.push(new AssignmentExpression(node.getOpcode(), new LeftHandSide(node.getOpcode(), variable),
+					new PrimaryExpression(node.getOpcode(), ((IincInsnNode) node).incr, DataType.INT)));
+		}
+	}
+
+	private UnaryExpression.OpPosition getUnaryOperandPosition(AbstractInsnNode node) {
 		if (node.getPrevious() != null && node.getPrevious().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node.getOpcode(), variable, DataType.INT, UnaryExpression.OpPosition.POSTFIX));
-			return;
+			return UnaryExpression.OpPosition.POSTFIX;
+		} else if (node.getNext() != null && node.getNext().getOpcode() == Opcodes.ILOAD) {
+			return UnaryExpression.OpPosition.PREFIX;
 		}
-		if (node.getNext() != null && node.getNext().getOpcode() == Opcodes.ILOAD) {
-			stack.push(new UnaryExpression(node.getOpcode(), variable, DataType.INT, UnaryExpression.OpPosition.PREFIX));
-			return;
-		}
-		stack.push(new AssignmentExpression(node.getOpcode(), new LeftHandSide(node.getOpcode(), variable),
-				new PrimaryExpression(node.getOpcode(), ((IincInsnNode)node).incr, DataType.INT)));
+		return null;
 	}
 }

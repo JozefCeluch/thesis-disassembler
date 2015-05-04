@@ -1,4 +1,4 @@
-package com.thesis.translator;
+package com.thesis.translator.handler;
 
 import com.thesis.expression.stack.ExpressionStack;
 import org.objectweb.asm.tree.TryCatchBlockNode;

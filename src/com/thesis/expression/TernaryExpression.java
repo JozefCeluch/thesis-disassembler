@@ -6,19 +6,25 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
-public class TernaryExpression extends ConditionalExpression {
+/**
+ * Expression that represents the ternary operator ?:
+ * <p>
+ * it is only a shorthand for a if-then-else op therefore it is not generated for any specific instruction
+ * it is only inferred from the {@link JumpExpression}
+ */
+public class TernaryExpression extends JumpExpression {
 
-	private ConditionalExpression mCondition;
+	private JumpExpression mCondition;
 	private Expression mFirst;
 	private Expression mSecond;
 
-	public TernaryExpression(ConditionalExpression expression) {
+	public TernaryExpression(JumpExpression expression) {
 		super(expression.mOpCode, expression.getJumpDestination());
 		mCondition = expression;
 		mFirst = mCondition.getThenBranch().getAll().get(0).getExpression();
 		mSecond = mCondition.getElseBranch().getAll().get(0).getExpression();
-		if(mSecond instanceof ConditionalExpression) {
-			mSecond = new TernaryExpression((ConditionalExpression) mSecond);
+		if(mSecond instanceof JumpExpression) {
+			mSecond = new TernaryExpression((JumpExpression) mSecond);
 		}
 		setType(mFirst.getType());
 	}

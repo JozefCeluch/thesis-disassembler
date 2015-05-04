@@ -5,6 +5,12 @@ import com.thesis.expression.variable.Variable;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the access to a variable
+ * <p>
+ * used for the following instructions:
+ * GETFIELD, GETSTATIC, ILOAD, LLOAD, FLOAD, DLOAD, ALOAD
+ */
 public class VariablePrimaryExpression extends PrimaryExpression {
 
 	public VariablePrimaryExpression(int opCode, Variable variable) {

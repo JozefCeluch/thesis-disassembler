@@ -7,6 +7,9 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.StringWriter;
 
+/**
+ * Abstract general representation of a certain part of Java code that can be inferred from a bytecode instruction
+ */
 public abstract class Expression implements Writable {
 
 	protected int mOpCode;

@@ -1,7 +1,7 @@
 package com.thesis.block;
 
 import com.thesis.translator.StatementCreator;
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 import com.thesis.expression.UnconditionalJump;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ public class DoWhileLoopStatement extends Statement {
 
 	private BlockStatement mBlock;
 
-	public DoWhileLoopStatement(ConditionalExpression expression, int line) {
+	public DoWhileLoopStatement(JumpExpression expression, int line) {
 		super(expression, line);
 		List<Statement> statements = new StatementCreator(expression.getThenBranch()).getStatements();
 		mBlock = new BlockStatement(line, statements);

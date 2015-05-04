@@ -7,6 +7,11 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the unary increment operator
+ * <p>
+ * used for IINC instruction
+ */
 public class UnaryExpression extends Expression {
 	Variable mVariable;
 	private OpPosition mOpPosition;

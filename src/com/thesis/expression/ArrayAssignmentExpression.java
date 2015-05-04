@@ -6,6 +6,14 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents an assignment of value to an array element, storing
+ *<p>
+ * used for the following instructions:
+ * IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE
+ *
+ * before being pushed to the stack it pushes the accessed index and creates an {@link ArrayAccessExpression}that it stores only locally
+ */
 public class ArrayAssignmentExpression extends Expression {
 
 	private ArrayAccessExpression mArray;

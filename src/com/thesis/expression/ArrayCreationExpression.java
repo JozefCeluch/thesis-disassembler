@@ -10,6 +10,17 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Expression that represents the array creation
+ * <p>
+ * It is used for all types of array i.e. with primitive types, objects and multi-dimensional arrays
+ *
+ * used for the following instructions:
+ * NEWARRAY, MULTIANEWARRAY, ANEWARRAY
+ *
+ * before being pushed to the stack it pops the array dimensions from the top of the stack
+ * in case of multi-dimensional array, the dimensions are pushed for each dimension separately
+ */
 public class ArrayCreationExpression extends Expression {
 
 	private List<Expression> mLengths;

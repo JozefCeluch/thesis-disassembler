@@ -26,12 +26,12 @@ public enum Operand {
 	private String mOperation;
 	private String mOpposite;
 
-	private Operand(String operation){
+	Operand(String operation){
 		mOperation = operation;
 		mOpposite = operation;
 	}
 
-	private Operand(String operation, String opposite){
+	Operand(String operation, String opposite){
 		mOperation = operation;
 		mOpposite = opposite;
 	}

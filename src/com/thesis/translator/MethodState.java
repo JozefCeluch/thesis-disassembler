@@ -1,6 +1,6 @@
 package com.thesis.translator;
 
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 import com.thesis.expression.stack.ExpressionStack;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.Stack;
 
 public class MethodState {
-	private int mFrameLabel = ConditionalExpression.NO_DESTINATION;
+	private int mFrameLabel = JumpExpression.NO_DESTINATION;
 	private int mCurrentLabel;
 	private int mCurrentLine;
 	private Set<Integer> mVisitedLabels;

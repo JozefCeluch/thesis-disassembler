@@ -6,6 +6,17 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents access to elements of an array
+ *<p>
+ * used for the following instructions:
+ * IALOAD, LALOAD, FALOAD, DALOAD, AALOAD, BALOAD, CALOAD, SALOAD
+ *
+ * it is also used in {@link ArrayAssignmentExpression} since before assigning a value
+ * to the array item, the item must be loaded first
+ *
+ * before being pushed to the stack it pops index that is accessed and the array reference
+ */
 public class ArrayAccessExpression extends Expression {
 
 	private Expression indexExpression;

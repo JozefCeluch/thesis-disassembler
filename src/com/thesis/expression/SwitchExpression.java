@@ -8,6 +8,12 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Expression that represents the switch statement
+ * <p>
+ * used for the following instructions:
+ * TABLESWITCH, LOOKUPSWITCH
+ */
 public class SwitchExpression extends Expression {
 
 	private Expression mValue;
@@ -49,6 +55,7 @@ public class SwitchExpression extends Expression {
 	public static class CaseExpression extends Expression {
 
 		public static final String DEFAULT = "default";
+		public static final String CASE = "case ";
 
 		private ExpressionStack mStack;
 		private Object mValue;
@@ -71,7 +78,7 @@ public class SwitchExpression extends Expression {
 			if (isDefaultCase()) {
 				writer.write(DEFAULT + ":\n");
 			} else {
-				writer.append("case ").append(mValue.toString()).write(":\n");
+				writer.append(CASE).append(mValue.toString()).write(":\n");
 			}
 		}
 

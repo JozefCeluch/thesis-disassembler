@@ -14,7 +14,6 @@ public class Statement extends Block {
 	protected boolean mAddNewLine;
 	protected boolean mWriteEnd;
 
-
 	protected Statement(int line) {
 		mLine = line;
 	}

@@ -8,6 +8,13 @@ import org.objectweb.asm.Opcodes;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents assignment of an expression to a variable
+ *<p>
+ * variable is always {@link com.thesis.expression.AssignmentExpression.LeftHandSide}
+ * used for the following instructions:
+ * PUTFIELD, PUTSTATIC, IINC, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE
+ */
 public class AssignmentExpression extends  Expression{
 
 	private LeftHandSide mLeftSide;
@@ -78,5 +85,48 @@ public class AssignmentExpression extends  Expression{
 		}
 
 		return op;
+	}
+
+	/**
+	 * Expression used in the {@link AssignmentExpression} that represents a variable
+	 */
+	public static class LeftHandSide extends Expression {
+
+		private Variable mVariable;
+
+		public LeftHandSide(int opCode, Variable variable) {
+			super(opCode);
+			mVariable = variable;
+		}
+
+		@Override
+		public DataType getType() {
+			return mVariable.getType();
+		}
+
+		@Override
+		public void setType(DataType type) {
+			super.setType(type);
+			mVariable.setType(type);
+		}
+
+		@Override
+		public boolean hasType() {
+			return mVariable.hasType();
+		}
+
+		@Override
+		public void prepareForStack(ExpressionStack stack) {
+			//no preparation necessary
+		}
+
+		@Override
+		public void write(Writer writer) throws IOException {
+			writer.write(mVariable.toString());
+		}
+
+		public Variable getVariable() {
+			return mVariable;
+		}
 	}
 }

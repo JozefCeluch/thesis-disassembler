@@ -10,6 +10,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 
+/**
+ * BIPUSH, SIPUSH, NEWARRAY
+ */
 public class IntInsnNodeHandler extends AbstractHandler {
 
 	public IntInsnNodeHandler(MethodState state) {

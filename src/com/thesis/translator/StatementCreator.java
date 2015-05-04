@@ -27,8 +27,8 @@ public class StatementCreator {
 		for (StackItem item : expressions.getAll()) {
 			if (item.getExpression().isVirtual() || item.getExpression() instanceof PrimaryExpression) continue;
 
-			if (item.getExpression() instanceof ConditionalExpression) {
-				statements.add(handleConditionalExpression((ConditionalExpression) item.getExpression(), item.getLine(), item.getLabelId()));
+			if (item.getExpression() instanceof JumpExpression) {
+				statements.add(handleConditionalExpression((JumpExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 			} else if (item.getExpression() instanceof SwitchExpression) {
 				statements.add(handleSwitchExpression((SwitchExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 			} else if (item.getExpression() instanceof TryCatchExpression) {
@@ -52,7 +52,7 @@ public class StatementCreator {
 		return statement;
 	}
 
-	private Statement handleConditionalExpression(ConditionalExpression expression, int line, int label) {
+	private Statement handleConditionalExpression(JumpExpression expression, int line, int label) {
 		if (expression.isLoop()) {
 			switch (expression.getLoopType()) {
 				case NONE:
@@ -80,19 +80,19 @@ public class StatementCreator {
 			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements));
 			return ifThenStatement;
 		}
-		if (expression instanceof JumpExpression) {
+		if (expression instanceof UnconditionalJump) {
 			return new Statement(expression, line);
 		}
 		//TODO throw exception
 		return new Statement(new PrimaryExpression(0, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getTypeFromObject("java.lang.String")),0);
 	}
 
-	private boolean isIfThenStatement(ConditionalExpression expression) {
+	private boolean isIfThenStatement(JumpExpression expression) {
 		return expression.getThenBranch() != null && !expression.getThenBranch().isEmpty()
 				&& (expression.getElseBranch() == null || expression.getElseBranch().isEmpty()) && !expression.isLoop();
 	}
 
-	private boolean isIfThenElseStatement(ConditionalExpression expression) {
+	private boolean isIfThenElseStatement(JumpExpression expression) {
 		return expression.getThenBranch() != null && !expression.getThenBranch().isEmpty()
 				&& expression.getElseBranch() != null && !expression.getElseBranch().isEmpty();
 	}

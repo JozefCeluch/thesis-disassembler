@@ -6,13 +6,15 @@ import com.thesis.translator.MethodState;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 
+/**
+ * MULTIANEWARRAY
+ */
 public class MultiANewArrayInsnNodeHandler extends AbstractHandler {
 
 	public MultiANewArrayInsnNodeHandler(MethodState state) {
 		super(state);
 	}
 
-	//	MULTIANEWARRAY
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

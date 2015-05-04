@@ -6,6 +6,13 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents access to the field length of an array
+ *<p>
+ * used for the ARRAYLENGTH instruction
+ *
+ * before being pushed to the stack, it pops the expression from the top of the stack
+ */
 public class ArrayLengthExpression extends Expression {
 
 	private Expression mExpression;

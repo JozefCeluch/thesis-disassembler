@@ -5,9 +5,16 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents a general unconditional jump
+ * <p>
+ * used for the GOTO instruction
+ * It is never printed out directly into the Java code, used as a general jump that can be printed out in the form
+ * of either a {@link BreakExpression} or a {@link ContinueExpression}
+ */
 public class UnconditionalJump extends JumpExpression {
 
-	private boolean mIsVirtual;
+	protected boolean mIsVirtual;
 
 	public UnconditionalJump(int opCode, int jumpLocation) {
 		super(opCode, jumpLocation);

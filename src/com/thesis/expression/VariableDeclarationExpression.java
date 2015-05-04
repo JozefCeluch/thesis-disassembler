@@ -7,6 +7,11 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents a declaration of a local variable
+ * <p>
+ * it is not used for any instruction
+ */
 public class VariableDeclarationExpression extends Expression {
 
 	private LocalVariable mVariable;

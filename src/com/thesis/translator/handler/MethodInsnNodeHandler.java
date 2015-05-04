@@ -11,6 +11,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+/**
+ * INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
+ */
 public class MethodInsnNodeHandler extends AbstractHandler {
 
 	private String mCallerMethodName;
@@ -22,7 +25,6 @@ public class MethodInsnNodeHandler extends AbstractHandler {
 		mEnclosingClassType = enclosingClassType;
 	}
 
-	//	INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

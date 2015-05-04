@@ -5,6 +5,9 @@ import org.objectweb.asm.tree.AnnotationNode;
 
 import java.util.List;
 
+/**
+ * A class that provides parsing of annotations and returns them in a single String
+ */
 public class AnnotationParser {
 
 	private StringBuffer buf;

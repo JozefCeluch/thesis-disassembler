@@ -6,12 +6,18 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
-public class LogicGateExpression extends ConditionalExpression {
+/**
+ * Expression that represents the short-circuit operators && and ||
+ *<p>
+ * in bytecode these operators do not have any special instructions,
+ * this expression is inferred from the jump destinations of the processed conditional expression
+ */
+public class LogicGateExpression extends JumpExpression {
 
-	private ConditionalExpression  mLeft;
-	private ConditionalExpression  mRight;
+	private JumpExpression mLeft;
+	private JumpExpression mRight;
 
-	public LogicGateExpression(ConditionalExpression left, ConditionalExpression right) {
+	public LogicGateExpression(JumpExpression left, JumpExpression right) {
 		super(0, right.getJumpDestination());
 		mRight = right;
 		mLeft = left;

@@ -13,6 +13,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Expression that represents a call to any method
+ *<p>
+ * (except for constructor {@link ConstructorInvocationExpression} )
+ * used for the following instructions:
+ * INVOKEVIRTUAL, INVOKESPECIAL (not constructor), INVOKESTATIC, INVOKEINTERFACE
+ */
 public class MethodInvocationExpression extends Expression {
 
 	protected final String mName;

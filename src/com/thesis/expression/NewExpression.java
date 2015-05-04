@@ -6,6 +6,11 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the new keyword
+ *<p>
+ * used for the NEW instruction
+ */
 public class NewExpression extends Expression {
 
 	private Expression mExpression;

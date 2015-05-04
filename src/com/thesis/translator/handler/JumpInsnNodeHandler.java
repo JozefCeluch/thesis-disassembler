@@ -28,7 +28,7 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 		checkType(node, JumpInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
-		ConditionalExpression exp = makeConditionalExpression((JumpInsnNode) node, stack);
+		JumpExpression exp = makeConditionalExpression((JumpInsnNode) node, stack);
 
 		if (exp instanceof UnconditionalJump) {
 			int frameIndex = stack.getExpressionIndexOfFrame(exp.getJumpDestination());
@@ -44,15 +44,15 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 			exp.setThenBranch(mState.startNewStack());
 		}
 
-		if (exp.getStartFrameLocation() == ConditionalExpression.NO_DESTINATION && mState.getFrameLabel() != ConditionalExpression.NO_DESTINATION) {
+		if (exp.getStartFrameLocation() == JumpExpression.NO_DESTINATION && mState.getFrameLabel() != JumpExpression.NO_DESTINATION) {
 			exp.setStartFrameLocation(mState.getFrameLabel());
-			mState.setFrameLabel(ConditionalExpression.NO_DESTINATION);
+			mState.setFrameLabel(JumpExpression.NO_DESTINATION);
 		}
 		while (!mState.isLabelVisited(exp.getJumpDestination())) {
 			mState.moveNode();
 			if (isConditionalJump(mState.getCurrentNode())) {
 				if (checkLogicGateExpressionIsOnTop(exp)) {
-					exp = new LogicGateExpression(exp, (ConditionalExpression) exp.getThenBranch().pop());
+					exp = new LogicGateExpression(exp, (JumpExpression) exp.getThenBranch().pop());
 					mState.replaceActiveStack(exp.getThenBranch());
 				}
 			}
@@ -97,9 +97,9 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 		return movedNode instanceof JumpInsnNode && movedNode.getOpcode() != Opcodes.GOTO;
 	}
 
-	private boolean checkLogicGateExpressionIsOnTop(ConditionalExpression exp) throws IncorrectNodeException {
+	private boolean checkLogicGateExpressionIsOnTop(JumpExpression exp) throws IncorrectNodeException {
 		ExpressionStack thenBranchBackup = exp.getThenBranch().duplicate();
-		ConditionalExpression innerExp = makeConditionalExpression((JumpInsnNode) mState.getCurrentNode(), exp.getThenBranch());
+		JumpExpression innerExp = makeConditionalExpression((JumpInsnNode) mState.getCurrentNode(), exp.getThenBranch());
 		exp.getThenBranch().push(innerExp);
 		if (exp.containsLogicGateExpression()) {
 			mState.moveNode();
@@ -113,8 +113,8 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 		}
 	}
 
-	private ConditionalExpression makeConditionalExpression(JumpInsnNode node, ExpressionStack stack) {
-		ConditionalExpression exp = null;
+	private JumpExpression makeConditionalExpression(JumpInsnNode node, ExpressionStack stack) {
+		JumpExpression exp = null;
 
 		int jumpDestination = stack.getLabelId(node.label.getLabel());
 		int opCode = node.getOpcode();

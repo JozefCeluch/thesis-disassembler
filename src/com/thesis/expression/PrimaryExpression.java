@@ -7,6 +7,14 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the simplest expression that can be pushed to the stack
+ * <p>
+ * used for the following instructions:
+ * BIPUSH, SIPUSH, LDC
+ *
+ * it is also used to wrap simple operands to expressions to be used in more complex expressions
+ */
 public class PrimaryExpression extends Expression {
 
 	private static final String QUOTE = "\"";

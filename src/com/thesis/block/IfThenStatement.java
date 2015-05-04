@@ -1,6 +1,6 @@
 package com.thesis.block;
 
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -8,10 +8,10 @@ import java.io.Writer;
 
 public class IfThenStatement extends Statement {
 
-	protected ConditionalExpression mCondition;
+	protected JumpExpression mCondition;
 	protected Statement mThenStatement;
 
-	public IfThenStatement(ConditionalExpression condition, int line){
+	public IfThenStatement(JumpExpression condition, int line){
 		super(line);
 		mCondition = condition;
 	}

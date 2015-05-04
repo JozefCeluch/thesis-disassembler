@@ -6,6 +6,11 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the Java instanceof keyword
+ *<p>
+ * used for the INSTANCEOF instruction
+ */
 public class InstanceOfExpression extends Expression {
 
 	private Expression leftObject;

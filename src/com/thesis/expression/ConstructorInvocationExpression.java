@@ -7,6 +7,14 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents a constructor invocation
+ *<p>
+ * a special case of {@link MethodInvocationExpression}
+ * used for the INVOKESPECIAL instruction but only in the case that it calls the special init method
+ *
+ * in case when constructor is invoked directly via the new keyword it is wrapped into the {@link NewExpression}
+ */
 public class ConstructorInvocationExpression extends MethodInvocationExpression {
 
 	protected NewExpression mNewExpression;

@@ -1,32 +1,23 @@
 package com.thesis.expression;
 
-import com.thesis.expression.stack.ExpressionStack;
-
 import java.io.IOException;
 import java.io.Writer;
 
-public class BreakExpression extends JumpExpression {
-
-	public BreakExpression(int opCode, int jumpLocation) {
-		super(opCode, jumpLocation);
-	}
+/**
+ * Expression that represents the break keyword
+ *<p>
+ * a special case of {@link UnconditionalJump}
+ * used to in loops and switches
+ */
+public class BreakExpression extends UnconditionalJump {
 
 	public BreakExpression(UnconditionalJump jump) {
 		super(jump.mOpCode, jump.mJumpDestination);
+		mIsVirtual = false;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
 		writer.write("break");
-	}
-
-	@Override
-	public boolean isVirtual() {
-		return false;
-	}
-
-	@Override
-	public void prepareForStack(ExpressionStack stack) {
-
 	}
 }

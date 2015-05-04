@@ -2,7 +2,7 @@ package com.thesis.translator.handler;
 
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.BreakExpression;
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 import com.thesis.expression.SwitchExpression;
 import com.thesis.expression.UnconditionalJump;
 import com.thesis.expression.stack.ExpressionStack;
@@ -15,6 +15,9 @@ import org.objectweb.asm.tree.TableSwitchInsnNode;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TABLESWITCH, LOOKUPSWITCH
+ */
 public class SwitchInsnNodeHandler extends AbstractHandler {
 
 	public SwitchInsnNodeHandler(MethodState state, OnNodeMoveListener moveListener) {
@@ -33,7 +36,6 @@ public class SwitchInsnNodeHandler extends AbstractHandler {
 		}
 	}
 
-	//	TABLESWITCH
 	private void visitTableSwitchInsnNode(TableSwitchInsnNode node) {
 		ExpressionStack stack = mState.getActiveStack();
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
@@ -53,7 +55,6 @@ public class SwitchInsnNodeHandler extends AbstractHandler {
 		stack.push(switchExp);
 	}
 
-	// LOOKUPSWITCH
 	private void visitLookupSwitchInsnNode(LookupSwitchInsnNode node) {
 		ExpressionStack stack = mState.getActiveStack();
 		int defaultLabel = stack.getLabelId(node.dflt.getLabel());
@@ -72,7 +73,7 @@ public class SwitchInsnNodeHandler extends AbstractHandler {
 	}
 
 	private void updateSwitchWithCases(SwitchExpression switchExp, int defaultLabel, Map<Integer, String> labelCaseMap) {
-		int switchEndLabel = ConditionalExpression.NO_DESTINATION;
+		int switchEndLabel = JumpExpression.NO_DESTINATION;
 		ExpressionStack caseStack = null;
 		SwitchExpression.CaseExpression caseExpression = null;
 
@@ -92,7 +93,7 @@ public class SwitchInsnNodeHandler extends AbstractHandler {
 			if (caseExpression != null && caseExpression.getLabel() != mState.getCurrentLabel() && (labelCaseMap.containsKey(mState.getCurrentLabel()) || mState.isLabelVisited(switchEndLabel))) {
 				if (caseStack.peek() instanceof UnconditionalJump) {
 					UnconditionalJump jump = (UnconditionalJump) caseStack.pop();
-					if (switchEndLabel == ConditionalExpression.NO_DESTINATION) {
+					if (switchEndLabel == JumpExpression.NO_DESTINATION) {
 						switchEndLabel = jump.getJumpDestination();
 					}
 					caseStack.push(new BreakExpression(jump));

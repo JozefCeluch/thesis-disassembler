@@ -7,6 +7,18 @@ import org.objectweb.asm.util.Printer;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents a binary operation
+ *<p>
+ * used for the following instructions:
+ * IADD, LADD, FADD, DADD, ISUB, LSUB, FSUB, DSUB,
+ * IMUL, LMUL, FMUL, DMUL, IDIV, LDIV, FDIV, DDIV, IREM, LREM,
+ * FREM, DREM, INEG, LNEG, FNEG, DNEG, ISHL, LSHL, ISHR, LSHR,
+ * IUSHR, LUSHR, IAND, LAND, IOR, LOR, IXOR, LXOR
+ *
+ * before being pushed to the stack, it pops right and left sides of the expression from the top of the stack
+ *
+ */
 public class ArithmeticExpression extends Expression {
 
 	private Expression mLeftSide;

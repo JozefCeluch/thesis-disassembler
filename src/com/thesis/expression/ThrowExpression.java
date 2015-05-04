@@ -6,6 +6,11 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Expression that represents the throw keyword
+ * <p>
+ * used for the ATHROW instruction
+ */
 public class ThrowExpression extends Expression {
 
 	private Expression mExpression;

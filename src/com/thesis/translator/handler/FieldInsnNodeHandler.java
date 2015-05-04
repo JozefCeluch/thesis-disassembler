@@ -3,6 +3,7 @@ package com.thesis.translator.handler;
 import com.thesis.common.DataType;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.*;
+import com.thesis.expression.AssignmentExpression.LeftHandSide;
 import com.thesis.expression.stack.ExpressionStack;
 import com.thesis.expression.variable.GlobalVariable;
 import com.thesis.translator.MethodState;

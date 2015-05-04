@@ -4,7 +4,17 @@ import com.thesis.common.DataType;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
 
+/**
+ * Expression that represents loading of a constant
+ *<p>
+ * a special case of {@link PrimaryExpression}
+ * used for the following instructions:
+ * ACONST_NULL, ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5,
+ * LCONST_0, LCONST_1, FCONST_0, FCONST_1, FCONST_2, DCONST_0, DCONST_1
+ *
+ */
 public class ConstantPrimaryExpression extends PrimaryExpression {
+
 	public ConstantPrimaryExpression(int opCode) {
 		super(opCode, getValue(opCode), getType(opCode));
 	}

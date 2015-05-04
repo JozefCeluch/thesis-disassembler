@@ -2,7 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.expression.stack.ExpressionStack;
 import com.thesis.common.DataType;
-import com.thesis.translator.TryCatchManager;
+import com.thesis.translator.handler.TryCatchManager;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -10,6 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Expression that represents the try-catch block
+ * <p>
+ * it is not created by any bytecode instruction
+ * try-catch blocks are stored separately in the class file, and ASM stores them in {@link org.objectweb.asm.tree.TryCatchBlockNode}
+ */
 public class TryCatchExpression extends Expression {
 
 	private ExpressionStack mTryStack;

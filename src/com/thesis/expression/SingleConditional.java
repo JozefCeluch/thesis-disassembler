@@ -5,7 +5,13 @@ import com.thesis.expression.stack.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 
-public class SingleConditional extends ConditionalExpression {
+/**
+ * Expression that represents a comparison of a single value with zero
+ * <p>
+ * used for the following instructions:
+ * IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE
+ */
+public class SingleConditional extends JumpExpression {
 
 	private Expression mLeftExpression;
 

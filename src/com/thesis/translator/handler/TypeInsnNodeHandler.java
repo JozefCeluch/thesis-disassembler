@@ -10,13 +10,15 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
+/**
+ * NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
+ */
 public class TypeInsnNodeHandler extends AbstractHandler {
 
 	public TypeInsnNodeHandler(MethodState state) {
 		super(state);
 	}
 
-	//	NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

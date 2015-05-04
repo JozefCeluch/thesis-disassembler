@@ -10,6 +10,9 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A general representation of a Java code structure
+ */
 public abstract class Block implements Writable{
 	protected static final String NL = "\n";
 	protected static final String OPENING_BRACKET = "{";

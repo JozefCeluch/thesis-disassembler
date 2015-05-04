@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
+/**
+ * Expression that represents the dynamic method invocation
+ *<p>
+ * used for the INVOKEDYNAMIC instruction
+ */
 public class LambdaExpression extends Expression{
 
 	private MethodHandle mBsMethod;

@@ -1,16 +1,15 @@
 package com.thesis.block;
 
-import com.thesis.expression.ConditionalExpression;
+import com.thesis.expression.JumpExpression;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 
 public class IfThenElseStatement extends IfThenStatement {
 
 	protected Statement mElseStatement;
 
-	public IfThenElseStatement(ConditionalExpression condition, int line){
+	public IfThenElseStatement(JumpExpression condition, int line){
 		super(condition, line);
 	}
 
