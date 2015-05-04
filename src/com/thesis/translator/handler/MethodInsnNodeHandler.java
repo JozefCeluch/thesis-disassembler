@@ -5,7 +5,7 @@ import com.thesis.common.Util;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.ConstructorInvocationExpression;
 import com.thesis.expression.MethodInvocationExpression;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;

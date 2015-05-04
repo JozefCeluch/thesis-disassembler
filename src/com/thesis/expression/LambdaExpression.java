@@ -1,7 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -72,7 +72,7 @@ public class LambdaExpression extends Expression{
 		}
 	}
 
-	static class MethodHandle implements Argument {
+	private static class MethodHandle implements Argument {
 
 		private static final DataType METHOD_HANDLES = DataType.getTypeFromObject("java.lang.invoke.MethodHandles");
 		private static final String LOOKUP = "lookup()";
@@ -132,7 +132,7 @@ public class LambdaExpression extends Expression{
 		}
 	}
 
-	static class MethodType implements Argument {
+	private static class MethodType implements Argument {
 
 		private static DataType METHOD_TYPE = DataType.getTypeFromObject("java.lang.invoke.MethodType");
 		private static String METHOD = "methodType";
@@ -170,7 +170,7 @@ public class LambdaExpression extends Expression{
 		}
  	}
 
-	static class StringArgument implements Argument {
+	private static class StringArgument implements Argument {
 
 		private String mValue;
 
@@ -184,7 +184,7 @@ public class LambdaExpression extends Expression{
 		}
 	}
 
-	static class ClassArgument implements Argument {
+	private static class ClassArgument implements Argument {
 
 		private DataType mValue;
 
@@ -198,7 +198,7 @@ public class LambdaExpression extends Expression{
 		}
 	}
 
-	static class ArgumentImpl implements Argument {
+	private static class ArgumentImpl implements Argument {
 		private String mValue;
 
 		public ArgumentImpl(String value) {

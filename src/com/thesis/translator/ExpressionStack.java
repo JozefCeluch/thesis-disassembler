@@ -1,7 +1,6 @@
-package com.thesis.expression.stack;
+package com.thesis.translator;
 
 import com.thesis.expression.*;
-import com.thesis.translator.StackEnhancer;
 import org.objectweb.asm.Label;
 
 import java.util.*;
@@ -12,13 +11,13 @@ public class ExpressionStack {
 
 	private List<StackEnhancer> mEnhancers;
 
-	private final Stack<StackItem> mStack;
+	private final Stack<Item> mStack;
 	private int mLineNum;
 	private Map<Label, Integer> mLabels;
 	private int mLabel;
 	private int mLastImprovementPosition = 0;
 	private int mVisitedFrame = NOT_SET;
-	private Map<Integer, StackItem> mFrameItemMap;
+	private Map<Integer, Item> mFrameItemMap;
 
 	public ExpressionStack() {
 		mLabels = new HashMap<>();
@@ -60,7 +59,7 @@ public class ExpressionStack {
 	public void push(Expression expression) {
 		expression.setLine(mLineNum);
 		expression.prepareForStack(this); //TODO move prepare to expression
-		mStack.push(new StackItem(expression, mLabel, mLineNum));
+		mStack.push(new Item(expression, mLabel, mLineNum));
 		improveStack();
 		expression.afterPush(this);
 		if (mVisitedFrame != NOT_SET) {
@@ -73,7 +72,7 @@ public class ExpressionStack {
 		if (shouldUpdateStack) {
 			push(expression);
 		} else {
-			mStack.push(new StackItem(expression, mLabel, mLineNum));
+			mStack.push(new Item(expression, mLabel, mLineNum));
 		}
 	}
 
@@ -118,21 +117,21 @@ public class ExpressionStack {
 	}
 
 	public void swap() {
-		StackItem first = mStack.pop();
-		StackItem second = mStack.pop();
+		Item first = mStack.pop();
+		Item second = mStack.pop();
 		mStack.push(first);
 		mStack.push(second);
 	}
 
 	public void addAll(ExpressionStack stack){
 		if (stack == null) return;
-		for(StackItem exp : stack.getAll()){
+		for(Item exp : stack.getAll()){
 			mStack.push(exp);
 		}
 	}
 
-	public List<StackItem> getAll() {
-		return Arrays.asList(mStack.toArray(new StackItem[mStack.size()]));
+	public List<Item> getAll() {
+		return Arrays.asList(mStack.toArray(new Item[mStack.size()]));
 	}
 
 //	public void clear() {
@@ -183,7 +182,7 @@ public class ExpressionStack {
 	}
 
 	public int getExpressionIndexOfFrame(int label) {
-		StackItem item = mFrameItemMap.get(label);
+		Item item = mFrameItemMap.get(label);
 		if (item == null) {
 			return -1;
 		}
@@ -196,5 +195,54 @@ public class ExpressionStack {
 			subStack.mStack.push(mStack.remove(startIndex));
 		}
 		return subStack;
+	}
+
+	public static class Item {
+
+		private final int labelId;
+		private Expression expression;
+		private final int line;
+
+		public Item(Expression expression, int label, int line) {
+			labelId = label;
+			this.expression = expression;
+			this.line = line;
+		}
+
+		public int getLabelId() {
+			return labelId;
+		}
+
+		public Expression getExpression() {
+			return expression;
+		}
+
+		public void setExpression(Expression expression) {
+			this.expression = expression;
+		}
+
+		public int getLine() {
+			return line;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			Item stackItem = (Item) o;
+
+			if (labelId != stackItem.labelId) return false;
+			if (line != stackItem.line) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = labelId;
+			result = 31 * result + line;
+			return result;
+		}
 	}
 }

@@ -3,7 +3,7 @@ package com.thesis.translator.handler;
 import com.thesis.common.DataType;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.PrimaryExpression;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;

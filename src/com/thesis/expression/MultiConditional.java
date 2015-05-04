@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 
 import java.io.IOException;
 import java.io.Writer;

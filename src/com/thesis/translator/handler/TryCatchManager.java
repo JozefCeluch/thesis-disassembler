@@ -1,6 +1,6 @@
 package com.thesis.translator.handler;
 
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.tree.TryCatchBlockNode;
 
 import java.util.ArrayList;

@@ -4,7 +4,7 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
 import com.thesis.expression.UnconditionalJump;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;

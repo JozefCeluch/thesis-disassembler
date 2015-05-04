@@ -3,7 +3,7 @@ package com.thesis.expression;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;

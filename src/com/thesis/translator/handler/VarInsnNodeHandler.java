@@ -6,7 +6,7 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.AssignmentExpression;
 import com.thesis.expression.AssignmentExpression.LeftHandSide;
 import com.thesis.expression.VariablePrimaryExpression;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.Opcodes;

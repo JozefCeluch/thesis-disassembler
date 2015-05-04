@@ -4,7 +4,7 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.ArrayCreationExpression;
 import com.thesis.expression.InstanceOfExpression;
 import com.thesis.expression.NewExpression;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;

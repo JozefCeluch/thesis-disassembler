@@ -5,7 +5,7 @@ import com.thesis.expression.BreakExpression;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.SwitchExpression;
 import com.thesis.expression.UnconditionalJump;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;

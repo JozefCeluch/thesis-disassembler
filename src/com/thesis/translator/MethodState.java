@@ -1,7 +1,6 @@
 package com.thesis.translator;
 
 import com.thesis.expression.JumpExpression;
-import com.thesis.expression.stack.ExpressionStack;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.util.HashSet;

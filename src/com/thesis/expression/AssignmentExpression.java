@@ -2,7 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.expression.variable.Variable;
 import com.thesis.common.DataType;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;

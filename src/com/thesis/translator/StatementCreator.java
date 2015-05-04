@@ -3,8 +3,6 @@ package com.thesis.translator;
 import com.thesis.block.*;
 import com.thesis.common.DataType;
 import com.thesis.expression.*;
-import com.thesis.expression.stack.ExpressionStack;
-import com.thesis.expression.stack.StackItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +22,7 @@ public class StatementCreator {
 
 	private List<Statement> createStatements(ExpressionStack expressions) {
 		List<Statement> statements = new ArrayList<>();
-		for (StackItem item : expressions.getAll()) {
+		for (ExpressionStack.Item item : expressions.getAll()) {
 			if (item.getExpression().isVirtual() || item.getExpression() instanceof PrimaryExpression) continue;
 
 			if (item.getExpression() instanceof JumpExpression) {

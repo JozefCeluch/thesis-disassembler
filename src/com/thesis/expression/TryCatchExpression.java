@@ -1,6 +1,6 @@
 package com.thesis.expression;
 
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import com.thesis.common.DataType;
 import com.thesis.translator.handler.TryCatchManager;
 

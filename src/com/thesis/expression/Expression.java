@@ -2,7 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.common.Writable;
 import com.thesis.common.DataType;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 
 import java.io.IOException;
 import java.io.StringWriter;

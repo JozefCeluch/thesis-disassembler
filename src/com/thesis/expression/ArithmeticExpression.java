@@ -1,7 +1,7 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
-import com.thesis.expression.stack.ExpressionStack;
+import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
