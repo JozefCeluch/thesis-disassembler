@@ -19,11 +19,13 @@ public class AssignmentExpression extends  Expression{
 
 	private LeftHandSide mLeftSide;
 	private Expression mRightSide;
+	private boolean mPrintType;
 
 	public AssignmentExpression(int opCode, LeftHandSide leftSide) {
 		super(opCode);
 		mLeftSide = leftSide;
 		mType = mLeftSide.getType();
+		mPrintType = false;
 	}
 
 	public AssignmentExpression(int opCode, LeftHandSide leftSide, Expression rightSide) {
@@ -36,6 +38,10 @@ public class AssignmentExpression extends  Expression{
 		mRightSide = rightSide;
 	}
 
+	public void setPrintType(boolean printType) {
+		mPrintType = printType;
+	}
+
 	public Expression getRightSide() {
 		return mRightSide;
 	}
@@ -46,6 +52,9 @@ public class AssignmentExpression extends  Expression{
 
 	@Override
 	public void write(Writer writer) throws IOException {
+		if (mPrintType) {
+			writer.append(mType.print()).append(" ");
+		}
 		mLeftSide.write(writer);
 		writer.append(makeCorrectOperator());
 		mRightSide.write(writer);

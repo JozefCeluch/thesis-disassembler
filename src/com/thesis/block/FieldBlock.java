@@ -5,6 +5,7 @@ import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.expression.*;
 import com.thesis.expression.AssignmentExpression.LeftHandSide;
+import com.thesis.statement.Statement;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.FieldNode;
 
@@ -17,8 +18,6 @@ public class FieldBlock extends Block {
 	private FieldNode mFieldNode;
 	private List<Object> mAnnotations;
 	private String mAccessFlags;
-	private Expression mExpression;
-	private DataType mType;
 
 	public FieldBlock(FieldNode fieldNode, Block parent) {
 		mFieldNode = fieldNode;
@@ -31,13 +30,17 @@ public class FieldBlock extends Block {
 
 		mAccessFlags = getAccessFlags();
 
-		mType = getType(mFieldNode.desc, mFieldNode.signature);
-		LocalVariable variable = new LocalVariable(mFieldNode.name, mType, 0);
+		DataType type = getType(mFieldNode.desc, mFieldNode.signature);
+		LocalVariable variable = new LocalVariable(mFieldNode.name, type, 0);
+		Expression expression;
 		if (mFieldNode.value != null) {
-			mExpression = new AssignmentExpression(0, new LeftHandSide(0, variable), new PrimaryExpression(mFieldNode.value, mType));
+			//the field is final
+			expression = new AssignmentExpression(0, new LeftHandSide(0, variable), new PrimaryExpression(mFieldNode.value, type));
+			((AssignmentExpression) expression).setPrintType(true);
 		} else {
-			mExpression = new VariableDeclarationExpression(variable);
+			expression = new VariableDeclarationExpression(variable);
 		}
+		children.add(new Statement(expression, 0));
 		return this;
 	}
 
@@ -62,10 +65,6 @@ public class FieldBlock extends Block {
 	public void write(Writer writer) throws IOException {
 		printList(writer, mAnnotations);
 		writer.write(mAccessFlags);
-		if (mExpression instanceof AssignmentExpression) {
-			writer.append(mType.print()).append(" ");
-		}
-		mExpression.write(writer);
-		writer.write(";\n");
+		children.get(0).write(writer);
 	}
 }
