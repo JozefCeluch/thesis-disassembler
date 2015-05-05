@@ -1,15 +1,13 @@
 package com.thesis;
 
-import com.thesis.file.Parser;
-
-import java.io.FileNotFoundException;
+import com.thesis.file.Disassembler;
 
 public class Main {
 
 	public static void main(String[] args) {
-		Parser p = Parser.createInstance("tests/example");
+		Disassembler p = Disassembler.createInstance("tests/example");
 
-		p.parseClassFile("Atom.class");
+		p.decompileClassFile("Atom.class");
 
 //        p.printCode();
 

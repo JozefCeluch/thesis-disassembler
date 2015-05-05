@@ -11,27 +11,27 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Parser {
+public class Disassembler {
 
     private Reader mReader;
-	private static Parser mParser;
+	private static Disassembler mDisassembler;
 	private Map<String, String> mInnerClassMap; // <full inner class name, displayed inner class name>
 
-	public static Parser createInstance(String directory) {
-		mParser = new Parser(directory);
-		return mParser;
+	public static Disassembler createInstance(String directory) {
+		mDisassembler = new Disassembler(directory);
+		return mDisassembler;
 	}
 
-	public static Parser getInstance() {
-		return mParser;
+	public static Disassembler getInstance() {
+		return mDisassembler;
 	}
 
-    private Parser(String directory) {
+    private Disassembler(String directory) {
         mReader = new Reader(directory);
 		mInnerClassMap = new HashMap<>();
     }
 
-    public String parseClassFile(String file) {
+    public String decompileClassFile(String file) {
 		ClassReader classReader = getClassReader(file);
 		if (classReader == null) {
 			return "ERROR";
@@ -51,7 +51,7 @@ public class Parser {
 		return stringWriter.toString();
     }
 
-	public ClassBlock parseInnerClass(String file, Block parent) {
+	public ClassBlock decompileInnerClass(String file, Block parent) {
 		file = file.endsWith(".class") ? file : file + ".class";
 		return disassembleClass(getClassReader(file), parent);
 	}

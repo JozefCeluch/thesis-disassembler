@@ -4,7 +4,7 @@ import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
 import com.thesis.common.Writable;
-import com.thesis.file.Parser;
+import com.thesis.file.Disassembler;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -119,7 +119,7 @@ public class ClassBlock extends Block {
 		for (Object object : innerClasses) {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
-				children.add(Parser.getInstance().parseInnerClass(innerClass.name, getParent()));
+				children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, getParent()));
 			}
 		}
 	}
@@ -132,7 +132,7 @@ public class ClassBlock extends Block {
 
 	private void saveInnerClassName(InnerClassNode innerClass) {
 		if (innerClass.innerName != null && innerClass.outerName != null) {
-			Parser.getInstance().addInnerClassName(innerClass.name, innerClass.innerName);
+			Disassembler.getInstance().addInnerClassName(innerClass.name, innerClass.innerName);
 		} else if (innerClass.name.length() > mClassNode.name.length()) {
 //			Parser.getInstance().addInnerClassName(innerClass.name, innerClass.name.replace(mClassNode.name, ""));
 		}

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(value = JUnitParamsRunner.class)
-public class ParserTest {
+public class DisassemblerTest {
 
 	private static String TEST_FOLDER = "testData" + File.separator;
 	private static String RESULTS_FOLDER = "testData" + File.separator + "expectedResults" + File.separator;
@@ -34,13 +34,13 @@ public class ParserTest {
 			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "ComplexVariableNames",
 			"MultiANewArrayInsnNode", "TryCatchBlockNode", "ClassWithInnerClasses", "ClassWithAnonymousClasses"})
 	public void testUngroupedClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	@Test
 	@Parameters(method = "getInsnNodeClasses")
 	public void testInsnNode(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getInsnNodeClasses() {
@@ -51,7 +51,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getFieldInsnNodeClasses")
 	public void testFieldInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getFieldInsnNodeClasses() {
@@ -62,7 +62,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getJumpInsnNodeClasses")
 	public void testJumpInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getJumpInsnNodeClasses() {
@@ -73,7 +73,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getTypeInsnNodeClasses")
 	public void testTypeInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getTypeInsnNodeClasses() {
@@ -84,7 +84,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getMethodInsnNodeClasses")
 	public void testMethodInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getMethodInsnNodeClasses() {
@@ -95,7 +95,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getInvokedynamicInsnNodeClasses")
 	public void testInvokedynamicInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getInvokedynamicInsnNodeClasses() {
@@ -106,7 +106,7 @@ public class ParserTest {
 	@Test
 	@Parameters(method = "getSwitchInsnNodeClasses")
 	public void testSwitchInsnNodeClasses(String name){
-		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Parser.createInstance(TEST_FOLDER)));
+		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	public List<Object[]> getSwitchInsnNodeClasses() {
@@ -124,7 +124,7 @@ public class ParserTest {
 		if (!success) {
 			fail("COMPILATION FAILED");
 		}
-		assertEquals("Classes do not equal", getJavaClassContent(name), Parser.createInstance(TEST_FOLDER).parseClassFile(name + ".class"));
+		assertEquals("Classes do not equal", getJavaClassContent(name), Disassembler.createInstance(TEST_FOLDER).decompileClassFile(name + ".class"));
 	}
 	public Object param1(){return $($("EmptyClassWithInterfaces", makeDependencyString("EmptyInterface", "AnotherEmptyInterface")));}
 	public Object param2(){return $($("EmptyInterfaceAnnotation", makeDependencyString("EmptyEnum")));}
@@ -165,7 +165,7 @@ public class ParserTest {
 		return new String(fileContents);
 	}
 
-	private String compileAndParseClass(String name, Parser parser) {
+	private String compileAndParseClass(String name, Disassembler disassembler) {
 		boolean success = compileClass(TEST_FOLDER + name + ".java");
 		if (!success) {
 			System.out.println("COMPILATION ERROR: " + name);
@@ -173,7 +173,7 @@ public class ParserTest {
 		}
 		System.out.println("COMPILATION SUCCESS: " + name);
 		System.out.println("PARSING: " + name);
-		return parser.parseClassFile(name + ".class");
+		return disassembler.decompileClassFile(name + ".class");
 	}
 
 	private boolean compileClass(String... names) {

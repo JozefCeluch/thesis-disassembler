@@ -1,6 +1,6 @@
 package com.thesis.common;
 
-import com.thesis.file.Parser;
+import com.thesis.file.Disassembler;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.util.Printer;
 
@@ -11,7 +11,7 @@ public class Util {
 	public static final String ARGUMENT_NAME_BASE = "arg";
 
 	public static String javaObjectName(String objectName) {
-		return Parser.getInstance().getInnerClassDisplayName(objectName);
+		return Disassembler.getInstance().getInnerClassDisplayName(objectName);
 	}
 
 	public static boolean containsFlag(int value, int flag) {
