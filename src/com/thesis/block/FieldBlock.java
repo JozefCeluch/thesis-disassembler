@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-public class Field extends Block {
+public class FieldBlock extends Block {
 
 	private FieldNode mFieldNode;
 	private List<Object> mAnnotations;
@@ -20,7 +20,7 @@ public class Field extends Block {
 	private Expression mExpression;
 	private DataType mType;
 
-	public Field(FieldNode fieldNode, Block parent) {
+	public FieldBlock(FieldNode fieldNode, Block parent) {
 		mFieldNode = fieldNode;
 		mParent = parent;
 	}

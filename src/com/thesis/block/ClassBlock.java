@@ -110,7 +110,7 @@ public class ClassBlock extends Block {
 	protected void appendFields(List fields) {
 		for (Object object : fields) {
 			FieldNode field = (FieldNode)object;
-			Field fieldBlock = new Field(field, this);
+			FieldBlock fieldBlock = new FieldBlock(field, this);
 			children.add(fieldBlock.disassemble());
 		}
 	}

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A general representation of a Java code structure
+ * General representation of a Java class-level member
  */
 public abstract class Block implements Writable{
 	protected static final String NL = "\n";
@@ -38,15 +38,6 @@ public abstract class Block implements Writable{
 
 	public List<Writable> getChildren() {
 		return children;
-	}
-
-	protected static String getTypeIndicator(String args) {
-		if (args.startsWith("L")) {
-			int positionAfterSemicolon = args.indexOf(';') + 1;
-			return args.substring(0, positionAfterSemicolon);
-		} else {
-			return args.substring(0, 1);
-		}
 	}
 
 	protected void clearBuffer() {
@@ -109,14 +100,6 @@ public abstract class Block implements Writable{
 		int location = buf.indexOf(str);
 		if (location > -1)
 			buf.replace(location, location + str.length(), "");
-	}
-
-	private void addBlockBeginning() {
-		buf.append(" ").append(OPENING_BRACKET).append(NL);
-	}
-
-	private void addBlockEnd(){
-		buf.append(CLOSING_BRACKET).append(NL);
 	}
 
 	public boolean hasParent() {
