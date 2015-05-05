@@ -1,9 +1,10 @@
 package com.thesis.file;
 
 import com.thesis.block.Block;
+import com.thesis.block.ClassBlock;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
@@ -31,31 +32,47 @@ public class Parser {
     }
 
     public String parseClassFile(String file) {
-        return parseClassFile(file, null);
+		ClassReader classReader = getClassReader(file);
+		if (classReader == null) {
+			return "ERROR";
+		}
+
+		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
+		classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+
+		Writer stringWriter = new StringWriter();
+		Writer printWriter = new PrintWriter(stringWriter);
+		ClassBlock classBlock = disassembleClass(classReader, null);
+		try {
+			classBlock.write(printWriter);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return stringWriter.toString();
     }
 
-	public String parseClassFile(String file, Block parent) {
-		InputStream is = null;
-		try {
-			is = mReader.openClassFile(file);
+	public ClassBlock parseInnerClass(String file, Block parent) {
+		file = file.endsWith(".class") ? file : file + ".class";
+		return disassembleClass(getClassReader(file), parent);
+	}
+
+	private ClassBlock disassembleClass(ClassReader classReader, Block parent) {
+		ClassNode classNode = new ClassNode();
+		classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+		ClassBlock classBlock = new ClassBlock(classNode, parent);
+		classBlock.disassemble();
+		return classBlock;
+	}
+
+	private ClassReader getClassReader(String file) {
+		try(InputStream is = mReader.openClassFile(file)) {
+			return new ClassReader(is);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace(); //TODO
-		}
-		try {
-			ClassReader classReader = new ClassReader(is);
-			ClassNode classNode = new ClassNode();
-			StringWriter stringWriter = new StringWriter();
-			classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
-			Disassembler disassembler = new Disassembler(new PrintWriter(stringWriter));
-			ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
-			classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
-			disassembler.disassembleClass(classNode, parent);
-			disassembler.print();
-			return stringWriter.toString();
 		} catch (IOException e) {
-			e.printStackTrace(); //TODO
-			return null;
+			e.printStackTrace();
 		}
+		return null;
 	}
 
 	public void addInnerClassName(String fullName, String displayName) {

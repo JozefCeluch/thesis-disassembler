@@ -119,8 +119,7 @@ public class ClassBlock extends Block {
 		for (Object object : innerClasses) {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
-				InnerClassBlock icb = new InnerClassBlock(innerClass, mClassNode.name, this);
-				children.add(icb.disassemble());
+				children.add(Parser.getInstance().parseInnerClass(innerClass.name, getParent()));
 			}
 		}
 	}

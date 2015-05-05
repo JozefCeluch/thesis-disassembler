@@ -1,13 +1,11 @@
 package com.thesis.block;
 
 import com.thesis.common.Writable;
-import com.thesis.statement.Statement;
 import com.thesis.translator.InstructionTranslator;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
-import com.thesis.expression.ReturnExpression;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;

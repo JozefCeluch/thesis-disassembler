@@ -22,14 +22,12 @@ public abstract class Block implements Writable{
 	protected static final String BLOCK_END = CLOSING_BRACKET + NL;
 
 	protected StringBuffer buf;
-	protected List<Object> text;
 	protected Block mParent;
 	protected final AnnotationParser mAnnotationParser;
 	protected List<Writable> children;
 
 	protected Block() {
 		buf = new StringBuffer();
-		text = new ArrayList<>();
 		mAnnotationParser = new AnnotationParser();
 		children = new ArrayList<>();
 	}
