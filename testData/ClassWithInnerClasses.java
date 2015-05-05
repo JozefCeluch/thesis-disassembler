@@ -1,7 +1,10 @@
+import java.lang.Long;
+
 public class ClassWithInnerClasses {
 	private int outerClassVariable;
 	private int otherIntVariable;
 	private String anotherVariable;
+	private static final OtherInnerClass a = new OtherInnerClass();
 
 	private class InnerClass {
 		public InnerClass(String s) {
@@ -25,6 +28,6 @@ public class ClassWithInnerClasses {
 		}
 	}
 
-	public class OtherInnerClass {
+	public static class OtherInnerClass {
 	}
 }

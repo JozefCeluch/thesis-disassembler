@@ -2,6 +2,7 @@ public class ClassWithInnerClasses {
 private int outerClassVariable;
 private int otherIntVariable;
 private java.lang.String anotherVariable;
+private final static OtherInnerClass a;
 public ClassWithInnerClasses() {
 super();
 }
@@ -14,10 +15,11 @@ return x0.otherIntVariable;
 static  /* synthetic */ java.lang.String access$200(ClassWithInnerClasses x0) {
 return x0.anotherVariable;
 }
+static void <clinit>() {
+ClassWithInnerClasses.a = new OtherInnerClass();
+}
 public class OtherInnerClass {
-final  /* synthetic */ ClassWithInnerClasses this$0;
-public OtherInnerClass(ClassWithInnerClasses this$0) {
-this.this$0 = this$0;
+public OtherInnerClass() {
 super();
 }
 }
