@@ -14,8 +14,6 @@ import java.io.Writer;
  */
 public class UnconditionalJump extends JumpExpression {
 
-	protected boolean mIsVirtual;
-
 	public UnconditionalJump(int opCode, int jumpLocation) {
 		super(opCode, jumpLocation);
 		mIsVirtual = true;
@@ -31,11 +29,6 @@ public class UnconditionalJump extends JumpExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-	}
-
-	@Override
-	public boolean isVirtual() {
-		return mIsVirtual;
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-public class Field extends Statement {
+public class Field extends Block {
 
 	private FieldNode mFieldNode;
 	private List<Object> mAnnotations;
@@ -21,7 +21,6 @@ public class Field extends Statement {
 	private DataType mType;
 
 	public Field(FieldNode fieldNode, Block parent) {
-		super(0); //todo line
 		mFieldNode = fieldNode;
 		mParent = parent;
 	}
@@ -67,6 +66,6 @@ public class Field extends Statement {
 			writer.append(mType.print()).append(" ");
 		}
 		mExpression.write(writer);
-		writer.write(STATEMENT_END_NL);
+		writer.write(";\n");
 	}
 }

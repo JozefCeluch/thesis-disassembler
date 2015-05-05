@@ -25,6 +25,7 @@ public class PrimaryExpression extends Expression {
 		super(opCode);
 		mValue = value;
 		mType = type;
+		mIsVirtual = true;
 	}
 
 	public PrimaryExpression(Object value, DataType type) {

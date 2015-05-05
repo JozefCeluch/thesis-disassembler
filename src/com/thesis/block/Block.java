@@ -25,7 +25,7 @@ public abstract class Block implements Writable{
 	protected List<Object> text;
 	protected Block mParent;
 	protected final AnnotationParser mAnnotationParser;
-	protected List<Block> children;
+	protected List<Writable> children;
 
 	protected Block() {
 		buf = new StringBuffer();
@@ -36,7 +36,7 @@ public abstract class Block implements Writable{
 
 	public abstract Block disassemble();
 
-	public List<Block> getChildren() {
+	public List<Writable> getChildren() {
 		return children;
 	}
 

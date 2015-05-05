@@ -46,9 +46,4 @@ public class NewExpression extends Expression {
 	public boolean isVirtual() {
 		return mExpression == null;
 	}
-
-	@Override
-	public String toString() {
-		return "new " + mType;
-	}
 }

@@ -1,5 +1,7 @@
 package com.thesis.block;
 
+import com.thesis.common.Writable;
+import com.thesis.statement.Statement;
 import com.thesis.translator.InstructionTranslator;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.common.DataType;
@@ -251,8 +253,7 @@ public class MethodBlock extends Block {
 
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			writer.write(BLOCK_START);
-			for(Block child : children) {
-				if (Util.isConstructor(mMethodNode.name) && child instanceof Statement && ((Statement) child).mExpression instanceof ReturnExpression) continue; // todo constructor return statement
+			for(Writable child : children) {
 				child.write(writer);
 			}
 			writer.write(BLOCK_END);

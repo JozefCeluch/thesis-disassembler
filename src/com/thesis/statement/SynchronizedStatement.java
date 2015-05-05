@@ -1,4 +1,4 @@
-package com.thesis.block;
+package com.thesis.statement;
 
 import com.thesis.translator.StatementCreator;
 import com.thesis.expression.MonitorExpression;

@@ -1,4 +1,4 @@
-package com.thesis.block;
+package com.thesis.statement;
 
 import com.thesis.translator.StatementCreator;
 import com.thesis.expression.TryCatchExpression;
@@ -20,11 +20,6 @@ public class TryCatchStatement extends Statement {
 		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
 			mCatchBlocks.add(new CatchStatement(catchExpression));
 		}
-	}
-
-	@Override
-	public Block disassemble() {
-		return this;
 	}
 
 	@Override

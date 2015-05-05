@@ -1,4 +1,4 @@
-package com.thesis.block;
+package com.thesis.statement;
 
 import com.thesis.expression.JumpExpression;
 

@@ -1,8 +1,7 @@
-package com.thesis.block;
+package com.thesis.statement;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BlockStatement extends Statement {
@@ -16,10 +15,10 @@ public class BlockStatement extends Statement {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(BLOCK_START);
+		writer.write(" {" + NL);
 		for(Statement statement : mStatements) {
 			statement.write(writer);
 		}
-		writer.write(CLOSING_BRACKET);
+		writer.write("}");
 	}
 }

@@ -1,7 +1,7 @@
 package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
-import com.thesis.block.Statement;
+import com.thesis.statement.Statement;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.VariableDeclarationExpression;
 import com.thesis.expression.variable.LocalVariable;

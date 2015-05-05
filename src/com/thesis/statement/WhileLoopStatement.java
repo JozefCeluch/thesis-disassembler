@@ -1,4 +1,4 @@
-package com.thesis.block;
+package com.thesis.statement;
 
 import com.thesis.translator.StatementCreator;
 import com.thesis.expression.JumpExpression;
@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-public class DoWhileLoopStatement extends Statement {
+public class WhileLoopStatement extends Statement {
 
 	private BlockStatement mBlock;
 
-	public DoWhileLoopStatement(JumpExpression expression, int line) {
+	public WhileLoopStatement(JumpExpression expression, int line) {
 		super(expression, line);
 		List<Statement> statements = new StatementCreator(expression.getThenBranch()).getStatements();
 		mBlock = new BlockStatement(line, statements);
@@ -20,15 +20,14 @@ public class DoWhileLoopStatement extends Statement {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write("do");
-		mBlock.write(writer);
-		writer.write(" while (");
+		writer.write("while (");
 		if (mExpression instanceof UnconditionalJump) {
 			writer.write("true");
 		} else {
 			mExpression.write(writer);
 		}
 		writer.write(")");
+		mBlock.write(writer);
 		writer.write(NL);
 	}
 }

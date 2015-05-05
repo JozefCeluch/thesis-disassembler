@@ -1,8 +1,8 @@
 package com.thesis.translator;
 
-import com.thesis.block.*;
 import com.thesis.common.DataType;
 import com.thesis.expression.*;
+import com.thesis.statement.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class StatementCreator {
 	private List<Statement> createStatements(ExpressionStack expressions) {
 		List<Statement> statements = new ArrayList<>();
 		for (ExpressionStack.Item item : expressions.getAll()) {
-			if (item.getExpression().isVirtual() || item.getExpression() instanceof PrimaryExpression) continue;
+			if (item.getExpression().isVirtual()) continue;
 
 			if (item.getExpression() instanceof JumpExpression) {
 				statements.add(handleConditionalExpression((JumpExpression) item.getExpression(), item.getLine(), item.getLabelId()));

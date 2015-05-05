@@ -16,9 +16,11 @@ public abstract class Expression implements Writable {
 	protected DataType mType;
 	protected DataType mCastType;
 	protected int mLine;
+	protected boolean mIsVirtual;
 
 	public Expression(int opCode) {
 		mOpCode = opCode;
+		mIsVirtual = false;
 	}
 
 	abstract public DataType getType();
@@ -48,7 +50,7 @@ public abstract class Expression implements Writable {
 	}
 
 	public boolean isVirtual() {
-		return false;
+		return mIsVirtual;
 	}
 
 	abstract public void prepareForStack(ExpressionStack stack);

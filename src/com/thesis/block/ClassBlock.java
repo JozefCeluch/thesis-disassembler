@@ -3,6 +3,7 @@ package com.thesis.block;
 import com.thesis.common.DataType;
 import com.thesis.common.SignatureVisitor;
 import com.thesis.common.Util;
+import com.thesis.common.Writable;
 import com.thesis.file.Parser;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
@@ -178,8 +179,8 @@ public class ClassBlock extends Block {
 		writer.write(mImplements);
 
 		writer.write(BLOCK_START);
-		for (Block block : children) {
-			block.write(writer);
+		for (Writable child : children) {
+			child.write(writer);
 		}
 		writer.write(BLOCK_END);
 	}
