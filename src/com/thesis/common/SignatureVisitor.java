@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * A {@link org.objectweb.asm.signature.SignatureVisitor} that prints a disassembled view of the signature
- * it visits. Adjusted version of TraceSignatureVisitor
+ * it visits. A modified version of {@link org.objectweb.asm.util.TraceSignatureVisitor}
  *
  * @author Eugene Kuleshov
  * @author Eric Bruneton

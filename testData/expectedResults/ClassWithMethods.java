@@ -21,7 +21,7 @@ private void voidMethodWithVarArgs(int... arg0) {
 private int intMethodWithExceptions() throws java.lang.NullPointerException, java.lang.Exception {
 return 0;
 }
-public <T> T genericMethod(T genericArg) {
+public <T extends java.lang.Comparable> T genericMethod(T genericArg) {
 return genericArg;
 }
 public java.util.Map<java.lang.Integer, java.lang.Float>[] crazyReturn() {

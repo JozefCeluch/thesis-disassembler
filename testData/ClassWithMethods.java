@@ -1,3 +1,5 @@
+import java.lang.Comparable;
+
 public class ClassWithMethods {
 	public static <T> java.util.Map<java.lang.Integer, java.lang.Float>[] staticWithGeneric(T anotherGenericArg) {
 		return null;
@@ -26,7 +28,7 @@ public class ClassWithMethods {
 		return 0;
 	}
 
-	public <T> T genericMethod(T genericArg) {
+	public <T extends Comparable> T genericMethod(T genericArg) {
 		return genericArg;
 	}
 
