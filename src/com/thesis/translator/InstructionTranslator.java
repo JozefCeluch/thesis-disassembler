@@ -62,7 +62,7 @@ public class InstructionTranslator {
 	private void prepareHandlers() {
 		mHandlers = new HashMap<>();
 
-		NodeHandler.OnNodeMoveListener nodeMoveListener = () -> processNode(mState.getCurrentNode());
+		NodeHandler.OnNodeMovedListener nodeMoveListener = () -> processNode(mState.getCurrentNode());
 		mHandlers.put(AbstractInsnNode.INSN, new InsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.INT_INSN, new IntInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.VAR_INSN, new VarInsnNodeHandler(mState));

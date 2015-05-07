@@ -20,8 +20,8 @@ import java.util.Map;
  */
 public class SwitchInsnNodeHandler extends AbstractHandler {
 
-	public SwitchInsnNodeHandler(MethodState state, OnNodeMoveListener moveListener) {
-		super(state, moveListener);
+	public SwitchInsnNodeHandler(MethodState state, OnNodeMovedListener onMovedListener) {
+		super(state, onMovedListener);
 	}
 
 	@Override

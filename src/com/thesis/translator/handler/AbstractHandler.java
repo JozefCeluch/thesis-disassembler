@@ -10,15 +10,15 @@ import java.lang.reflect.Field;
 public abstract class AbstractHandler implements NodeHandler {
 
 	protected MethodState mState;
-	private OnNodeMoveListener mMoveListener;
+	private OnNodeMovedListener mOnMovedListener;
 
 	public AbstractHandler(MethodState state) {
 		mState = state;
 	}
 
-	public AbstractHandler(MethodState state, OnNodeMoveListener moveListener) {
+	public AbstractHandler(MethodState state, OnNodeMovedListener onMovedListener) {
 		mState = state;
-		mMoveListener = moveListener;
+		mOnMovedListener = onMovedListener;
 	}
 
 	@Override
@@ -26,13 +26,9 @@ public abstract class AbstractHandler implements NodeHandler {
 		printNodeInfo(node, mState);
 	}
 
-	public void setMoveListener(OnNodeMoveListener moveListener) {
-		mMoveListener = moveListener;
-	}
-
 	protected void nodeMoved() {
-		if (mMoveListener != null) {
-			mMoveListener.processNode();
+		if (mOnMovedListener != null) {
+			mOnMovedListener.onNodeMoved();
 		}
 	}
 

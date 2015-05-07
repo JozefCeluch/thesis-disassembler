@@ -15,8 +15,8 @@ public class LabelNodeHandler extends AbstractHandler {
 
 	private TryCatchManager mTryCatchManager;
 
-	public LabelNodeHandler(MethodState state, List tryCatchBlocks, OnNodeMoveListener moveListener) {
-		super(state, moveListener);
+	public LabelNodeHandler(MethodState state, List tryCatchBlocks, OnNodeMovedListener onMovedListener) {
+		super(state, onMovedListener);
 		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mState.getFinalStack());;
 	}
 

@@ -13,8 +13,8 @@ import org.objectweb.asm.tree.LabelNode;
 
 public class JumpInsnNodeHandler extends AbstractHandler {
 
-	public JumpInsnNodeHandler(MethodState state, OnNodeMoveListener moveListener) {
-		super(state, moveListener);
+	public JumpInsnNodeHandler(MethodState state, OnNodeMovedListener onMovedListener) {
+		super(state, onMovedListener);
 	}
 
 	/**
