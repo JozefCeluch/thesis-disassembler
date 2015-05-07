@@ -1,9 +1,11 @@
 package com.thesis.translator;
 
 import com.thesis.expression.JumpExpression;
+import com.thesis.expression.variable.LocalVariable;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -14,6 +16,7 @@ public class MethodState {
 	private Set<Integer> mVisitedLabels;
 	private AbstractInsnNode mCurrentNode;
 
+	private Map<Integer, LocalVariable> mLocalVariables;
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
 
@@ -90,5 +93,13 @@ public class MethodState {
 	public void setCurrentLine(int currentLine) {
 		mCurrentLine = currentLine;
 		getActiveStack().setLineNumber(mCurrentLine);
+	}
+
+	public Map<Integer, LocalVariable> getLocalVariables() {
+		return mLocalVariables;
+	}
+
+	public void setLocalVariables(Map<Integer, LocalVariable> localVariables) {
+		mLocalVariables = localVariables;
 	}
 }

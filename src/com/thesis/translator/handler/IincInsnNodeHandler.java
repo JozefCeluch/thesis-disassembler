@@ -13,18 +13,13 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 
-import java.util.Map;
-
 /**
  * IINC
  */
 public class IincInsnNodeHandler extends AbstractHandler {
 
-	private Map<Integer, LocalVariable> mLocalVariables;
-
-	public IincInsnNodeHandler(MethodState state, Map<Integer, LocalVariable> localVariables) {
+	public IincInsnNodeHandler(MethodState state) {
 		super(state);
-		mLocalVariables = localVariables;
 	}
 
 	@Override
@@ -33,7 +28,7 @@ public class IincInsnNodeHandler extends AbstractHandler {
 		checkType(node, IincInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
-		LocalVariable variable = mLocalVariables.get(((IincInsnNode) node).var);
+		LocalVariable variable = mState.getLocalVariables().get(((IincInsnNode) node).var);
 		
 		UnaryExpression.OpPosition opPosition = getUnaryOperandPosition(node);
 		if (opPosition != null) {

@@ -20,11 +20,8 @@ import java.util.Map;
  */
 public class VarInsnNodeHandler extends AbstractHandler {
 
-	private Map<Integer, LocalVariable> mLocalVariables;
-
-	public VarInsnNodeHandler(MethodState state, Map<Integer, LocalVariable> localVariables) {
+	public VarInsnNodeHandler(MethodState state) {
 		super(state);
-		mLocalVariables = localVariables;
 	}
 
 	@Override
@@ -33,17 +30,18 @@ public class VarInsnNodeHandler extends AbstractHandler {
 		checkType(node, VarInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
+		Map<Integer, LocalVariable> localVars = mState.getLocalVariables();
 		int varNum = ((VarInsnNode) node).var;
 		int opCode = node.getOpcode();
 		if (Util.isBetween(opCode, Opcodes.ILOAD, Opcodes.ALOAD)) {
-			LocalVariable var = mLocalVariables.get(varNum);
+			LocalVariable var = localVars.get(varNum);
 			stack.push(new VariablePrimaryExpression(opCode, var));
 		}
 		if (Util.isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
-			if (!mLocalVariables.containsKey(varNum)) {
-				mLocalVariables.put(varNum, new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum)); //TODO set type according to the instruction
+			if (!localVars.containsKey(varNum)) {
+				localVars.put(varNum, new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum)); //TODO set type according to the instruction
 			}
-			LocalVariable localVar = mLocalVariables.get(varNum);
+			LocalVariable localVar = localVars.get(varNum);
 			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar)));
 		}
 		// RET is deprecated since Java 6

@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class InstructionTranslator {
 
 	private final MethodNode mMethod;
-	private Map<Integer, LocalVariable> mLocalVariables;
 	private MethodBlock mMethodBlock;
 	private Map<Integer, NodeHandler> mHandlers;
 
@@ -24,7 +23,7 @@ public class InstructionTranslator {
 		mState = new MethodState();
 		mMethodBlock = methodBlock;
 		mMethod = methodBlock.getMethodNode();
-		copyLocalVariables();
+		mState.setLocalVariables(prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments()));
 		prepareHandlers();
 	}
 
@@ -47,17 +46,17 @@ public class InstructionTranslator {
 		return statements;
 	}
 
-	private void copyLocalVariables() {
-		mLocalVariables = new HashMap<>();
+	private Map<Integer, LocalVariable> prepareLocalVariables(List localVariables, Map<Integer, LocalVariable> args) {
+		Map<Integer, LocalVariable> localVarMap = new HashMap<>();
 
-		if (mMethod.localVariables.size() > 0) {
-			for (Object var : mMethod.localVariables) {
+		if (localVariables.size() > 0) {
+			for (Object var : localVariables) {
 				LocalVariableNode variable = (LocalVariableNode) var;
-				mLocalVariables.put(variable.index, new LocalVariable(variable));
+				localVarMap.put(variable.index, new LocalVariable(variable));
 			}
 		}
-		mLocalVariables.putAll(mMethodBlock.getArguments());
-
+		localVarMap.putAll(args);
+		return localVarMap;
 	}
 
 	private void prepareHandlers() {
@@ -66,7 +65,7 @@ public class InstructionTranslator {
 		NodeHandler.OnNodeMoveListener nodeMoveListener = () -> processNode(mState.getCurrentNode());
 		mHandlers.put(AbstractInsnNode.INSN, new InsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.INT_INSN, new IntInsnNodeHandler(mState));
-		mHandlers.put(AbstractInsnNode.VAR_INSN, new VarInsnNodeHandler(mState, mLocalVariables));
+		mHandlers.put(AbstractInsnNode.VAR_INSN, new VarInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.TYPE_INSN, new TypeInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.FIELD_INSN, new FieldInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.METHOD_INSN, new MethodInsnNodeHandler(mState, mMethod.name, mMethodBlock.getClassType()));
@@ -74,7 +73,7 @@ public class InstructionTranslator {
 		mHandlers.put(AbstractInsnNode.JUMP_INSN, new JumpInsnNodeHandler(mState, nodeMoveListener));
 		mHandlers.put(AbstractInsnNode.LABEL, new LabelNodeHandler(mState, mMethod.tryCatchBlocks, nodeMoveListener));
 		mHandlers.put(AbstractInsnNode.LDC_INSN, new LdcInsnNodeHandler(mState));
-		mHandlers.put(AbstractInsnNode.IINC_INSN, new IincInsnNodeHandler(mState, mLocalVariables));
+		mHandlers.put(AbstractInsnNode.IINC_INSN, new IincInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.MULTIANEWARRAY_INSN, new MultiANewArrayInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.FRAME, new FrameNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.LINE, new LineNumberNodeHandler(mState));
@@ -97,7 +96,7 @@ public class InstructionTranslator {
 	}
 
 	private List<Statement> getLocalVariableAssignments() {
-		List<Statement> localVars = mLocalVariables.values().stream()
+		List<Statement> localVars = mState.getLocalVariables().values().stream()
 				.filter(variable -> !variable.isArgument() && !variable.isAdded())
 				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0)) //todo variable line number
 				.collect(Collectors.toList());
