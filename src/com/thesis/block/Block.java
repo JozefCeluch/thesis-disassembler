@@ -1,5 +1,6 @@
 package com.thesis.block;
 
+import com.thesis.common.CodeElement;
 import com.thesis.common.Writable;
 import com.thesis.common.AnnotationParser;
 import com.thesis.common.Util;
@@ -13,20 +14,19 @@ import java.util.List;
 /**
  * General representation of a Java class-level member
  */
-public abstract class Block implements Writable{
+public abstract class Block extends CodeElement {
 	protected static final String NL = "\n";
 	protected static final String OPENING_BRACKET = "{";
 	protected static final String CLOSING_BRACKET = "}";
-	protected static final String TAB = "\t";
 	protected static final String BLOCK_START = " " + OPENING_BRACKET + NL;
 	protected static final String BLOCK_END = CLOSING_BRACKET + NL;
 
 	protected StringBuffer buf;
-	protected Block mParent;
 	protected final AnnotationParser mAnnotationParser;
-	protected List<Writable> children;
+	protected List<CodeElement> children;
 
-	protected Block() {
+	protected Block(Block parent) {
+		super(parent);
 		buf = new StringBuffer();
 		mAnnotationParser = new AnnotationParser();
 		children = new ArrayList<>();
@@ -34,7 +34,7 @@ public abstract class Block implements Writable{
 
 	public abstract Block disassemble();
 
-	public List<Writable> getChildren() {
+	public List<CodeElement> getChildren() {
 		return children;
 	}
 
@@ -100,19 +100,6 @@ public abstract class Block implements Writable{
 			buf.replace(location, location + str.length(), "");
 	}
 
-	public boolean hasParent() {
-		return mParent != null;
-	}
-
-	public Block getParent() {
-		return mParent;
-	}
-
-	public int countParents() {
-		int parent = getParent().countParents();
-		return 1 + parent;
-	}
-
 	public static void printList(final Writer pw, final List<?> l) {
 		for (Object o : l) {
 			if (o instanceof List) {
@@ -129,8 +116,9 @@ public abstract class Block implements Writable{
 
 	protected List<Object> getSingleLineAnnotations(List... annotationLists){
 		List<Object> annotations = new ArrayList<>();
+		String tabs = getTabs();
 		for (List annotationNodeList : annotationLists) {
-			annotations.add(mAnnotationParser.getAnnotations(annotationNodeList, NL));
+			annotations.add(mAnnotationParser.getAnnotations(annotationNodeList, tabs, NL));
 		}
 		return annotations;
 	}

@@ -1,5 +1,6 @@
 package com.thesis.statement;
 
+import com.thesis.common.CodeElement;
 import com.thesis.expression.Expression;
 import com.thesis.expression.SwitchExpression;
 
@@ -12,8 +13,8 @@ public class SwitchStatement extends Statement {
 
 	private BlockStatement mSwitchBlock;
 
-	public SwitchStatement(SwitchExpression expression, int line) {
-		super(expression, line);
+	public SwitchStatement(SwitchExpression expression, int line, CodeElement parent) {
+		super(expression, line, parent);
 	}
 
 	public void setSwitchBlock(BlockStatement switchBlock) {
@@ -33,13 +34,14 @@ public class SwitchStatement extends Statement {
 
 		private List<Statement> mStatements;
 
-		public CaseStatement(Expression expression, int line, List<Statement> statements) {
-			super(expression, line);
+		public CaseStatement(Expression expression, int line, List<Statement> statements, CodeElement parent) {
+			super(expression, line, parent);
 			mStatements = statements;
 		}
 
 		@Override
 		public void write(Writer writer) throws IOException {
+			writer.write(getTabs());
 			mExpression.write(writer);
 			for(Statement statement : mStatements) {
 				statement.write(writer);

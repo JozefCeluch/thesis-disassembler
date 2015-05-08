@@ -17,11 +17,17 @@ public class AnnotationParser {
 	}
 
 	public String getAnnotations(List annotations, String separator) {
+		return getAnnotations(annotations, null, separator);
+	}
+
+	public String getAnnotations(List annotations, String prefix, String suffix) {
 		if (annotations == null) return "";
+
 		buf.setLength(0);
 		for (Object annotation : annotations) {
+			if (prefix != null) buf.append(prefix);
 			addAnnotationNode(((AnnotationNode)annotation).desc, ((AnnotationNode)annotation).values);
-			buf.append(separator);
+			if (suffix != null) buf.append(suffix);
 		}
 		return buf.toString();
 	}

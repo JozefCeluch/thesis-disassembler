@@ -1,5 +1,6 @@
 package com.thesis.translator;
 
+import com.thesis.common.CodeElement;
 import com.thesis.common.DataType;
 import com.thesis.expression.*;
 import com.thesis.statement.*;
@@ -11,9 +12,11 @@ public class StatementCreator {
 
 	private ExpressionStack mStack;
 	private List<Statement> mStatements;
+	private CodeElement mParent;
 
-	public StatementCreator(ExpressionStack stack) {
+	public StatementCreator(ExpressionStack stack, CodeElement parent) {
 		mStack = stack;
+		mParent = parent;
 	}
 
 	private void createStatements(){
@@ -30,23 +33,23 @@ public class StatementCreator {
 			} else if (item.getExpression() instanceof SwitchExpression) {
 				statements.add(handleSwitchExpression((SwitchExpression) item.getExpression(), item.getLine(), item.getLabelId()));
 			} else if (item.getExpression() instanceof TryCatchExpression) {
-				statements.add(new TryCatchStatement((TryCatchExpression)item.getExpression(), item.getLine()));
+				statements.add(new TryCatchStatement((TryCatchExpression)item.getExpression(), item.getLine(), mParent));
 			} else if (item.getExpression() instanceof MonitorExpression) {
-				statements.add(new SynchronizedStatement((MonitorExpression)item.getExpression(), item.getLine()));
+				statements.add(new SynchronizedStatement((MonitorExpression)item.getExpression(), item.getLine(), mParent));
 			} else {
-				statements.add(new Statement(item.getExpression(), item.getLine()));
+				statements.add(new Statement(item.getExpression(), item.getLine(), mParent));
 			}
 		}
 		return statements;
 	}
 
 	private Statement handleSwitchExpression(SwitchExpression expression, int line, int labelId) {
-		SwitchStatement statement = new SwitchStatement(expression, line);
+		SwitchStatement statement = new SwitchStatement(expression, line, mParent);
 		List<Statement> caseStatements = new ArrayList<>();
 		for(SwitchExpression.CaseExpression caseExp : expression.getCaseList()) {
-			caseStatements.add(new SwitchStatement.CaseStatement(caseExp, line, createStatements(caseExp.getStack()))); //TODO line
+			caseStatements.add(new SwitchStatement.CaseStatement(caseExp, line, createStatements(caseExp.getStack()), statement)); //TODO line
 		}
-		statement.setSwitchBlock(new BlockStatement(line, caseStatements));
+		statement.setSwitchBlock(new BlockStatement(line, caseStatements, statement));
 		return statement;
 	}
 
@@ -56,33 +59,33 @@ public class StatementCreator {
 				case NONE:
 					break;
 				case WHILE:
-					return new WhileLoopStatement(expression, line);
+					return new WhileLoopStatement(expression, line, mParent);
 				case FOR:
 					break;
 				case DO_WHILE:
-					return new DoWhileLoopStatement(expression, line);
+					return new DoWhileLoopStatement(expression, line, mParent);
 			}
 		}
 		if (isIfThenElseStatement(expression)) {
-			IfThenElseStatement ifThenElseStatement = new IfThenElseStatement(expression, line);
+			IfThenElseStatement ifThenElseStatement = new IfThenElseStatement(expression, line, mParent);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
 			List<Statement> elseStatements = createStatements(expression.getElseBranch());
 
-			ifThenElseStatement.setThenStatement(new BlockStatement(line, thenStatements));
-			ifThenElseStatement.setElseStatement(new BlockStatement(line, elseStatements));
+			ifThenElseStatement.setThenStatement(new BlockStatement(line, thenStatements, ifThenElseStatement));
+			ifThenElseStatement.setElseStatement(new BlockStatement(line, elseStatements, ifThenElseStatement));
 			return ifThenElseStatement;
 		}
 		if (isIfThenStatement(expression)){
-			IfThenStatement ifThenStatement = new IfThenStatement(expression, line);
+			IfThenStatement ifThenStatement = new IfThenStatement(expression, line, mParent);
 			List<Statement> thenStatements = createStatements(expression.getThenBranch());
-			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements));
+			ifThenStatement.setThenStatement(new BlockStatement(line, thenStatements, ifThenStatement));
 			return ifThenStatement;
 		}
 		if (expression instanceof UnconditionalJump) {
-			return new Statement(expression, line);
+			return new Statement(expression, line, mParent);
 		}
 		//TODO throw exception
-		return new Statement(new PrimaryExpression(0, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getTypeFromObject("java.lang.String")),0);
+		return new Statement(new PrimaryExpression(0, "UNKNOWN CONDITIONAL EXPRESSION ", DataType.getTypeFromObject("java.lang.String")),0, mParent);
 	}
 
 	private boolean isIfThenStatement(JumpExpression expression) {

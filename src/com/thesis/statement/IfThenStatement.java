@@ -1,5 +1,6 @@
 package com.thesis.statement;
 
+import com.thesis.common.CodeElement;
 import com.thesis.expression.JumpExpression;
 
 import java.io.IOException;
@@ -11,8 +12,8 @@ public class IfThenStatement extends Statement {
 	protected JumpExpression mCondition;
 	protected Statement mThenStatement;
 
-	public IfThenStatement(JumpExpression condition, int line){
-		super(line);
+	public IfThenStatement(JumpExpression condition, int line, CodeElement parent){
+		super(line, parent);
 		mCondition = condition;
 	}
 
@@ -31,7 +32,7 @@ public class IfThenStatement extends Statement {
 		mCondition.write(auxWriter);
 		buf.setLength(0);
 		buf.append("if (").append(auxWriter.toString()).append(")");
-		writer.write(buf.toString());
+		writer.append(getTabs()).write(buf.toString());
 		mThenStatement.write(writer);
 	}
 }

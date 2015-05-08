@@ -20,8 +20,8 @@ public class FieldBlock extends Block {
 	private String mAccessFlags;
 
 	public FieldBlock(FieldNode fieldNode, Block parent) {
+		super(parent);
 		mFieldNode = fieldNode;
-		mParent = parent;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class FieldBlock extends Block {
 		} else {
 			expression = new VariableDeclarationExpression(variable);
 		}
-		children.add(new Statement(expression, 0));
+		children.add(new Statement(expression, 0, null));
 		return this;
 	}
 
@@ -64,6 +64,7 @@ public class FieldBlock extends Block {
 	@Override
 	public void write(Writer writer) throws IOException {
 		printList(writer, mAnnotations);
+		writer.write(getTabs());
 		writer.write(mAccessFlags);
 		children.get(0).write(writer);
 	}

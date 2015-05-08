@@ -40,7 +40,7 @@ public class InstructionTranslator {
 
 		mState.getFinalStack().enhance();
 
-		StatementCreator sc = new StatementCreator(mState.getFinalStack());
+		StatementCreator sc = new StatementCreator(mState.getFinalStack(), mMethodBlock);
 
 		List<Statement> statements = getLocalVariableAssignments();
 		statements.addAll(sc.getStatements());
@@ -99,7 +99,7 @@ public class InstructionTranslator {
 	private List<Statement> getLocalVariableAssignments() {
 		List<Statement> localVars = mState.getLocalVariables().values().stream()
 				.filter(variable -> !variable.isArgument() && !variable.isAdded())
-				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0)) //todo variable line number
+				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0, mMethodBlock)) //todo variable line number
 				.collect(Collectors.toList());
 		List<Statement> result = new ArrayList<>();
 		result.addAll(0, localVars);

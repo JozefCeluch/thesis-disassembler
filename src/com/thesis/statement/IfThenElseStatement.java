@@ -1,5 +1,6 @@
 package com.thesis.statement;
 
+import com.thesis.common.CodeElement;
 import com.thesis.expression.JumpExpression;
 
 import java.io.IOException;
@@ -9,8 +10,8 @@ public class IfThenElseStatement extends IfThenStatement {
 
 	protected Statement mElseStatement;
 
-	public IfThenElseStatement(JumpExpression condition, int line){
-		super(condition, line);
+	public IfThenElseStatement(JumpExpression condition, int line, CodeElement parent){
+		super(condition, line, parent);
 	}
 
 	public void setElseStatement(Statement elseStatement) {

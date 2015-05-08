@@ -29,8 +29,8 @@ public class MethodBlock extends Block {
 	private String mGenericExceptions;
 
 	public MethodBlock(MethodNode methodNode, Block parent) {
+		super(parent);
 		mMethodNode = methodNode;
-		mParent = parent;
 		mArguments = new HashMap<>();
 	}
 
@@ -241,7 +241,10 @@ public class MethodBlock extends Block {
 
 	@Override
 	public void write(Writer writer) throws IOException {
+		writer.write(NL);
 		printList(writer, mAnnotations);
+		String tabs = getTabs();
+		writer.write(tabs);
 		writer.write(mAccessFlags);
 		writer.write(Util.isConstructor(mMethodNode.name) ? "" : (getReturnType(mMethodNode.desc, mGenericReturnType).print() + " "));
 		writer.write(mName);
@@ -254,7 +257,7 @@ public class MethodBlock extends Block {
 			for(Writable child : children) {
 				child.write(writer);
 			}
-			writer.write(BLOCK_END);
+			writer.append(tabs).write(BLOCK_END);
 		}
 	}
 

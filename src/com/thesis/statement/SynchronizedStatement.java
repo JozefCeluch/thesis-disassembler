@@ -1,5 +1,6 @@
 package com.thesis.statement;
 
+import com.thesis.common.CodeElement;
 import com.thesis.translator.StatementCreator;
 import com.thesis.expression.MonitorExpression;
 
@@ -10,14 +11,14 @@ public class SynchronizedStatement extends Statement {
 
 	private BlockStatement mBlockStatement;
 
-	public SynchronizedStatement(MonitorExpression expression, int line) {
-		super(expression, line);
-		mBlockStatement = new BlockStatement(line,new StatementCreator(expression.getSynchronizedBlock()).getStatements());
+	public SynchronizedStatement(MonitorExpression expression, int line, CodeElement parent) {
+		super(expression, line, parent);
+		mBlockStatement = new BlockStatement(line, expression.getSynchronizedBlock(), parent);
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write("synchronized (");
+		writer.append(getTabs()).write("synchronized (");
 		mExpression.write(writer);
 		writer.write(")");
 		mBlockStatement.write(writer);

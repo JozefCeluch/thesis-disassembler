@@ -1,5 +1,10 @@
 package com.thesis.statement;
 
+import com.thesis.common.CodeElement;
+import com.thesis.expression.Expression;
+import com.thesis.translator.ExpressionStack;
+import com.thesis.translator.StatementCreator;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -8,9 +13,14 @@ public class BlockStatement extends Statement {
 
 	private List<Statement> mStatements;
 
-	public BlockStatement(int line, List<Statement> statements){
-		super(line);
+	public BlockStatement(int line, List<Statement> statements, CodeElement parent) {
+		super(line, parent);
 		mStatements = statements;
+	}
+
+	public BlockStatement(int line, ExpressionStack stack, CodeElement parent){
+		super(line, parent);
+		mStatements = new StatementCreator(stack, this).getStatements();
 	}
 
 	@Override
@@ -19,6 +29,6 @@ public class BlockStatement extends Statement {
 		for(Statement statement : mStatements) {
 			statement.write(writer);
 		}
-		writer.write("}");
+		writer.append(getTabs()).append("}");
 	}
 }

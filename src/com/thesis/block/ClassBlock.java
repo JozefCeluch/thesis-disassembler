@@ -1,9 +1,6 @@
 package com.thesis.block;
 
-import com.thesis.common.DataType;
-import com.thesis.common.SignatureVisitor;
-import com.thesis.common.Util;
-import com.thesis.common.Writable;
+import com.thesis.common.*;
 import com.thesis.file.Disassembler;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
@@ -26,6 +23,7 @@ public class ClassBlock extends Block {
 	private String mImplements = "";
 
 	public ClassBlock(ClassNode classNode, Block parent) {
+		super(parent);
 		mClassNode = classNode;
 		mParent = parent;
 	}
@@ -119,7 +117,7 @@ public class ClassBlock extends Block {
 		for (Object object : innerClasses) {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
-				children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, getParent()));
+				children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, this));
 			}
 		}
 	}
@@ -162,25 +160,19 @@ public class ClassBlock extends Block {
 	}
 
 	@Override
-	public int countParents() {
-		if (!hasParent()) {
-			return 0;
-		}
-		return super.countParents();
-	}
-
-	@Override
 	public void write(Writer writer) throws IOException {
+		String tabs = getTabs();
+		if (tabs != null && !tabs.isEmpty()) {
+			writer.write(NL);
+		}
 		printList(writer, mAnnotations);
-		writer.write(mAccessFlags);
-		writer.write(mClassType.print());
-		writer.write(mExtends);
-		writer.write(mImplements);
+		writer.append(tabs).append(mAccessFlags).append(mClassType.print())
+				.append(mExtends).append(mImplements)
+				.write(BLOCK_START);
 
-		writer.write(BLOCK_START);
 		for (Writable child : children) {
 			child.write(writer);
 		}
-		writer.write(BLOCK_END);
+		writer.append(tabs).write(BLOCK_END);
 	}
 }
