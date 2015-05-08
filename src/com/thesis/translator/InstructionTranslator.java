@@ -40,8 +40,9 @@ public class InstructionTranslator {
 
 		mState.getFinalStack().enhance();
 
-		List<Statement> statements = getLocalVariableAssignments();
 		StatementCreator sc = new StatementCreator(mState.getFinalStack());
+
+		List<Statement> statements = getLocalVariableAssignments();
 		statements.addAll(sc.getStatements());
 		return statements;
 	}

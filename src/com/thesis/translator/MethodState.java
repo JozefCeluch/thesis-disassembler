@@ -10,12 +10,11 @@ import java.util.Set;
 import java.util.Stack;
 
 public class MethodState {
-	private int mFrameLabel = JumpExpression.NO_DESTINATION;
-	private int mCurrentLabel;
-	private int mCurrentLine;
-	private Set<Integer> mVisitedLabels;
 	private AbstractInsnNode mCurrentNode;
-
+	private int mCurrentLine;
+	private int mCurrentLabel;
+	private int mFrameLabel = JumpExpression.NO_DESTINATION;
+	private Set<Integer> mVisitedLabels;
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
