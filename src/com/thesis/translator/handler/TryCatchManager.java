@@ -3,10 +3,8 @@ package com.thesis.translator.handler;
 import com.thesis.translator.ExpressionStack;
 import org.objectweb.asm.tree.TryCatchBlockNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TryCatchManager {
 
@@ -73,11 +71,7 @@ public class TryCatchManager {
 	}
 
 	public List<Item> getItemsWithStartId(int labelId) {
-		List<Item> result = new ArrayList<>();
-		for (Item item : mItems) {
-			if (item.getStartId() == labelId) result.add(item);
-		}
-		return result;
+		return mItems.stream().filter(item -> item.getStartId() == labelId).collect(Collectors.toList());
 	}
 
 	public boolean hasCatchHandlerEnd(int labelId) {
@@ -91,18 +85,20 @@ public class TryCatchManager {
 
 		private int mStartId;
 		private int mEndId;
-		private List<Integer> mHandlerLocations = new ArrayList<>();
-		private Map<Integer, String> mHandlerTypes = new HashMap<>(); // labelId, type
+		private Set<Integer> mHandlerLocations = new HashSet<>();
+		private Map<Integer, ArrayList<String>> mHandlerTypes = new HashMap<>(); // labelId, type
 		private ExpressionStack mTryStack;
 		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //labelId, stack
-		private boolean mHasFinallyBlock;
-		private int mFinallyBlockStart;
 
 		public Item(int startId, int endId, int handlerId, String exception) {
 			mStartId = startId;
 			mEndId = endId;
 			mHandlerLocations.add(handlerId);
-			mHandlerTypes.put(handlerId, exception);
+			ArrayList<String> exceptions = new ArrayList<>();
+			if (exception != null) {
+				exceptions.add(exception);
+			}
+			mHandlerTypes.put(handlerId, exceptions);
 		}
 
 		public int getStartId() {
@@ -121,28 +117,12 @@ public class TryCatchManager {
 			mTryStack = tryStack;
 		}
 
-		public boolean hasFinallyBlock() {
-			return mHasFinallyBlock;
-		}
-
-		public void setHasFinallyBlock(boolean hasFinallyBlock) {
-			this.mHasFinallyBlock = hasFinallyBlock;
-		}
-
-		public int getFinallyBlockStart() {
-			return mFinallyBlockStart;
-		}
-
-		public void setFinallyBlockStart(int finallyBlockStart) {
-			mFinallyBlockStart = finallyBlockStart;
-		}
-
-		public Map<Integer, String> getHandlerTypes() {
+		public Map<Integer, ArrayList<String>> getHandlerTypes() {
 			return mHandlerTypes;
 		}
 
 		public List<Integer> getHandlerLocations() {
-			return mHandlerLocations;
+			return new ArrayList<>(mHandlerLocations);
 		}
 
 		public int getHandlerCount() {
@@ -153,14 +133,16 @@ public class TryCatchManager {
 			return mCatchStacks.size();
 		}
 
-		public void addHandlers(List<Integer> handlerLocations, Map<Integer,String> handlers) {
+		public void addHandlers(List<Integer> handlerLocations, Map<Integer,ArrayList<String>> handlers) {
 			mHandlerLocations.addAll(handlerLocations);
-			mHandlerTypes.putAll(handlers);
-		}
 
-		public void removeHandler(int location) {
-			mHandlerLocations.remove(mHandlerLocations.indexOf(location));
-			mCatchStacks.remove(location);
+			for (Integer key : handlers.keySet()) {
+				if (mHandlerTypes.containsKey(key)) {
+					mHandlerTypes.get(key).addAll(handlers.get(key));
+				} else {
+					mHandlerTypes.put(key, handlers.get(key));
+				}
+			}
 		}
 
 		public boolean matches(Item other) {
@@ -182,7 +164,7 @@ public class TryCatchManager {
 			return mCatchStacks.get(handlerId);
 		}
 
-		public String getHandlerType(int handlerId) {
+		public ArrayList<String> getHandlerType(int handlerId) {
 			return mHandlerTypes.get(handlerId);
 		}
 

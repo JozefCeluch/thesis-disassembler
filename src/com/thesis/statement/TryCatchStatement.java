@@ -16,7 +16,7 @@ public class TryCatchStatement extends Statement {
 
 	public TryCatchStatement(TryCatchExpression tryCatchExpression, int line, CodeElement parent) {
 		super(tryCatchExpression, line, parent);
-		mTryBlock = new BlockStatement(line, tryCatchExpression.getTryStack(), this);
+		mTryBlock = new BlockStatement(line, tryCatchExpression.getTryStack(), parent);
 		mCatchBlocks = new ArrayList<>();
 		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
 			mCatchBlocks.add(new CatchStatement(catchExpression, parent));
@@ -39,7 +39,7 @@ public class TryCatchStatement extends Statement {
 
 		protected CatchStatement(TryCatchExpression.CatchExpression catchExpression, CodeElement parent) {
 			super(catchExpression, catchExpression.getLine(), parent);
-			mCatchBlock = new BlockStatement(this.mLine, catchExpression.getStack(), this);
+			mCatchBlock = new BlockStatement(this.mLine, catchExpression.getStack(), parent);
 		}
 
 		@Override

@@ -20,7 +20,6 @@ public class TryCatchExpression extends Expression {
 
 	private ExpressionStack mTryStack;
 	private List<CatchExpression> mCatchExpressions;
-	private ExpressionStack mFinallyStack;
 
 	public TryCatchExpression(TryCatchManager.Item tryCatchItem) {
 		super(0);
@@ -35,10 +34,6 @@ public class TryCatchExpression extends Expression {
 
 	public ExpressionStack getTryStack() {
 		return mTryStack;
-	}
-
-	public ExpressionStack getFinallyStack() {
-		return mFinallyStack;
 	}
 
 	public List<CatchExpression> getCatchExpressions() {
@@ -62,17 +57,22 @@ public class TryCatchExpression extends Expression {
 	public class CatchExpression extends Expression {
 
 		private int mLabel;
-		private DataType mType;
+		private ArrayList<DataType> mExceptions;
 		private AssignmentExpression mExpression;
 		private ExpressionStack mStack;
 
-		public CatchExpression(int label, String typeString, ExpressionStack stack) {
+		public CatchExpression(int label, ArrayList<String> exceptions, ExpressionStack stack) {
 			super(0);
 			mLabel = label;
-			mType = typeString != null ? DataType.getTypeFromObject(typeString) : null;
 			mStack = stack;
 			mExpression = (AssignmentExpression) mStack.remove(0);
-			if (mType == null && mStack.size() > 0) {
+			if (exceptions != null && !exceptions.isEmpty()) {
+				mExceptions = new ArrayList<>();
+				for (String exceptionType : exceptions) {
+					mExceptions.add(DataType.getTypeFromObject(exceptionType));
+				}
+			}
+			if (mExceptions == null && mStack.size() > 0) {
 				mStack.pop();
 			}
 		}
@@ -83,7 +83,7 @@ public class TryCatchExpression extends Expression {
 
 		@Override
 		public DataType getType() {
-			return mType;
+			return null;
 		}
 
 		@Override
@@ -93,10 +93,15 @@ public class TryCatchExpression extends Expression {
 
 		@Override
 		public void write(Writer writer) throws IOException {
-			if (mType != null) {
-				writer.append(" catch (")
-						.append(mType.toString()).append(" ").append(mExpression.getVariable().toString())
-						.append(")");
+			if (mExceptions != null) {
+				writer.write(" catch (");
+
+				int count = mExceptions.size();
+				for (int i = 0; i < count; i++) {
+					writer.append(mExceptions.get(i).toString()).append( i < count - 1 ? " | " : " ");
+				}
+
+				writer.append(mExpression.getVariable().toString()).append(")");
 			} else {
 				writer.write(" finally");
 			}

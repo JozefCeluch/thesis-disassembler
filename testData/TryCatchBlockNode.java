@@ -1,6 +1,8 @@
 import java.lang.*;
+import java.lang.ArithmeticException;
 import java.lang.IndexOutOfBoundsException;
 import java.lang.Integer;
+import java.lang.NullPointerException;
 import java.lang.NumberFormatException;
 import java.lang.String;
 
@@ -23,6 +25,9 @@ class TryCatchBlockNode {
 		} catch (IndexOutOfBoundsException e) {
 			number = -3;
 			System.out.println("index out of bounds exception caught");
+		}  catch (NullPointerException | ArithmeticException e) {
+			number = 5;
+			System.out.println("multicatch block");
 		} finally {
 			System.out.println("called finally");
 		}

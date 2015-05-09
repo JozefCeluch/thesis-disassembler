@@ -76,10 +76,7 @@ public class LabelNodeHandler extends AbstractHandler {
 		for (int i = 0; i < item.getHandlerCount(); i++) {
 			item.addCatchBlock(state.getCurrentLabel(), state.startNewStack());
 			int currentBlockLabel = state.getCurrentLabel();
-			if (item.getHandlerType(currentBlockLabel) == null) {
-				item.setHasFinallyBlock(true);
-				item.setFinallyBlockStart(currentBlockLabel);
-			}
+
 			while (state.getCurrentLabel() == currentBlockLabel || !(item.hasHandlerLabel(state.getCurrentLabel())
 					|| mTryCatchManager.hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
 				state.moveNode();
