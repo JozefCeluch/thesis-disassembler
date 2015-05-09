@@ -1,3 +1,7 @@
+import java.io.FileInputStream;
+import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.*;
 import java.lang.ArithmeticException;
 import java.lang.IndexOutOfBoundsException;
@@ -42,4 +46,37 @@ class TryCatchBlockNode {
 			System.out.println("called finally with " + number);
 		}
 	}
+
+//	void standardPrintFile() throws IOException {
+//		FileInputStream input = null;
+//
+//		try {
+//			input = new FileInputStream("file.txt");
+//
+//			int data = input.read();
+//			while(data != -1){
+//				System.out.print((char) data);
+//				data = input.read();
+//			}
+//		} finally {
+//			if(input != null){
+//				try {
+//					input.close();
+//				} catch (IOException e) {
+//
+//				}
+//			}
+//		}
+//	}
+
+//	void tryWithResourcesPrintFile() throws IOException {
+//		try(FileInputStream input = new FileInputStream("file.txt")) {
+//
+//			int data = input.read();
+//			while(data != -1){
+//				System.out.print((char) data);
+//				data = input.read();
+//			}
+//		}
+//	}
 }

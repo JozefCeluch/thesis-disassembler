@@ -3,7 +3,6 @@ package com.thesis.translator.handler;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
-import com.thesis.expression.UnconditionalJump;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -17,7 +16,7 @@ public class LabelNodeHandler extends AbstractHandler {
 
 	public LabelNodeHandler(MethodState state, List tryCatchBlocks, OnNodeMovedListener onMovedListener) {
 		super(state, onMovedListener);
-		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mState.getFinalStack());;
+		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mState.getFinalStack());
 	}
 
 	@Override
@@ -56,20 +55,20 @@ public class LabelNodeHandler extends AbstractHandler {
 		}
 
 		while (item.getEndId() != state.getCurrentLabel()) {
-			state.moveNode();
+			if (state.moveNode() == null) break;
 			nodeMoved();
 		}
 		state.finishStack();
 		// ignore repeated finally blocks
 		ExpressionStack repeatedFinallyCalls = state.startNewStack();
 		while (!item.hasHandlerLabel(state.getCurrentLabel())) {
-			state.moveNode();
+			if (state.moveNode() == null) break;
 			nodeMoved();
 		}
 
 		int tryCatchBlockEnd = JumpExpression.NO_DESTINATION;
-		if (repeatedFinallyCalls.peek() instanceof UnconditionalJump) {
-			tryCatchBlockEnd = ((UnconditionalJump) repeatedFinallyCalls.peek()).getJumpDestination();
+		if (repeatedFinallyCalls.peek() instanceof JumpExpression) {
+			tryCatchBlockEnd = ((JumpExpression) repeatedFinallyCalls.peek()).getJumpDestination();
 		}
 		state.finishStack();
 		// fill catch blocks
@@ -79,7 +78,7 @@ public class LabelNodeHandler extends AbstractHandler {
 
 			while (state.getCurrentLabel() == currentBlockLabel || !(item.hasHandlerLabel(state.getCurrentLabel())
 					|| mTryCatchManager.hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				state.moveNode();
+				if (state.moveNode() == null) break;
 				nodeMoved();
 			}
 			state.finishStack();
@@ -87,7 +86,7 @@ public class LabelNodeHandler extends AbstractHandler {
 			state.startNewStack();
 			// ignore repeated finally blocks
 			while (!(item.hasHandlerLabel(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				state.moveNode();
+				if (state.moveNode() == null) break;
 				nodeMoved();
 			}
 			state.finishStack();

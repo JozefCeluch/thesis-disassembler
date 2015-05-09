@@ -65,14 +65,14 @@ public class TryCatchExpression extends Expression {
 			super(0);
 			mLabel = label;
 			mStack = stack;
-			mExpression = (AssignmentExpression) mStack.remove(0);
+			mExpression = mStack != null ? (AssignmentExpression) mStack.remove(0) : null;
 			if (exceptions != null && !exceptions.isEmpty()) {
 				mExceptions = new ArrayList<>();
 				for (String exceptionType : exceptions) {
 					mExceptions.add(DataType.getTypeFromObject(exceptionType));
 				}
 			}
-			if (mExceptions == null && mStack.size() > 0) {
+			if (mExceptions == null && mStack != null && mStack.size() > 0) {
 				mStack.pop();
 			}
 		}
@@ -100,8 +100,10 @@ public class TryCatchExpression extends Expression {
 				for (int i = 0; i < count; i++) {
 					writer.append(mExceptions.get(i).toString()).append( i < count - 1 ? " | " : " ");
 				}
-
-				writer.append(mExpression.getVariable().toString()).append(")");
+				if (mExpression != null) {
+					writer.write(mExpression.getVariable().toString());
+				}
+				writer.write(")");
 			} else {
 				writer.write(" finally");
 			}

@@ -84,6 +84,8 @@ public class InstructionTranslator {
 	}
 
 	private void processNode(AbstractInsnNode node) {
+		if (node == null) return;
+
 		NodeHandler handler = mHandlers.get(node.getType());
 		if (handler != null) {
 			try {
