@@ -25,6 +25,7 @@ public class StatementCreator {
 
 	private List<Statement> createStatements(ExpressionStack expressions) {
 		List<Statement> statements = new ArrayList<>();
+		if (expressions == null) return statements;
 		for (ExpressionStack.Item item : expressions.getAll()) {
 			if (item.getExpression().isVirtual()) continue;
 

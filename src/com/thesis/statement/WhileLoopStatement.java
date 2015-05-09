@@ -15,7 +15,7 @@ public class WhileLoopStatement extends Statement {
 
 	public WhileLoopStatement(JumpExpression expression, int line, CodeElement parent) {
 		super(expression, line, parent);
-		mBlock = new BlockStatement(line, expression.getThenBranch(), this);
+		mBlock = new BlockStatement(line, expression.getThenBranch(), parent);
 	}
 
 	@Override

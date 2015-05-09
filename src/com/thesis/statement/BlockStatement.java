@@ -16,6 +16,9 @@ public class BlockStatement extends Statement {
 	public BlockStatement(int line, List<Statement> statements, CodeElement parent) {
 		super(line, parent);
 		mStatements = statements;
+		for (Statement s : mStatements) {
+			s.setParent(this);
+		}
 	}
 
 	public BlockStatement(int line, ExpressionStack stack, CodeElement parent){

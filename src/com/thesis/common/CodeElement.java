@@ -9,6 +9,10 @@ public abstract class CodeElement implements Writable {
 		mParent = parent;
 	}
 
+	public void setParent (CodeElement parent) {
+		mParent = parent;
+	}
+
 	private int countParents() {
 		int parent = 0;
 		if (mParent != null) {
