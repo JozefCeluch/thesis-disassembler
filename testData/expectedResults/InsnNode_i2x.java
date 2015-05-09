@@ -1,14 +1,16 @@
 public class InsnNode_i2x {
-public InsnNode_i2x() {
-super();
-}
-private byte intToByte() {
-int x;
-byte b;
-byte b2;
-x = -45;
-b = (byte) x;
-b2 = -5;
-return (byte) (b & b2);
-}
+
+	public InsnNode_i2x() {
+		super();
+	}
+
+	private byte intToByte() {
+		int x;
+		byte b;
+		byte b2;
+		x = -45;
+		b = (byte) x;
+		b2 = -5;
+		return (byte) (b & b2);
+	}
 }

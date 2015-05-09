@@ -13,7 +13,7 @@ public class SynchronizedStatement extends Statement {
 
 	public SynchronizedStatement(MonitorExpression expression, int line, CodeElement parent) {
 		super(expression, line, parent);
-		mBlockStatement = new BlockStatement(line, expression.getSynchronizedBlock(), parent);
+		mBlockStatement = new BlockStatement(line, expression.getSynchronizedBlock(), this);
 	}
 
 	@Override

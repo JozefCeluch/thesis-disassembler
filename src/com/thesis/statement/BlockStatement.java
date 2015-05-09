@@ -16,14 +16,11 @@ public class BlockStatement extends Statement {
 	public BlockStatement(int line, List<Statement> statements, CodeElement parent) {
 		super(line, parent);
 		mStatements = statements;
-		for (Statement s : mStatements) {
-			s.setParent(this);
-		}
 	}
 
 	public BlockStatement(int line, ExpressionStack stack, CodeElement parent){
 		super(line, parent);
-		mStatements = new StatementCreator(stack, this).getStatements();
+		mStatements = new StatementCreator(stack, parent).getStatements();
 	}
 
 	@Override
@@ -32,6 +29,6 @@ public class BlockStatement extends Statement {
 		for(Statement statement : mStatements) {
 			statement.write(writer);
 		}
-		writer.append(getTabs()).append("}");
+		writer.append(getTabs().replaceFirst(TAB, "")).append("}");
 	}
 }

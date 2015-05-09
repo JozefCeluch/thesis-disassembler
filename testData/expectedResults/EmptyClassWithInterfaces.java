@@ -1,5 +1,6 @@
 public class EmptyClassWithInterfaces implements EmptyInterface, AnotherEmptyInterface {
-public EmptyClassWithInterfaces() {
-super();
-}
+
+	public EmptyClassWithInterfaces() {
+		super();
+	}
 }

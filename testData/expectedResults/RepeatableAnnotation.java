@@ -1,3 +1,4 @@
 @interface RepeatableAnnotation {
-public abstract SimpleAnnotation[] value() default {};
+
+	public abstract SimpleAnnotation[] value() default {};
 }

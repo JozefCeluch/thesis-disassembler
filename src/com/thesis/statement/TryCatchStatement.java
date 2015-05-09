@@ -16,10 +16,10 @@ public class TryCatchStatement extends Statement {
 
 	public TryCatchStatement(TryCatchExpression tryCatchExpression, int line, CodeElement parent) {
 		super(tryCatchExpression, line, parent);
-		mTryBlock = new BlockStatement(line, tryCatchExpression.getTryStack(), parent);
+		mTryBlock = new BlockStatement(line, tryCatchExpression.getTryStack(), this);
 		mCatchBlocks = new ArrayList<>();
 		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
-			mCatchBlocks.add(new CatchStatement(catchExpression, parent));
+			mCatchBlocks.add(new CatchStatement(catchExpression, this));
 		}
 	}
 

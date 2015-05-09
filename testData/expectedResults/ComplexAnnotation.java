@@ -1,3 +1,4 @@
 public @interface ComplexAnnotation {
-public abstract EmptyInterfaceAnnotation[] value() default {};
+
+	public abstract EmptyInterfaceAnnotation[] value() default {};
 }
