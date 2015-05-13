@@ -18,6 +18,7 @@ public class MethodState {
 	private Map<Integer, LocalVariable> mLocalVariables;
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
+	private OnLabelChangeListener mOnLabelChangeListener;
 
 	public MethodState() {
 		mVisitedLabels = new HashSet<>();
@@ -68,6 +69,9 @@ public class MethodState {
 		mCurrentLabel = currentLabel;
 		getActiveStack().setLabel(currentLabel);
 		mVisitedLabels.add(currentLabel);
+		if (mOnLabelChangeListener != null) {
+			mOnLabelChangeListener.onLabelChange(currentLabel);
+		}
 	}
 
 	public boolean isLabelVisited(int label) {
@@ -100,5 +104,13 @@ public class MethodState {
 
 	public void setLocalVariables(Map<Integer, LocalVariable> localVariables) {
 		mLocalVariables = localVariables;
+	}
+
+	public void setOnLabelChangeListener(OnLabelChangeListener onLabelChangeListener) {
+		mOnLabelChangeListener = onLabelChangeListener;
+	}
+
+	public interface OnLabelChangeListener {
+		void onLabelChange(int newLabel);
 	}
 }

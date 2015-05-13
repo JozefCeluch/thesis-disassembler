@@ -1,6 +1,8 @@
 package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
+import com.thesis.expression.JumpExpression;
+import com.thesis.expression.TryCatchExpression;
 import com.thesis.statement.Statement;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.VariableDeclarationExpression;
@@ -11,19 +13,23 @@ import org.objectweb.asm.tree.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InstructionTranslator {
+public class InstructionTranslator implements MethodState.OnLabelChangeListener {
 
 	private final MethodNode mMethod;
 	private MethodBlock mMethodBlock;
 	private Map<Integer, NodeHandler> mHandlers;
 
 	private MethodState mState;
+	private TryCatchManager mTryCatchManager;
+
 
 	public InstructionTranslator(MethodBlock methodBlock) {
 		mState = new MethodState();
 		mMethodBlock = methodBlock;
 		mMethod = methodBlock.getMethodNode();
 		mState.setLocalVariables(prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments()));
+		mState.setOnLabelChangeListener(this);
+		mTryCatchManager = TryCatchManager.newInstance(mMethod.tryCatchBlocks, mState.getFinalStack());
 		prepareHandlers();
 	}
 
@@ -95,6 +101,72 @@ public class InstructionTranslator {
 			}
 		} else {
 			AbstractHandler.printNodeInfo(node, mState);
+		}
+	}
+
+	@Override
+	public void onLabelChange(int newLabel) {
+		createTryCatchBlocks(mState);
+	}
+
+	public void createTryCatchBlocks(MethodState state) {
+		if (mTryCatchManager.isEmpty()) return;
+		List<TryCatchManager.Item> tryCatchItems = mTryCatchManager.getItemsWithStartId(state.getCurrentLabel());
+		if (tryCatchItems.isEmpty()) return;
+
+		TryCatchExpression tryCatchExpression = null;
+		for(TryCatchManager.Item item : tryCatchItems) {
+			prepareTryCatchItem(state, item, tryCatchExpression);
+			tryCatchExpression = new TryCatchExpression(item);
+		}
+		state.getActiveStack().push(tryCatchExpression);
+	}
+
+	private void prepareTryCatchItem(MethodState state, TryCatchManager.Item item, TryCatchExpression innerTryCatchBlock) {
+		if (item.getCatchBlockCount() == item.getHandlerTypes().size()) return;
+
+		// fill try block
+		item.setTryStack(state.startNewStack());
+		if (innerTryCatchBlock != null) {
+			item.getTryStack().push(innerTryCatchBlock);
+		}
+
+		while (item.getEndId() != state.getCurrentLabel()) {
+			if (state.moveNode() == null) break;
+			processNode(mState.getCurrentNode());
+		}
+		state.finishStack();
+		// ignore repeated finally blocks
+		ExpressionStack repeatedFinallyCalls = state.startNewStack();
+		while (!item.hasHandlerLabel(state.getCurrentLabel())) {
+			if (state.moveNode() == null) break;
+			processNode(mState.getCurrentNode());
+		}
+
+		int tryCatchBlockEnd = JumpExpression.NO_DESTINATION;
+		if (repeatedFinallyCalls.peek() instanceof JumpExpression) {
+			tryCatchBlockEnd = ((JumpExpression) repeatedFinallyCalls.peek()).getJumpDestination();
+		}
+		state.finishStack();
+		// fill catch blocks
+		for (int i = 0; i < item.getHandlerCount(); i++) {
+			item.addCatchBlock(state.getCurrentLabel(), state.startNewStack());
+			int currentBlockLabel = state.getCurrentLabel();
+
+			while (state.getCurrentLabel() == currentBlockLabel || !(item.hasHandlerLabel(state.getCurrentLabel())
+					|| mTryCatchManager.hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
+				if (state.moveNode() == null) break;
+				processNode(mState.getCurrentNode());
+			}
+			state.finishStack();
+
+			state.startNewStack();
+			// ignore repeated finally blocks
+			while (!(item.hasHandlerLabel(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
+				if (state.moveNode() == null) break;
+				processNode(mState.getCurrentNode());
+			}
+			state.finishStack();
 		}
 	}
 

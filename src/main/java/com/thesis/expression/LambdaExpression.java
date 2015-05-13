@@ -8,7 +8,9 @@ import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Expression that represents the dynamic method invocation
@@ -21,6 +23,7 @@ public class LambdaExpression extends Expression{
 	private DataType mOwner;
 	private String mName;
 	private List<Argument> mArguments = new ArrayList<>();
+	private List<DataType> methodArgs= new ArrayList<>();
 
 	public LambdaExpression(String name, String desc, Handle bsm, Object... bsmArgs) {
 		super(Opcodes.INVOKEDYNAMIC);
@@ -33,6 +36,10 @@ public class LambdaExpression extends Expression{
 		mArguments.add(2, new MethodType(desc));
 
 		appendArgsAtPosition(mArguments, 3, bsmArgs);
+
+		for (Type arg : Type.getMethodType(desc).getArgumentTypes()) {
+			methodArgs.add(DataType.getType(arg));
+		}
 	}
 
 	@Override
@@ -42,7 +49,11 @@ public class LambdaExpression extends Expression{
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
-
+		if (methodArgs != null) {
+			for (int i = 0; i < methodArgs.size(); i++) {
+				stack.pop();
+			}
+		}
 	}
 
 	@Override
@@ -138,10 +149,6 @@ public class LambdaExpression extends Expression{
 		private static String METHOD = "methodType";
 		private List<ClassArgument> mTypes = new ArrayList<>();
 
-		public MethodType(Type type) {
-			addType(mTypes, type);
-		}
-
 		public MethodType(List<Object> types) {
 			for(Object o : types) {
 				addType(mTypes, (Type) o);
@@ -153,7 +160,8 @@ public class LambdaExpression extends Expression{
 		}
 
 		public MethodType(String desc) {
-			this(Type.getMethodType(desc));
+			Type methodType = Type.getMethodType(desc);
+			addType(mTypes, methodType);
 		}
 
 		public void write(Writer writer) throws IOException {
