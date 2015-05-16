@@ -58,11 +58,4 @@ public class ReaderTest {
             assertTrue(Files.isRegularFile(file));
         }
     }
-
-    @Test
-    public void testExtractJarFile() throws Exception {
-        Path jarFileFolder = mReader.extractClassFilesFromJar("example.jar");
-        assertNotNull(jarFileFolder);
-        assertTrue(Files.isDirectory(jarFileFolder));
-    }
 }
