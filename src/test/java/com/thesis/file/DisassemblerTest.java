@@ -124,7 +124,7 @@ public class DisassemblerTest {
 		if (!success) {
 			fail("COMPILATION FAILED");
 		}
-		assertEquals("Classes do not equal", getJavaClassContent(name), Disassembler.createInstance(TEST_FOLDER).decompileClassFile(name + ".class"));
+		assertEquals("Classes do not equal", getJavaClassContent(name), Disassembler.createInstance(TEST_FOLDER).decompileClassFile(name + ".class").getJavaCode());
 	}
 	public Object param1(){return $($("EmptyClassWithInterfaces", makeDependencyString("EmptyInterface", "AnotherEmptyInterface")));}
 	public Object param2(){return $($("EmptyInterfaceAnnotation", makeDependencyString("EmptyEnum")));}
@@ -173,7 +173,7 @@ public class DisassemblerTest {
 		}
 		System.out.println("COMPILATION SUCCESS: " + name);
 		System.out.println("PARSING: " + name);
-		return disassembler.decompileClassFile(name + ".class");
+		return disassembler.decompileClassFile(name + ".class").getJavaCode();
 	}
 
 	private boolean compileClass(String... names) {

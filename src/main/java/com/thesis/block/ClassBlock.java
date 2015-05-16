@@ -10,6 +10,7 @@ import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ClassBlock extends Block {
 	private DataType mClassType;
 	private String mExtends = "";
 	private String mImplements = "";
+	private String mBytecode;
 
 	public ClassBlock(ClassNode classNode, Block parent) {
 		super(parent);
@@ -57,6 +59,21 @@ public class ClassBlock extends Block {
 		appendInnerClasses(mClassNode.innerClasses);
 
 		return this;
+	}
+
+	public void setBytecode(String bytecode) {
+		mBytecode = bytecode;
+	}
+
+	public String getBytecode() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(mBytecode);
+		for (CodeElement child : children) {
+			if (child instanceof ClassBlock) {
+				buffer.append(((ClassBlock) child).getBytecode());
+			}
+		}
+		return buffer.toString();
 	}
 
 	private String getAccessFlags() {

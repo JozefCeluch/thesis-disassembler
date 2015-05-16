@@ -31,24 +31,10 @@ public class Disassembler {
 		mInnerClassMap = new HashMap<>();
     }
 
-    public String decompileClassFile(String file) {
+    public DecompilationResult decompileClassFile(String file) {
 		ClassReader classReader = getClassReader(file);
-		if (classReader == null) {
-			return "ERROR";
-		}
-
-		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(System.out));
-		classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
-
-		Writer stringWriter = new StringWriter();
-		Writer printWriter = new PrintWriter(stringWriter);
 		ClassBlock classBlock = disassembleClass(classReader, null);
-		try {
-			classBlock.write(printWriter);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return stringWriter.toString();
+		return new DecompilationResult(classBlock);
     }
 
 	public ClassBlock decompileInnerClass(String file, Block parent) {
@@ -57,9 +43,15 @@ public class Disassembler {
 	}
 
 	private ClassBlock disassembleClass(ClassReader classReader, Block parent) {
+		Writer bytecodeStringWriter = new StringWriter();
+		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(bytecodeStringWriter));
+		classReader.accept(classVisitor, ClassReader.SKIP_FRAMES);
+
 		ClassNode classNode = new ClassNode();
-		classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+		classReader.accept(classNode, ClassReader. EXPAND_FRAMES);
 		ClassBlock classBlock = new ClassBlock(classNode, parent);
+
+		classBlock.setBytecode(bytecodeStringWriter.toString());
 		classBlock.disassemble();
 		return classBlock;
 	}
@@ -85,5 +77,46 @@ public class Disassembler {
 		String result = mInnerClassMap.get(fullName);
 
 		return result != null ? result : fullName;
+	}
+
+	public static class DecompilationResult {
+		private ClassBlock mClassBlock;
+
+		private String mJavaCode = null;
+		private String mBytecode = null;
+
+		public DecompilationResult(ClassBlock classBlock) {
+			mClassBlock = classBlock;
+		}
+
+		public String getBytecode() {
+			if (mBytecode == null) {
+				mBytecode = mClassBlock.getBytecode();
+			}
+			return mBytecode;
+		}
+
+		public String getJavaCode() {
+			if (mJavaCode == null) {
+				mJavaCode = printDecompiledClass();
+				getBytecode();
+			}
+			return mJavaCode;
+		}
+
+		public ClassBlock getClassBlock() {
+			return mClassBlock;
+		}
+
+		private String printDecompiledClass() {
+			Writer stringWriter = new StringWriter();
+			Writer printWriter = new PrintWriter(stringWriter);
+			try {
+				mClassBlock.write(printWriter);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return stringWriter.toString();
+		}
 	}
 }
