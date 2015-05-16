@@ -206,21 +206,8 @@ public class SignatureVisitor extends org.objectweb.asm.signature.SignatureVisit
 	public void visitClassType(final String name) {
 		if (!isVisitingComplexParameter()) createVariable();
 		declaration.append(getCurrentArgAnnotations());
-		if ("java/lang/Object".equals(name)) {
-			// Map<java.lang.Object,java.util.List>
-			// or
-			// abstract public V get(Object key); (seen in Dictionary.class)
-			// should have Object
-			// but java.lang.String extends java.lang.Object is unnecessary
-			boolean needObjectClass = argumentStack % 2 != 0 || seenParameter;
-			if (needObjectClass) {
-				declaration.append(separator).append(name.replace('/', '.'));
-				currentArgType.append(separator).append(name.replace('/', '.'));
-			}
-		} else {
-			declaration.append(separator).append(name.replace('/', '.'));
-			currentArgType.append(separator).append(name.replace('/', '.'));
-		}
+		declaration.append(separator).append(name.replace('/', '.'));
+		currentArgType.append(separator).append(name.replace('/', '.'));
 		separator = "";
 		argumentStack *= 2;
 	}

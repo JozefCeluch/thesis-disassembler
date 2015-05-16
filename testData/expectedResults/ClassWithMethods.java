@@ -4,7 +4,7 @@ public class ClassWithMethods {
 		super();
 	}
 
-	public static <T> java.util.Map<java.lang.Integer, java.lang.Float>[] staticWithGeneric(T anotherGenericArg) {
+	public static <T extends java.lang.Object> java.util.Map<java.lang.Integer, java.lang.Float>[] staticWithGeneric(T anotherGenericArg) {
 		return null;
 	}
 
@@ -39,7 +39,7 @@ public class ClassWithMethods {
 		return null;
 	}
 
-	public <T> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T anotherGenericArg) {
+	public <T extends java.lang.Object> java.util.Map<java.lang.Integer, java.lang.Float>[] usesGeneric(T anotherGenericArg) {
 		return null;
 	}
 
