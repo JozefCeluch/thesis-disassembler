@@ -9,6 +9,7 @@ import com.thesis.expression.UnaryExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
@@ -18,6 +19,8 @@ import org.objectweb.asm.tree.IincInsnNode;
  */
 public class IincInsnNodeHandler extends AbstractHandler {
 
+	private static final Logger LOG = Logger.getLogger(IincInsnNodeHandler.class);
+
 	public IincInsnNodeHandler(MethodState state) {
 		super(state);
 	}
@@ -25,6 +28,7 @@ public class IincInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, IincInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();

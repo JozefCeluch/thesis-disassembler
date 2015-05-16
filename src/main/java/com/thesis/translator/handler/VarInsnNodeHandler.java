@@ -9,6 +9,7 @@ import com.thesis.expression.VariablePrimaryExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -19,6 +20,7 @@ import java.util.Map;
  * ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
  */
 public class VarInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(VarInsnNodeHandler.class);
 
 	public VarInsnNodeHandler(MethodState state) {
 		super(state);

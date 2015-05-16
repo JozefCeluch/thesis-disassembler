@@ -5,11 +5,13 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.PrimaryExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 
 public class LdcInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(LdcInsnNodeHandler.class);
 
 	public LdcInsnNodeHandler(MethodState state) {
 		super(state);
@@ -19,6 +21,7 @@ public class LdcInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, LdcInsnNode.class);
 		ExpressionStack stack = mState.getActiveStack();
 		DataType type;

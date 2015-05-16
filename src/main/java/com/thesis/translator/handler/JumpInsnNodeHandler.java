@@ -6,12 +6,14 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.*;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 
 public class JumpInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(JumpInsnNodeHandler.class);
 
 	public JumpInsnNodeHandler(MethodState state, OnNodeMovedListener onMovedListener) {
 		super(state, onMovedListener);
@@ -25,6 +27,7 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, JumpInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
@@ -118,7 +121,7 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 
 		int jumpDestination = stack.getLabelId(node.label.getLabel());
 		int opCode = node.getOpcode();
-		System.out.println("L" + jumpDestination);
+		LOG.debug("jump destination L" + jumpDestination);
 
 		if (Util.isBetween(opCode, Opcodes.IF_ICMPEQ, Opcodes.IF_ACMPNE)) {
 			exp = new MultiConditional(opCode, jumpDestination, stack.pop(), stack.pop());

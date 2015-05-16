@@ -3,11 +3,14 @@ package com.thesis.translator.handler;
 import com.thesis.common.Util;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.lang.reflect.Field;
 
 public abstract class AbstractHandler implements NodeHandler {
+
+	private static final Logger LOG = Logger.getLogger(AbstractHandler.class);
 
 	protected MethodState mState;
 	private OnNodeMovedListener mOnMovedListener;
@@ -23,7 +26,6 @@ public abstract class AbstractHandler implements NodeHandler {
 
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
-		printNodeInfo(node, mState);
 	}
 
 	protected void nodeMoved() {
@@ -32,28 +34,29 @@ public abstract class AbstractHandler implements NodeHandler {
 		}
 	}
 
-	protected void checkType(AbstractInsnNode node, Class<? extends AbstractInsnNode> clazz) throws IncorrectNodeException {
+	protected void checkType(AbstractInsnNode node, Class<? extends AbstractInsnNode> clazz) {
 		if (!node.getClass().equals(clazz)) throw new IncorrectNodeException("Incorrect node type, expected: " + clazz.getSimpleName());
 	}
 
-	public static void printNodeInfo(AbstractInsnNode node, MethodState state) {
+	protected String logNode(AbstractInsnNode node) {
 		String opCode = Util.getOpcodeString(node.getOpcode());
-		if (opCode.isEmpty()) return;
-		String fields = "";
+		StringBuilder fields = new StringBuilder();
 		for (Field field : node.getClass().getFields()) {
 			if (!(field.getName().contains("INSN") || field.getName().contains("LABEL") || field.getName().contains("FRAME") || field.getName().contains("LINE"))) {
+				Object fieldVal = null;
 				try {
-					fields += field.getName() + " = " + field.get(node);
-					fields += "; ";
+					fieldVal = field.get(node);
 				} catch (IllegalAccessException e) {
 					System.out.println(field.getName() + " is inaccessible");
 				}
+				if (fieldVal == null) {
+					continue;
+				}
+				fields.append(field.getName()).append(" = ").append(fieldVal).append("; ");
+
 			}
 
 		}
-		System.out.println("STACK: " + state.getActiveStack().size());
-		String result = "code: " + opCode + " " + fields;
-		result += "\nCURRENT LABEL: " + state.getCurrentLabel() + ",  STACK: " + state.getActiveStack().getLabel();
-		System.out.println(result);
+		return opCode + " " + fields;
 	}
 }

@@ -6,6 +6,7 @@ import com.thesis.expression.InstanceOfExpression;
 import com.thesis.expression.NewExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -14,6 +15,7 @@ import org.objectweb.asm.tree.TypeInsnNode;
  * NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
  */
 public class TypeInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(TypeInsnNodeHandler.class);
 
 	public TypeInsnNodeHandler(MethodState state) {
 		super(state);
@@ -22,6 +24,7 @@ public class TypeInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, TypeInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();

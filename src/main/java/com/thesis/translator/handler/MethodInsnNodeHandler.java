@@ -7,6 +7,7 @@ import com.thesis.expression.ConstructorInvocationExpression;
 import com.thesis.expression.MethodInvocationExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -15,6 +16,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
  * INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
  */
 public class MethodInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(MethodInsnNodeHandler.class);
 
 	private String mCallerMethodName;
 	private DataType mEnclosingClassType;
@@ -28,6 +30,7 @@ public class MethodInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, MethodInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();

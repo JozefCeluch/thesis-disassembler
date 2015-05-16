@@ -3,6 +3,7 @@ package com.thesis.translator.handler;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.ArrayCreationExpression;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 
@@ -10,6 +11,7 @@ import org.objectweb.asm.tree.MultiANewArrayInsnNode;
  * MULTIANEWARRAY
  */
 public class MultiANewArrayInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(MultiANewArrayInsnNodeHandler.class);
 
 	public MultiANewArrayInsnNodeHandler(MethodState state) {
 		super(state);
@@ -18,6 +20,7 @@ public class MultiANewArrayInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, MultiANewArrayInsnNode.class);
 
 		String desc = ((MultiANewArrayInsnNode)node).desc;

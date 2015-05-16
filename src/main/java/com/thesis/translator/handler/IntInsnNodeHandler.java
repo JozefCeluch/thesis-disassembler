@@ -6,6 +6,7 @@ import com.thesis.expression.ArrayCreationExpression;
 import com.thesis.expression.PrimaryExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
@@ -15,13 +16,17 @@ import org.objectweb.asm.tree.IntInsnNode;
  */
 public class IntInsnNodeHandler extends AbstractHandler {
 
+	private static final Logger LOG = Logger.getLogger(IntInsnNodeHandler.class);
+
 	public IntInsnNodeHandler(MethodState state) {
 		super(state);
+
 	}
 
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, IntInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();

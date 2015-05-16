@@ -1,6 +1,8 @@
 package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
+import com.thesis.exception.DecompilerException;
+import com.thesis.exception.DecompilerRuntimeException;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
 import com.thesis.statement.Statement;
@@ -8,12 +10,14 @@ import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.VariableDeclarationExpression;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.translator.handler.*;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class InstructionTranslator implements MethodState.OnLabelChangeListener {
+	private static final Logger LOG = Logger.getLogger(InstructionTranslator.class);
 
 	private final MethodNode mMethod;
 	private MethodBlock mMethodBlock;
@@ -34,8 +38,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 	}
 
 	public List<Statement> addCode() {
-		System.out.println(" ");
-		System.out.println("METHOD: " + mMethod.name);
+		LOG.debug("METHOD: " + mMethod.name);
 
 		mState.getFinalStack().addEnhancer(new LoopEnhancer());
 		mState.setCurrentNode(mMethod.instructions.getFirst());
@@ -93,15 +96,10 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 		if (node == null) return;
 
 		NodeHandler handler = mHandlers.get(node.getType());
-		if (handler != null) {
-			try {
-				handler.handle(node);
-			} catch (IncorrectNodeException e) {
-				e.printStackTrace(); //TODO
-			}
-		} else {
-			AbstractHandler.printNodeInfo(node, mState);
+		if (handler == null) {
+			throw new DecompilerRuntimeException("No handler for this node type: " + node.getType());
 		}
+		handler.handle(node);
 	}
 
 	@Override

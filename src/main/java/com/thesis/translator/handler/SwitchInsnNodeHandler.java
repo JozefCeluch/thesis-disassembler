@@ -7,6 +7,7 @@ import com.thesis.expression.SwitchExpression;
 import com.thesis.expression.UnconditionalJump;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
@@ -19,6 +20,7 @@ import java.util.Map;
  * TABLESWITCH, LOOKUPSWITCH
  */
 public class SwitchInsnNodeHandler extends AbstractHandler {
+	private static final Logger LOG = Logger.getLogger(SwitchInsnNodeHandler.class);
 
 	public SwitchInsnNodeHandler(MethodState state, OnNodeMovedListener onMovedListener) {
 		super(state, onMovedListener);
@@ -27,6 +29,7 @@ public class SwitchInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		if (node instanceof TableSwitchInsnNode) {
 			visitTableSwitchInsnNode((TableSwitchInsnNode) node);
 		} else if (node instanceof LookupSwitchInsnNode) {

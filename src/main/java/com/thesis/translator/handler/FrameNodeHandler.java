@@ -2,12 +2,13 @@ package com.thesis.translator.handler;
 
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FrameNode;
 
-import java.util.Arrays;
-
 public class FrameNodeHandler extends AbstractHandler {
+
+	private static final Logger LOG = Logger.getLogger(FrameNodeHandler.class);
 
 	public FrameNodeHandler(MethodState state) {
 		super(state);
@@ -16,11 +17,8 @@ public class FrameNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, FrameNode.class);
-
-		System.out.println("FRAME:");
-		System.out.println("local: " + Arrays.deepToString(((FrameNode)node).local.toArray()));
-		System.out.println("stack: " + Arrays.deepToString(((FrameNode)node).stack.toArray()));
 
 		mState.setFrameLabel(mState.getCurrentLabel());
 	}

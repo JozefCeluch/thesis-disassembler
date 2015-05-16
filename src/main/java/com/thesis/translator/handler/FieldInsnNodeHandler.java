@@ -7,12 +7,15 @@ import com.thesis.expression.AssignmentExpression.LeftHandSide;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.expression.variable.GlobalVariable;
 import com.thesis.translator.MethodState;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 
 public class FieldInsnNodeHandler extends AbstractHandler {
+
+	private static final Logger LOG = Logger.getLogger(FieldInsnNodeHandler.class);
 
 	public FieldInsnNodeHandler(MethodState state) {
 		super(state);
@@ -22,6 +25,7 @@ public class FieldInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, FieldInsnNode.class);
 		ExpressionStack stack = mState.getActiveStack();
 		int opCode = node.getOpcode();
