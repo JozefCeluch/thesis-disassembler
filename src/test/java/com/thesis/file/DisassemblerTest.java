@@ -1,5 +1,6 @@
 package com.thesis.file;
 
+import com.thesis.exception.DecompilerException;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
@@ -33,13 +34,13 @@ public class DisassemblerTest {
 	@Parameters({"AnotherEmptyInterface", "ClassWithNumericExpressions", "EmptyDeprecatedClass",
 			"EmptyDeprecatedInterface", "EmptyEnum", "EmptyInterface", "ComplexVariableNames",
 			"MultiANewArrayInsnNode", "TryCatchBlockNode", "ClassWithInnerClasses", "ClassWithAnonymousClasses"})
-	public void testUngroupedClasses(String name){
+	public void testUngroupedClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
 	@Test
 	@Parameters(method = "getInsnNodeClasses")
-	public void testInsnNode(String name){
+	public void testInsnNode(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -50,7 +51,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getFieldInsnNodeClasses")
-	public void testFieldInsnNodeClasses(String name){
+	public void testFieldInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -61,7 +62,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getJumpInsnNodeClasses")
-	public void testJumpInsnNodeClasses(String name){
+	public void testJumpInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -72,7 +73,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getTypeInsnNodeClasses")
-	public void testTypeInsnNodeClasses(String name){
+	public void testTypeInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -83,7 +84,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getMethodInsnNodeClasses")
-	public void testMethodInsnNodeClasses(String name){
+	public void testMethodInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -94,7 +95,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getInvokedynamicInsnNodeClasses")
-	public void testInvokedynamicInsnNodeClasses(String name){
+	public void testInvokedynamicInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -105,7 +106,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "getSwitchInsnNodeClasses")
-	public void testSwitchInsnNodeClasses(String name){
+	public void testSwitchInsnNodeClasses(String name) throws Throwable {
 		assertEquals("Classes do not equal", getJavaClassContent(name), compileAndParseClass(name, Disassembler.createInstance(TEST_FOLDER)));
 	}
 
@@ -116,7 +117,7 @@ public class DisassemblerTest {
 
 	@Test
 	@Parameters(method = "param1, param2, param3, param4, param5, param6, param7, param8, param9")
-	public void testClassesWithDependencies(String name, String... dependencies) {
+	public void testClassesWithDependencies(String name, String... dependencies) throws Throwable {
 		String compileString = TEST_FOLDER + name + ".java";
 		ArrayList<String> filesNames = new ArrayList<>(Arrays.asList(dependencies));
 		filesNames.add(0, compileString);
@@ -165,7 +166,7 @@ public class DisassemblerTest {
 		return new String(fileContents);
 	}
 
-	private String compileAndParseClass(String name, Disassembler disassembler) {
+	private String compileAndParseClass(String name, Disassembler disassembler) throws DecompilerException {
 		boolean success = compileClass(TEST_FOLDER + name + ".java");
 		if (!success) {
 			System.out.println("COMPILATION ERROR: " + name);

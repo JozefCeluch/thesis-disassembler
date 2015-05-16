@@ -1,7 +1,6 @@
 package com.thesis.block;
 
 import com.thesis.common.CodeElement;
-import com.thesis.common.Writable;
 import com.thesis.common.AnnotationParser;
 import com.thesis.common.Util;
 import org.objectweb.asm.Opcodes;
@@ -77,12 +76,12 @@ public abstract class Block extends CodeElement {
 			buf.append("enum ");
 		}
 		if (Util.containsFlag(access, Opcodes.ACC_SYNTHETIC)) {
-			addComment("synthetic");
+			buf.append(wrapInComment("synthetic"));
 		}
 	}
 
-	protected void addComment(String comment) {
-		buf.append(" /* ").append(comment).append(" */ ");
+	protected String wrapInComment(String comment) {
+		return " /* " + comment + " */ ";
 	}
 
 	protected void addComma(int currentPosition) {

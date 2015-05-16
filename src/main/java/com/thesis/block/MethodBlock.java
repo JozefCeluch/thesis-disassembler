@@ -110,7 +110,7 @@ public class MethodBlock extends Block {
 		addAccess(access & ~Opcodes.ACC_VOLATILE);
 
 		if (Util.containsFlag(access, Opcodes.ACC_BRIDGE)) {
-			addComment("bridge");
+			buf.append(wrapInComment("bridge"));
 		}
 		if (Util.containsFlag(access, Opcodes.ACC_NATIVE)) {
 			buf.append("native ");

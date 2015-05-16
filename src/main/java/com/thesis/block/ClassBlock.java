@@ -1,7 +1,10 @@
 package com.thesis.block;
 
 import com.thesis.common.*;
+import com.thesis.exception.DecompilerException;
+import com.thesis.expression.PrimaryExpression;
 import com.thesis.file.Disassembler;
+import com.thesis.statement.Statement;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -10,7 +13,6 @@ import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 
@@ -134,7 +136,11 @@ public class ClassBlock extends Block {
 		for (Object object : innerClasses) {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
-				children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, this));
+				try {
+					children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, this));
+				} catch (DecompilerException e) {
+					children.add(new Statement(new PrimaryExpression(wrapInComment("Classfile of inner class " + innerClass.name + " was not found"),DataType.UNKNOWN), 0, this));
+				}
 			}
 		}
 	}

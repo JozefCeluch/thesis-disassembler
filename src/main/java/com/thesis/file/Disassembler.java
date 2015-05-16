@@ -2,6 +2,7 @@ package com.thesis.file;
 
 import com.thesis.block.Block;
 import com.thesis.block.ClassBlock;
+import com.thesis.exception.DecompilerException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.tree.ClassNode;
@@ -31,13 +32,13 @@ public class Disassembler {
 		mInnerClassMap = new HashMap<>();
     }
 
-    public DecompilationResult decompileClassFile(String file) {
+    public DecompilationResult decompileClassFile(String file) throws DecompilerException {
 		ClassReader classReader = getClassReader(file);
 		ClassBlock classBlock = disassembleClass(classReader, null);
 		return new DecompilationResult(classBlock);
     }
 
-	public ClassBlock decompileInnerClass(String file, Block parent) {
+	public ClassBlock decompileInnerClass(String file, Block parent) throws DecompilerException {
 		file = file.endsWith(".class") ? file : file + ".class";
 		return disassembleClass(getClassReader(file), parent);
 	}
@@ -56,15 +57,12 @@ public class Disassembler {
 		return classBlock;
 	}
 
-	private ClassReader getClassReader(String file) {
+	private ClassReader getClassReader(String file) throws DecompilerException {
 		try(InputStream is = mReader.openClassFile(file)) {
 			return new ClassReader(is);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace(); //TODO
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new DecompilerException("Unable to read file", e);
 		}
-		return null;
 	}
 
 	public void addInnerClassName(String fullName, String displayName) {
