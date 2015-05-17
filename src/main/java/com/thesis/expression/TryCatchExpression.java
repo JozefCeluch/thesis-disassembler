@@ -65,7 +65,7 @@ public class TryCatchExpression extends Expression {
 			super(0);
 			mLabel = label;
 			mStack = stack;
-			mExpression = mStack != null ? (AssignmentExpression) mStack.remove(0) : null;
+			mExpression = mStack != null && mStack.get(0) instanceof AssignmentExpression ? (AssignmentExpression) mStack.remove(0) : null;
 			if (exceptions != null && !exceptions.isEmpty()) {
 				mExceptions = new ArrayList<>();
 				for (String exceptionType : exceptions) {

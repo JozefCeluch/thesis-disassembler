@@ -59,7 +59,6 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 					mState.replaceActiveStack(exp.getThenBranch());
 				}
 			}
-
 			nodeMoved();
 
 			if (isEndOfThenBlock(mState.getCurrentNode()) ) {
@@ -72,13 +71,22 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 					* non-standard switch where default case is called after each standard case*/
 				}
 			}
+			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel())) {
+				break;
+			}
 		}
 		mState.finishStack();
+
+		Expression catchBlockEnd = null;
 		if (exp.hasEmptyElseBranch() && !exp.isLoop()) {
 			exp.setElseBranch(mState.startNewStack());
 			while(!mState.isLabelVisited(exp.getElseBranchEnd())) { //mCurrentLabel != exp.getElseBranchEnd()
 				mState.moveNode();
 				nodeMoved();
+				if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel())) {
+					catchBlockEnd = exp.getElseBranch().pop();
+					break;
+				}
 			}
 			exp.updateElseBranchType();
 			mState.finishStack();
@@ -89,7 +97,10 @@ public class JumpInsnNodeHandler extends AbstractHandler {
 		} else {
 			mState.getActiveStack().push(exp);
 		}
-		mState.setCurrentLabel(mState.getCurrentLabel());
+		mState.updateCurrentLabel(mState.getCurrentLabel());
+		if (catchBlockEnd != null) {
+			mState.getActiveStack().push(catchBlockEnd);
+		}
 	}
 
 	private boolean isEndOfThenBlock(AbstractInsnNode movedNode) {

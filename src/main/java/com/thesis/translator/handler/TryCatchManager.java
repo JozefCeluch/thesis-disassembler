@@ -88,6 +88,13 @@ public class TryCatchManager {
 		return false;
 	}
 
+	public boolean hasCatchHandlerLocation(int labelId) {
+		for(Item item : mCatchBlockHandlers) {
+			if (item.getCatchLocations().contains(labelId)) return true;
+		}
+		return false;
+	}
+
 	public boolean hasCatchBlockStart(int location) {
 		for (Item item : mItems) {
 			if (item.getCatchLocations().contains(location)) {

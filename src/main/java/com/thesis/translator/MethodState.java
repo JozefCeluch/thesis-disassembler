@@ -65,7 +65,7 @@ public class MethodState {
 		return mCurrentLabel;
 	}
 
-	public void setCurrentLabel(int currentLabel) {
+	public void updateCurrentLabel(int currentLabel) {
 		mCurrentLabel = currentLabel;
 		getActiveStack().setLabel(currentLabel);
 		mVisitedLabels.add(currentLabel);

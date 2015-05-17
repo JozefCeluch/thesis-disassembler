@@ -9,6 +9,7 @@ import java.lang.Integer;
 import java.lang.NullPointerException;
 import java.lang.NumberFormatException;
 import java.lang.String;
+import java.lang.Throwable;
 
 class TryCatchBlockNode {
 
@@ -47,36 +48,74 @@ class TryCatchBlockNode {
 		}
 	}
 
-//	void standardPrintFile() throws IOException {
-//		FileInputStream input = null;
-//
-//		try {
-//			input = new FileInputStream("file.txt");
-//
-//			int data = input.read();
-//			while(data != -1){
-//				System.out.print((char) data);
-//				data = input.read();
-//			}
-//		} finally {
-//			if(input != null){
-//				try {
-//					input.close();
-//				} catch (IOException e) {
-//
-//				}
-//			}
-//		}
-//	}
+	void catchWithThrow() throws IOException {
+		String a = "a";
+		try {
+			int l = a.length();
+		} catch (NullPointerException e) {
+			a = "caught";
+			throw new IOException(e);
+		} finally {
+			a = "finally";
+		}
+	}
 
-//	void tryWithResourcesPrintFile() throws IOException {
-//		try(FileInputStream input = new FileInputStream("file.txt")) {
-//
-//			int data = input.read();
-//			while(data != -1){
-//				System.out.print((char) data);
-//				data = input.read();
-//			}
-//		}
-//	}
+	void simplePrintFile() throws IOException {
+		FileInputStream input = new FileInputStream("file.txt");
+		try {
+			int data = input.read();
+			while(data != -1){
+				System.out.print((char) data);
+				data = input.read();
+			}
+		} finally {
+			if (input == null) {
+				System.out.println("INPUT IS NULL");
+			}
+			if (input != null) {
+				input.close();
+			}
+			else {
+				System.out.println("ELSE BRANCH");
+			}
+		}
+	}
+
+	void tryWithResourcesLikePrintFile() throws IOException {
+		FileInputStream input = new FileInputStream("file.txt");
+		Throwable exception = null;
+		try {
+			int data = input.read();
+			while(data != -1){
+				System.out.print((char) data);
+				data = input.read();
+			}
+		} catch (Throwable throwable) {
+			exception = throwable;
+			throw throwable;
+		} finally {
+			if(input != null) {
+				if(exception != null) {
+					try {
+						input.close();
+					} catch (Throwable innerException) {
+						exception.addSuppressed(innerException);
+					}
+				} else {
+					input.close();
+				}
+			}
+		}
+	}
+
+	void tryWithResourcesPrintFile() throws IOException {
+		try(FileInputStream input = new FileInputStream("file.txt")) {
+
+			int data = input.read();
+			while(data != -1){
+				System.out.print((char) data);
+				data = input.read();
+			}
+		}
+	}
 }

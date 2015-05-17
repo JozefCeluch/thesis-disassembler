@@ -1,12 +1,10 @@
 package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
-import com.thesis.exception.DecompilerException;
 import com.thesis.exception.DecompilerRuntimeException;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
 import com.thesis.statement.Statement;
-import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.VariableDeclarationExpression;
 import com.thesis.expression.variable.LocalVariable;
 import com.thesis.translator.handler.*;
@@ -16,7 +14,7 @@ import org.objectweb.asm.tree.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InstructionTranslator implements MethodState.OnLabelChangeListener {
+public class InstructionTranslator {
 	private static final Logger LOG = Logger.getLogger(InstructionTranslator.class);
 
 	private final MethodNode mMethod;
@@ -25,14 +23,11 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 
 	private MethodState mState;
 
-
-
 	public InstructionTranslator(MethodBlock methodBlock) {
 		mState = new MethodState();
 		mMethodBlock = methodBlock;
 		mMethod = methodBlock.getMethodNode();
 		mState.setLocalVariables(prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments()));
-		mState.setOnLabelChangeListener(this);
 		mState.setupTryCatchManager(mMethod.tryCatchBlocks);
 		prepareHandlers();
 	}
@@ -100,72 +95,6 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 			throw new DecompilerRuntimeException("No handler for this node type: " + node.getType());
 		}
 		handler.handle(node);
-	}
-
-	@Override
-	public void onLabelChange(int newLabel) {
-		createTryCatchBlocks(mState);
-	}
-
-	public void createTryCatchBlocks(MethodState state) {
-		if (state.getTryCatchManager().isEmpty()) return;
-		List<TryCatchManager.Item> tryCatchItems = state.getTryCatchManager().getTryBlocksLocation(state.getCurrentLabel());
-		if (tryCatchItems.isEmpty()) return;
-
-		TryCatchExpression tryCatchExpression = null;
-		for(TryCatchManager.Item item : tryCatchItems) {
-			prepareTryCatchItem(state, item, tryCatchExpression);
-			tryCatchExpression = new TryCatchExpression(item);
-		}
-		state.getActiveStack().push(tryCatchExpression);
-	}
-
-	private void prepareTryCatchItem(MethodState state, TryCatchManager.Item item, TryCatchExpression innerTryCatchBlock) {
-		if (item.getCatchBlockCount() == item.getCatchTypes().size()) return;
-
-		// fill try block
-		item.setTryStack(state.startNewStack());
-		if (innerTryCatchBlock != null) {
-			item.getTryStack().push(innerTryCatchBlock);
-		}
-
-		while (item.getTryEndLocation() != state.getCurrentLabel()) {
-			if (state.moveNode() == null) break;
-			processNode(mState.getCurrentNode());
-		}
-		state.finishStack();
-		// ignore repeated finally blocks
-		ExpressionStack repeatedFinallyCalls = state.startNewStack();
-		while (!item.hasHandlerLabel(state.getCurrentLabel())) {
-			if (state.moveNode() == null) break;
-			processNode(mState.getCurrentNode());
-		}
-
-		int tryCatchBlockEnd = JumpExpression.NO_DESTINATION;
-		if (repeatedFinallyCalls.peek() instanceof JumpExpression) {
-			tryCatchBlockEnd = ((JumpExpression) repeatedFinallyCalls.peek()).getJumpDestination();
-		}
-		state.finishStack();
-		// fill catch blocks
-		for (int i = 0; i < item.getHandlerCount(); i++) {
-			item.addCatchBlock(state.getCurrentLabel(), state.startNewStack());
-			int currentBlockLabel = state.getCurrentLabel();
-
-			while (state.getCurrentLabel() == currentBlockLabel || !(item.hasHandlerLabel(state.getCurrentLabel())
-					|| state.getTryCatchManager().hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				if (state.moveNode() == null) break;
-				processNode(mState.getCurrentNode());
-			}
-			state.finishStack();
-
-			state.startNewStack();
-			// ignore repeated finally blocks
-			while (!(item.hasHandlerLabel(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
-				if (state.moveNode() == null) break;
-				processNode(mState.getCurrentNode());
-			}
-			state.finishStack();
-		}
 	}
 
 	private List<Statement> getLocalVariableAssignments() {
