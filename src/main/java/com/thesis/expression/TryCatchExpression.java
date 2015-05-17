@@ -26,7 +26,7 @@ public class TryCatchExpression extends Expression {
 		mCatchExpressions = new ArrayList<>();
 
 		mCatchExpressions.addAll(
-				tryCatchItem.getHandlerLocations().stream()
+				tryCatchItem.getCatchLocations().stream()
 						.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
 						.collect(Collectors.toList()));
 		mTryStack = tryCatchItem.getTryStack();

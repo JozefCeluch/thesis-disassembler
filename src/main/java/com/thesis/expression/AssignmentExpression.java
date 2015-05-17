@@ -30,7 +30,9 @@ public class AssignmentExpression extends  Expression{
 
 	public AssignmentExpression(int opCode, LeftHandSide leftSide, Expression rightSide) {
 		this(opCode, leftSide);
-		rightSide.setType(leftSide.getType());
+		if (rightSide != null) {
+			rightSide.setType(leftSide.getType());
+		}
 		mRightSide = rightSide;
 	}
 

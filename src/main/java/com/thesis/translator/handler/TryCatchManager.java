@@ -8,7 +8,14 @@ import java.util.stream.Collectors;
 
 public class TryCatchManager {
 
+	/**
+	 * List of try-catch blocks
+	 */
 	private List<Item> mItems;
+
+	/**
+	 * List of try-catch blocks inside the catch blocks that represent the finally statement
+	 */
 	private List<Item> mCatchBlockHandlers;
 
 	/**
@@ -41,22 +48,21 @@ public class TryCatchManager {
 		for (Item item : tryCatchItems) {
 			if (item.matches(newItem)) {
 				foundMatch = true;
-				item.addHandlers(newItem.getHandlerLocations(), newItem.getHandlerTypes());
+				item.addCatchTypes(newItem.getCatchLocations(), newItem.getCatchTypes());
 			}
-			if (item.getHandlerLocations().contains(newItem.getStartId())) {
+			if (item.getCatchLocations().contains(newItem.getTryStartLocation())) {
 				isCatchBlockHandler = true;
 			}
-			if (foundMatch && isCatchBlockHandler) break;
+			if (foundMatch || isCatchBlockHandler) break;
 		}
 		if (!foundMatch && !isCatchBlockHandler) {
 			tryCatchItems.add(newItem);
 		}
 
-		if (isCatchBlockHandler && !newItem.getHandlerLocations().contains(newItem.getStartId())) {
+		if (isCatchBlockHandler && !newItem.getCatchLocations().contains(newItem.getTryStartLocation())) {
 			catchBlockHandlers.add(newItem);
 		}
 	}
-	//endregion
 
 	private void setItems(List<Item> items) {
 		mItems = items;
@@ -65,48 +71,58 @@ public class TryCatchManager {
 	private void setCatchBlockHandlers(List<Item> catchBlockHandlers) {
 		mCatchBlockHandlers = catchBlockHandlers;
 	}
+	//endregion
 
 	public boolean isEmpty() {
 		return mItems == null || mItems.isEmpty();
 	}
 
-	public List<Item> getItemsWithStartId(int labelId) {
-		return mItems.stream().filter(item -> item.getStartId() == labelId).collect(Collectors.toList());
+	public List<Item> getTryBlocksLocation(int labelId) {
+		return mItems.stream().filter(item -> item.getTryStartLocation() == labelId).collect(Collectors.toList());
 	}
 
 	public boolean hasCatchHandlerEnd(int labelId) {
 		for(Item item : mCatchBlockHandlers) {
-			if (item.getEndId() == labelId) return true;
+			if (item.getTryEndLocation() == labelId) return true;
+		}
+		return false;
+	}
+
+	public boolean hasCatchBlockStart(int location) {
+		for (Item item : mItems) {
+			if (item.getCatchLocations().contains(location)) {
+				return true;
+			}
 		}
 		return false;
 	}
 
 	public static class Item {
 
-		private int mStartId;
-		private int mEndId;
-		private Set<Integer> mHandlerLocations = new HashSet<>();
-		private Map<Integer, ArrayList<String>> mHandlerTypes = new HashMap<>(); // labelId, type
+		private int mTryStartLocation;
+		private int mTryEndLocation;
+		private Set<Integer> mCatchLocations = new HashSet<>();
+		private Map<Integer, ArrayList<String>> mCatchTypes = new HashMap<>(); // location, catch types (multicatch)
 		private ExpressionStack mTryStack;
-		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //labelId, stack
+		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //location, stack
 
-		public Item(int startId, int endId, int handlerId, String exception) {
-			mStartId = startId;
-			mEndId = endId;
-			mHandlerLocations.add(handlerId);
+		public Item(int tryStartLocation, int tryEndLocation, int catchLocation, String exception) {
+			mTryStartLocation = tryStartLocation;
+			mTryEndLocation = tryEndLocation;
+			mCatchLocations.add(catchLocation);
 			ArrayList<String> exceptions = new ArrayList<>();
 			if (exception != null) {
 				exceptions.add(exception);
 			}
-			mHandlerTypes.put(handlerId, exceptions);
+			mCatchTypes.put(catchLocation, exceptions);
 		}
 
-		public int getStartId() {
-			return mStartId;
+		public int getTryStartLocation() {
+			return mTryStartLocation;
 		}
 
-		public int getEndId() {
-			return mEndId;
+		public int getTryEndLocation() {
+			return mTryEndLocation;
 		}
 
 		public ExpressionStack getTryStack() {
@@ -117,40 +133,40 @@ public class TryCatchManager {
 			mTryStack = tryStack;
 		}
 
-		public Map<Integer, ArrayList<String>> getHandlerTypes() {
-			return mHandlerTypes;
+		public Map<Integer, ArrayList<String>> getCatchTypes() {
+			return mCatchTypes;
 		}
 
-		public List<Integer> getHandlerLocations() {
-			return new ArrayList<>(mHandlerLocations);
+		public List<Integer> getCatchLocations() {
+			return new ArrayList<>(mCatchLocations);
 		}
 
 		public int getHandlerCount() {
-			return mHandlerTypes.size();
+			return mCatchTypes.size();
 		}
 
 		public int getCatchBlockCount() {
 			return mCatchStacks.size();
 		}
 
-		public void addHandlers(List<Integer> handlerLocations, Map<Integer,ArrayList<String>> handlers) {
-			mHandlerLocations.addAll(handlerLocations);
+		public void addCatchTypes(List<Integer> handlerLocations, Map<Integer, ArrayList<String>> catchTypes) {
+			mCatchLocations.addAll(handlerLocations);
 
-			for (Integer key : handlers.keySet()) {
-				if (mHandlerTypes.containsKey(key)) {
-					mHandlerTypes.get(key).addAll(handlers.get(key));
+			for (Integer key : catchTypes.keySet()) {
+				if (mCatchTypes.containsKey(key)) {
+					mCatchTypes.get(key).addAll(catchTypes.get(key));
 				} else {
-					mHandlerTypes.put(key, handlers.get(key));
+					mCatchTypes.put(key, catchTypes.get(key));
 				}
 			}
 		}
 
 		public boolean matches(Item other) {
-			return this.mStartId == other.mStartId && this.mEndId == other.mEndId;
+			return this.mTryStartLocation == other.mTryStartLocation && this.mTryEndLocation == other.mTryEndLocation;
 		}
 
 		public boolean hasHandlerLabel(int label) {
-			for(int key : mHandlerTypes.keySet()) {
+			for(int key : mCatchTypes.keySet()) {
 				if (key == label) return true;
 			}
 			return false;
@@ -160,13 +176,40 @@ public class TryCatchManager {
 			mCatchStacks.put(handlerId, catchStack);
 		}
 
-		public ExpressionStack getCatchBlock(int handlerId) {
-			return mCatchStacks.get(handlerId);
+		public ExpressionStack getCatchBlock(int catchLocation) {
+			return mCatchStacks.get(catchLocation);
 		}
 
-		public ArrayList<String> getHandlerType(int handlerId) {
-			return mHandlerTypes.get(handlerId);
+		public ArrayList<String> getHandlerType(int catchLocation) {
+			return mCatchTypes.get(catchLocation);
 		}
 
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			Item item = (Item) o;
+
+			if (mTryStartLocation != item.mTryStartLocation) return false;
+			if (mTryEndLocation != item.mTryEndLocation) return false;
+			if (mCatchLocations != null ? !mCatchLocations.equals(item.mCatchLocations) : item.mCatchLocations != null)
+				return false;
+			if (mCatchTypes != null ? !mCatchTypes.equals(item.mCatchTypes) : item.mCatchTypes != null) return false;
+			if (mTryStack != null ? !mTryStack.equals(item.mTryStack) : item.mTryStack != null) return false;
+			return !(mCatchStacks != null ? !mCatchStacks.equals(item.mCatchStacks) : item.mCatchStacks != null);
+
+		}
+
+		@Override
+		public int hashCode() {
+			int result = mTryStartLocation;
+			result = 31 * result + mTryEndLocation;
+			result = 31 * result + (mCatchLocations != null ? mCatchLocations.hashCode() : 0);
+			result = 31 * result + (mCatchTypes != null ? mCatchTypes.hashCode() : 0);
+			result = 31 * result + (mTryStack != null ? mTryStack.hashCode() : 0);
+			result = 31 * result + (mCatchStacks != null ? mCatchStacks.hashCode() : 0);
+			return result;
+		}
 	}
 }

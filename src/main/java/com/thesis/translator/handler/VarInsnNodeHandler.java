@@ -5,6 +5,8 @@ import com.thesis.common.Util;
 import com.thesis.exception.IncorrectNodeException;
 import com.thesis.expression.AssignmentExpression;
 import com.thesis.expression.AssignmentExpression.LeftHandSide;
+import com.thesis.expression.Expression;
+import com.thesis.expression.PrimaryExpression;
 import com.thesis.expression.VariablePrimaryExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.expression.variable.LocalVariable;
@@ -44,7 +46,12 @@ public class VarInsnNodeHandler extends AbstractHandler {
 				localVars.put(varNum, new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum)); //TODO set type according to the instruction
 			}
 			LocalVariable localVar = localVars.get(varNum);
-			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar)));
+			Expression rightSide = null;
+			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel())) {
+				rightSide = new PrimaryExpression(localVar.getType().toString(), localVar.getType());
+			}
+			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar), rightSide));
+
 		}
 		// RET is deprecated since Java 6
 	}

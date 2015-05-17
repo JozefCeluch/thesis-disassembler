@@ -2,12 +2,10 @@ package com.thesis.translator;
 
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.variable.LocalVariable;
+import com.thesis.translator.handler.TryCatchManager;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 public class MethodState {
 	private AbstractInsnNode mCurrentNode;
@@ -19,6 +17,8 @@ public class MethodState {
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
 	private OnLabelChangeListener mOnLabelChangeListener;
+
+	private TryCatchManager mTryCatchManager;
 
 	public MethodState() {
 		mVisitedLabels = new HashSet<>();
@@ -112,5 +112,13 @@ public class MethodState {
 
 	public interface OnLabelChangeListener {
 		void onLabelChange(int newLabel);
+	}
+
+	public TryCatchManager getTryCatchManager() {
+		return mTryCatchManager;
+	}
+
+	public void setupTryCatchManager(List tryCatchBlocks) {
+		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mStack);
 	}
 }

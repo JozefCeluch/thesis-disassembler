@@ -24,7 +24,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 	private Map<Integer, NodeHandler> mHandlers;
 
 	private MethodState mState;
-	private TryCatchManager mTryCatchManager;
+
 
 
 	public InstructionTranslator(MethodBlock methodBlock) {
@@ -33,7 +33,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 		mMethod = methodBlock.getMethodNode();
 		mState.setLocalVariables(prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments()));
 		mState.setOnLabelChangeListener(this);
-		mTryCatchManager = TryCatchManager.newInstance(mMethod.tryCatchBlocks, mState.getFinalStack());
+		mState.setupTryCatchManager(mMethod.tryCatchBlocks);
 		prepareHandlers();
 	}
 
@@ -81,7 +81,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 		mHandlers.put(AbstractInsnNode.METHOD_INSN, new MethodInsnNodeHandler(mState, mMethod.name, mMethodBlock.getClassType()));
 		mHandlers.put(AbstractInsnNode.INVOKE_DYNAMIC_INSN, new InvokeDynamicInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.JUMP_INSN, new JumpInsnNodeHandler(mState, nodeMoveListener));
-		mHandlers.put(AbstractInsnNode.LABEL, new LabelNodeHandler(mState, mMethod.tryCatchBlocks, nodeMoveListener));
+		mHandlers.put(AbstractInsnNode.LABEL, new LabelNodeHandler(mState, nodeMoveListener));
 		mHandlers.put(AbstractInsnNode.LDC_INSN, new LdcInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.IINC_INSN, new IincInsnNodeHandler(mState));
 		mHandlers.put(AbstractInsnNode.MULTIANEWARRAY_INSN, new MultiANewArrayInsnNodeHandler(mState));
@@ -108,8 +108,8 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 	}
 
 	public void createTryCatchBlocks(MethodState state) {
-		if (mTryCatchManager.isEmpty()) return;
-		List<TryCatchManager.Item> tryCatchItems = mTryCatchManager.getItemsWithStartId(state.getCurrentLabel());
+		if (state.getTryCatchManager().isEmpty()) return;
+		List<TryCatchManager.Item> tryCatchItems = state.getTryCatchManager().getTryBlocksLocation(state.getCurrentLabel());
 		if (tryCatchItems.isEmpty()) return;
 
 		TryCatchExpression tryCatchExpression = null;
@@ -121,7 +121,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 	}
 
 	private void prepareTryCatchItem(MethodState state, TryCatchManager.Item item, TryCatchExpression innerTryCatchBlock) {
-		if (item.getCatchBlockCount() == item.getHandlerTypes().size()) return;
+		if (item.getCatchBlockCount() == item.getCatchTypes().size()) return;
 
 		// fill try block
 		item.setTryStack(state.startNewStack());
@@ -129,7 +129,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 			item.getTryStack().push(innerTryCatchBlock);
 		}
 
-		while (item.getEndId() != state.getCurrentLabel()) {
+		while (item.getTryEndLocation() != state.getCurrentLabel()) {
 			if (state.moveNode() == null) break;
 			processNode(mState.getCurrentNode());
 		}
@@ -152,7 +152,7 @@ public class InstructionTranslator implements MethodState.OnLabelChangeListener 
 			int currentBlockLabel = state.getCurrentLabel();
 
 			while (state.getCurrentLabel() == currentBlockLabel || !(item.hasHandlerLabel(state.getCurrentLabel())
-					|| mTryCatchManager.hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
+					|| state.getTryCatchManager().hasCatchHandlerEnd(state.getCurrentLabel()) || state.getCurrentLabel() == tryCatchBlockEnd)) {
 				if (state.moveNode() == null) break;
 				processNode(mState.getCurrentNode());
 			}

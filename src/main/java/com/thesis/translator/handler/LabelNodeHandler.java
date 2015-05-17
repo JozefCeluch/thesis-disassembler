@@ -12,11 +12,8 @@ import java.util.List;
 public class LabelNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(LabelNodeHandler.class);
 
-//	private TryCatchManager mTryCatchManager;
-
-	public LabelNodeHandler(MethodState state, List tryCatchBlocks, OnNodeMovedListener onMovedListener) {
+	public LabelNodeHandler(MethodState state, OnNodeMovedListener onMovedListener) {
 		super(state, onMovedListener);
-//		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mState.getFinalStack());
 	}
 
 	@Override
@@ -34,7 +31,7 @@ public class LabelNodeHandler extends AbstractHandler {
 
 //	public void createTryCatchBlocks(MethodState state) {
 //		if (mTryCatchManager.isEmpty()) return;
-//		List<TryCatchManager.Item> tryCatchItems = mTryCatchManager.getItemsWithStartId(state.getCurrentLabel());
+//		List<TryCatchManager.Item> tryCatchItems = mTryCatchManager.getTryBlocksLocation(state.getCurrentLabel());
 //		if (tryCatchItems.isEmpty()) return;
 //
 //		TryCatchExpression tryCatchExpression = null;
@@ -46,7 +43,7 @@ public class LabelNodeHandler extends AbstractHandler {
 //	}
 //
 //	private void prepareTryCatchItem(MethodState state, TryCatchManager.Item item, TryCatchExpression innerTryCatchBlock) {
-//		if (item.getCatchBlockCount() == item.getHandlerTypes().size()) return;
+//		if (item.getCatchBlockCount() == item.getCatchTypes().size()) return;
 //
 //		// fill try block
 //		item.setTryStack(state.startNewStack());
@@ -54,7 +51,7 @@ public class LabelNodeHandler extends AbstractHandler {
 //			item.getTryStack().push(innerTryCatchBlock);
 //		}
 //
-//		while (item.getEndId() != state.getCurrentLabel()) {
+//		while (item.getTryEndLocation() != state.getCurrentLabel()) {
 //			if (state.moveNode() == null) break;
 //			nodeMoved();
 //		}
