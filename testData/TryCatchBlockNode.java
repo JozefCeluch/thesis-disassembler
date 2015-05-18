@@ -48,6 +48,17 @@ class TryCatchBlockNode {
 		}
 	}
 
+	int finallyWithReturn() {
+		String number = "1";
+		try {
+			return Integer.valueOf(number);
+		} catch (NumberFormatException e) {
+			return 0;
+		} finally {
+			return -1;
+		}
+	}
+
 	void catchWithThrow() throws IOException {
 		String a = "a";
 		try {

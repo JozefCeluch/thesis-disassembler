@@ -72,7 +72,7 @@ public class TryCatchExpression extends Expression {
 					mExceptions.add(DataType.getTypeFromObject(exceptionType));
 				}
 			}
-			if (mExceptions == null && mStack != null && mStack.size() > 0) {
+			if (mExceptions == null && mStack != null && mStack.size() > 0 && mStack.peek() instanceof ThrowExpression) {
 				mStack.pop();
 			}
 		}

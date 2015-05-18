@@ -44,6 +44,21 @@ class TryCatchBlockNode {
 		}
 	}
 
+	int finallyWithReturn() {
+		java.lang.String number;
+		java.lang.NumberFormatException e;
+		int var3;
+		java.lang.Object var4;
+		number = "1";
+		try {
+			e = java.lang.Integer.valueOf(number).intValue();
+		} catch (java.lang.NumberFormatException e) {
+			var3 = 0;
+		} finally {
+			return -1;
+		}
+	}
+
 	void catchWithThrow() throws java.io.IOException {
 		java.lang.String a;
 		java.lang.NullPointerException e;
