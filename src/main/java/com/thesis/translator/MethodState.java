@@ -2,7 +2,6 @@ package com.thesis.translator;
 
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.variable.LocalVariable;
-import com.thesis.translator.handler.TryCatchManager;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 import java.util.*;

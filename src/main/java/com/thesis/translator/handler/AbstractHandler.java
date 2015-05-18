@@ -7,6 +7,7 @@ import com.thesis.expression.JumpExpression;
 import com.thesis.expression.TryCatchExpression;
 import com.thesis.translator.ExpressionStack;
 import com.thesis.translator.MethodState;
+import com.thesis.translator.TryCatchManager;
 import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 

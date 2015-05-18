@@ -2,7 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.translator.ExpressionStack;
 import com.thesis.common.DataType;
-import com.thesis.translator.handler.TryCatchManager;
+import com.thesis.translator.TryCatchManager;
 
 import java.io.IOException;
 import java.io.Writer;
