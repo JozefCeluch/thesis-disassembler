@@ -16,8 +16,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import java.util.Map;
-
 /**
  * ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
  */
@@ -34,18 +32,18 @@ public class VarInsnNodeHandler extends AbstractHandler {
 		checkType(node, VarInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
-		Map<Integer, LocalVariable> localVars = mState.getLocalVariables();
 		int varNum = ((VarInsnNode) node).var;
 		int opCode = node.getOpcode();
 		if (Util.isBetween(opCode, Opcodes.ILOAD, Opcodes.ALOAD)) {
-			LocalVariable var = localVars.get(varNum);
+			LocalVariable var = mState.getLocalVariable(varNum);
 			stack.push(new VariablePrimaryExpression(opCode, var));
 		}
 		if (Util.isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
-			if (!localVars.containsKey(varNum)) {
-				localVars.put(varNum, new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum)); //TODO set type according to the instruction
+			LocalVariable localVar = mState.getLocalVariable(varNum);
+			if (localVar == null) {
+				localVar = new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum);
+				mState.addLocalVariable(varNum, localVar); //TODO set type according to the instruction
 			}
-			LocalVariable localVar = localVars.get(varNum);
 			Expression rightSide = null;
 			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel())) {
 				rightSide = new PrimaryExpression(localVar.getType().toString(), localVar.getType());

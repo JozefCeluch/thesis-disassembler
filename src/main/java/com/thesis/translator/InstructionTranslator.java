@@ -2,17 +2,19 @@ package com.thesis.translator;
 
 import com.thesis.block.MethodBlock;
 import com.thesis.exception.DecompilerRuntimeException;
-import com.thesis.expression.JumpExpression;
-import com.thesis.expression.TryCatchExpression;
-import com.thesis.statement.Statement;
 import com.thesis.expression.VariableDeclarationExpression;
 import com.thesis.expression.variable.LocalVariable;
+import com.thesis.statement.Statement;
 import com.thesis.translator.handler.*;
 import org.apache.log4j.Logger;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class InstructionTranslator {
 	private static final Logger LOG = Logger.getLogger(InstructionTranslator.class);
@@ -27,7 +29,7 @@ public class InstructionTranslator {
 		mState = new MethodState();
 		mMethodBlock = methodBlock;
 		mMethod = methodBlock.getMethodNode();
-		mState.setLocalVariables(prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments()));
+		prepareLocalVariables(mMethod.localVariables, mMethodBlock.getArguments());
 		mState.setupTryCatchManager(mMethod.tryCatchBlocks);
 		prepareHandlers();
 	}
@@ -45,21 +47,38 @@ public class InstructionTranslator {
 		mState.getFinalStack().enhance();
 
 		StatementCreator sc = new StatementCreator(mState.getFinalStack(), mMethodBlock);
-
-		return sc.getStatements();
+		List<Statement> statements = getLocalVariableAssignments();
+		statements.addAll(sc.getStatements());
+		return statements;
 	}
 
-	private Map<Integer, LocalVariable> prepareLocalVariables(List localVariables, Map<Integer, LocalVariable> args) {
-		Map<Integer, LocalVariable> localVarMap = new HashMap<>();
+	private void prepareLocalVariables(List localVariables, Map<Integer, LocalVariable> args) {
+		for (int position : args.keySet()) {
+			mState.addLocalVariable(position, args.get(position));
+		}
 
 		if (localVariables.size() > 0) {
 			for (Object var : localVariables) {
 				LocalVariableNode variable = (LocalVariableNode) var;
-				localVarMap.put(variable.index, new LocalVariable(variable));
+				mState.addLocalVariable(variable.index, new LocalVariable(variable));
 			}
 		}
-		localVarMap.putAll(args);
-		return localVarMap;
+	}
+
+	private List<Statement> getLocalVariableAssignments() {
+		List<Statement> localVars = new ArrayList<>();
+		for (List<LocalVariable> variableList : mState.getLocalVariables().values()) {
+			if (variableList.size() == 1) {
+				LocalVariable variable = variableList.get(0);
+				if (variable.getScopes().size() > 1 && !variable.isArgument()) {
+					localVars.add(new Statement(new VariableDeclarationExpression(variable), 0, mMethodBlock));
+				}
+			}
+		}
+
+		List<Statement> result = new ArrayList<>();
+		result.addAll(0, localVars);
+		return result;
 	}
 
 	private void prepareHandlers() {

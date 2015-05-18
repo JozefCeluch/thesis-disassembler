@@ -32,7 +32,7 @@ public class IincInsnNodeHandler extends AbstractHandler {
 		checkType(node, IincInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
-		LocalVariable variable = mState.getLocalVariables().get(((IincInsnNode) node).var);
+		LocalVariable variable = mState.getLocalVariable(((IincInsnNode) node).var);
 		
 		UnaryExpression.OpPosition opPosition = getUnaryOperandPosition(node);
 		if (opPosition != null) {

@@ -8,23 +8,18 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.LocalVariableNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LocalVariable extends Variable {
 
 	private int mIndex;
 	private boolean mIsArgument;
-	private Label mStart;
-	private Label mEnd;
-	private boolean isAdded = false;
+	private List<Scope> mScopes = new ArrayList<>();
 
 	public LocalVariable(int index) {
 		super();
 		this.mIndex = index;
-		mPrintType = true;
-	}
-
-	public LocalVariable(String name, int index) {
-		this(index);
-		mName = name;
 		mPrintType = true;
 	}
 
@@ -38,8 +33,7 @@ public class LocalVariable extends Variable {
 			mType = DataType.getTypeFromObject(visitor.getDeclaration());
 		}
 		mIndex = variableNode.index;
-		mStart = variableNode.start.getLabel();
-		mEnd = variableNode.end.getLabel();
+		mScopes.add(new Scope(variableNode.start.getLabel(), variableNode.end.getLabel()));
 		mDebugType = true;
 		mPrintType = true;
 	}
@@ -67,20 +61,15 @@ public class LocalVariable extends Variable {
 		return mIsArgument;
 	}
 
-	public int getStartLabel(ExpressionStack stack) {
-		return stack.getLabelId(mStart);
+	public List<Scope> getScopes() {
+		return mScopes;
 	}
 
-	public int getEndLabelId(ExpressionStack stack) {
-		return stack.getLabelId(mEnd);
-	}
-
-	public boolean isAdded() {
-		return isAdded;
-	}
-
-	public void setAdded(boolean added) {
-		this.isAdded = added;
+	public void merge(LocalVariable other) {
+		if (!this.equals(other)) {
+			return;
+		}
+		mScopes.addAll(other.mScopes);
 	}
 
 	@Override
@@ -97,5 +86,52 @@ public class LocalVariable extends Variable {
 		}
 		variable += mName;
 		return variable;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		LocalVariable that = (LocalVariable) o;
+
+		if (mIndex != that.mIndex) return false;
+		if (mName != null ? !mName.equals(that.mName) : that.mName != null) return false;
+		return !(mType != null ? !mType.equals(that.mType) : that.mType != null);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = mIndex;
+		result = 31 * result + (mName != null ? mName.hashCode() : 0);
+		result = 31 * result + (mType != null ? mType.hashCode() : 0);
+		return result;
+	}
+
+	public static class Scope {
+		public static final int UNDEFINED = -1;
+
+		private Label mStart;
+		private Label mEnd;
+
+		public Scope(Label start, Label end) {
+			mStart = start;
+			mEnd = end;
+		}
+
+		public int getStartLabelId(ExpressionStack stack) {
+			if (mStart == null) {
+				return UNDEFINED;
+			}
+			return stack.getLabelId(mStart);
+		}
+
+		public int getEndLabelId(ExpressionStack stack) {
+			if (mEnd == null) {
+				return UNDEFINED;
+			}
+			return stack.getLabelId(mEnd);
+		}
 	}
 }

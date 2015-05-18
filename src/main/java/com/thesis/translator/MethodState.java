@@ -3,6 +3,7 @@ package com.thesis.translator;
 import com.thesis.expression.JumpExpression;
 import com.thesis.expression.variable.LocalVariable;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 
 import java.util.*;
 
@@ -12,7 +13,7 @@ public class MethodState {
 	private int mCurrentLabel;
 	private int mFrameLabel = JumpExpression.NO_DESTINATION;
 	private Set<Integer> mVisitedLabels;
-	private Map<Integer, LocalVariable> mLocalVariables;
+	private Map<Integer, List<LocalVariable>> mLocalVariables;
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
 	private OnLabelChangeListener mOnLabelChangeListener;
@@ -23,6 +24,7 @@ public class MethodState {
 		mVisitedLabels = new HashSet<>();
 		mActiveStacks = new Stack<>();
 		mStack = new ExpressionStack();
+		mLocalVariables = new HashMap<>();
 		mActiveStacks.push(mStack);
 	}
 
@@ -97,14 +99,6 @@ public class MethodState {
 		getActiveStack().setLineNumber(mCurrentLine);
 	}
 
-	public Map<Integer, LocalVariable> getLocalVariables() {
-		return mLocalVariables;
-	}
-
-	public void setLocalVariables(Map<Integer, LocalVariable> localVariables) {
-		mLocalVariables = localVariables;
-	}
-
 	public void setOnLabelChangeListener(OnLabelChangeListener onLabelChangeListener) {
 		mOnLabelChangeListener = onLabelChangeListener;
 	}
@@ -119,5 +113,68 @@ public class MethodState {
 
 	public void setupTryCatchManager(List tryCatchBlocks) {
 		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mStack);
+	}
+
+	public void addLocalVariable(int position, LocalVariable variable) {
+		List<LocalVariable> variablesAtPos = mLocalVariables.get(position);
+		if (variablesAtPos == null) {
+			variablesAtPos = new ArrayList<>();
+			variablesAtPos.add(variable);
+			mLocalVariables.put(position, variablesAtPos);
+		} else {
+			int index = variablesAtPos.indexOf(variable);
+			if (index > -1) {
+				variablesAtPos.get(index).merge(variable);
+			} else {
+				variablesAtPos.add(variable);
+			}
+		}
+	}
+
+	Map<Integer, List<LocalVariable>> getLocalVariables () {
+		return mLocalVariables;
+	}
+
+	public LocalVariable getLocalVariable(int position) {
+		if (mLocalVariables == null || mLocalVariables.isEmpty()) {
+			return null;
+		}
+		List<LocalVariable> varsAtPosition = mLocalVariables.get(position);
+		if (varsAtPosition == null || varsAtPosition.isEmpty()) {
+			return null;
+		}
+		int nearestLabelNode = findNearestLabelNode();
+		for (LocalVariable var : varsAtPosition) {
+			if (isInScope(var.getScopes(), nearestLabelNode, getActiveStack())) {
+				return var;
+			}
+		}
+		return null;
+	}
+
+	private boolean isInScope(List<LocalVariable.Scope> scopes, int nearestLabelNode, ExpressionStack stack) {
+		if (scopes == null || scopes.isEmpty()) {
+			return true;
+		}
+		for (LocalVariable.Scope scope : scopes) {
+			int startLocation = scope.getStartLabelId(stack);
+			int endLocation = scope.getEndLabelId(stack);
+			if (startLocation == LocalVariable.Scope.UNDEFINED && endLocation == LocalVariable.Scope.UNDEFINED) return true;
+			if (mVisitedLabels.contains(startLocation) && !mVisitedLabels.contains(endLocation)) return true;
+			if (startLocation == nearestLabelNode) return true;
+		}
+
+		return false;
+	}
+
+	private int findNearestLabelNode() {
+		AbstractInsnNode node = mCurrentNode;
+		while (node != null && !(node instanceof LabelNode)) {
+			node = node.getNext();
+		}
+		if (node != null) {
+			return getActiveStack().getLabelId(((LabelNode)node).getLabel());
+		}
+		return -1;
 	}
 }

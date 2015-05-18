@@ -42,7 +42,7 @@ class TryCatchBlockNode {
 	int finallyWithReturn() {
 		java.lang.String number = "1";
 		try {
-			e = java.lang.Integer.valueOf(number).intValue();
+			int var2 = java.lang.Integer.valueOf(number).intValue();
 		} catch (java.lang.NumberFormatException e) {
 			int var3 = 0;
 		} finally {
@@ -53,7 +53,7 @@ class TryCatchBlockNode {
 	void catchWithThrow() throws java.io.IOException {
 		java.lang.String a = "a";
 		try {
-			int l = a.length();
+			int var2 = a.length();
 		} catch (java.lang.NullPointerException e) {
 			a = "caught";
 			throw new java.io.IOException(e);
@@ -88,11 +88,11 @@ class TryCatchBlockNode {
 		try {
 			int data = input.read();
 			while (data != -1) {
-				java.lang.System.out.print((char) throwable);
+				java.lang.System.out.print((char) data);
 				data = input.read();
 			}
 		} catch (java.lang.Throwable throwable) {
-			exception = (java.lang.Throwable) throwable;
+			exception = throwable;
 			throw throwable;
 		} finally {
 			if (input != null) {
@@ -118,9 +118,9 @@ class TryCatchBlockNode {
 				java.lang.System.out.print((char) data);
 				data = input.read();
 			}
-		} catch (java.lang.Throwable data) {
+		} catch (java.lang.Throwable var3) {
 			var2 = java.lang.Object;
-			throw data;
+			throw var3;
 		} finally {
 			if (input != null) {
 				if (var2 != null) {
