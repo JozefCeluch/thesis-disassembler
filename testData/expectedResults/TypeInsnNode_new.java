@@ -5,16 +5,11 @@ public class TypeInsnNode_new {
 	}
 
 	void methodWithNewCall() {
-		InnerClass firstObject;
-		InnerClass secondObject;
-		int firstNumber;
-		InnerClass thirdObject;
-		InnerClass fourthObject;
-		firstObject = new InnerClass(this);
-		secondObject = new InnerClass(this, 2);
-		firstNumber = 99;
-		thirdObject = new InnerClass(this, firstNumber);
-		fourthObject = new InnerClass(this, 1, 2);
+		InnerClass firstObject = new InnerClass(this);
+		InnerClass secondObject = new InnerClass(this, 2);
+		int firstNumber = 99;
+		InnerClass thirdObject = new InnerClass(this, firstNumber);
+		InnerClass fourthObject = new InnerClass(this, 1, 2);
 	}
 
 	class InnerClass {

@@ -2,11 +2,12 @@ package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
 
-public class Variable {
+public abstract class Variable {
 
 	protected String mName;
 	protected DataType mType;
 	protected boolean mDebugType;
+	protected boolean mPrintType;
 
 	public Variable() {
 		mDebugType = false;
@@ -39,4 +40,9 @@ public class Variable {
 		return mDebugType;
 	}
 
+	public void setPrintType(boolean printType) {
+		mPrintType = printType;
+	}
+
+	public abstract String write();
 }

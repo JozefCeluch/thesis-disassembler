@@ -36,7 +36,6 @@ public class FieldBlock extends Block {
 		if (mFieldNode.value != null) {
 			//the field is final
 			expression = new AssignmentExpression(0, new LeftHandSide(0, variable), new PrimaryExpression(mFieldNode.value, type));
-			((AssignmentExpression) expression).setPrintType(true);
 		} else {
 			expression = new VariableDeclarationExpression(variable);
 		}

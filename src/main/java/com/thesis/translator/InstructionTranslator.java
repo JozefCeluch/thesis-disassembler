@@ -46,9 +46,7 @@ public class InstructionTranslator {
 
 		StatementCreator sc = new StatementCreator(mState.getFinalStack(), mMethodBlock);
 
-		List<Statement> statements = getLocalVariableAssignments();
-		statements.addAll(sc.getStatements());
-		return statements;
+		return sc.getStatements();
 	}
 
 	private Map<Integer, LocalVariable> prepareLocalVariables(List localVariables, Map<Integer, LocalVariable> args) {
@@ -95,15 +93,5 @@ public class InstructionTranslator {
 			throw new DecompilerRuntimeException("No handler for this node type: " + node.getType());
 		}
 		handler.handle(node);
-	}
-
-	private List<Statement> getLocalVariableAssignments() {
-		List<Statement> localVars = mState.getLocalVariables().values().stream()
-				.filter(variable -> !variable.isArgument() && !variable.isAdded())
-				.map(variable -> new Statement(new VariableDeclarationExpression(variable), 0, mMethodBlock)) //todo variable line number
-				.collect(Collectors.toList());
-		List<Statement> result = new ArrayList<>();
-		result.addAll(0, localVars);
-		return result;
 	}
 }

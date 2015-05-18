@@ -18,8 +18,7 @@ public class JumpInsnNode_loops {
 	}
 
 	void completeForLoop() {
-		int i;
-		i = 0;
+		int i = 0;
 		while (i < 10) {
 			if (i > 8) {
 				java.lang.System.out.println("conditional print");
@@ -30,20 +29,16 @@ public class JumpInsnNode_loops {
 	}
 
 	void forEachLoop() {
-		java.util.List objects;
-		java.util.Iterator var2;
-		java.lang.Object o;
-		objects = new java.util.ArrayList();
-		var2 = objects.iterator();
+		java.util.List objects = new java.util.ArrayList();
+		java.util.Iterator var2 = objects.iterator();
 		while (var2.hasNext()) {
-			o = var2.next();
+			java.lang.Object o = var2.next();
 			java.lang.System.out.println(o.toString());
 		}
 	}
 
 	void loopWithContinue() {
-		int i;
-		i = 0;
+		int i = 0;
 		while (i < 10) {
 			if (i == 8) {
 				java.lang.System.out.println("call continue");
@@ -61,8 +56,7 @@ public class JumpInsnNode_loops {
 	}
 
 	void loopWithBreak() {
-		int i;
-		i = 0;
+		int i = 0;
 		while (i < 10) {
 			i += 1;
 			if (i > 8) {
@@ -81,8 +75,7 @@ public class JumpInsnNode_loops {
 	}
 
 	void doLoop() {
-		int i;
-		i = 0;
+		int i = 0;
 		do {
 			java.lang.System.out.println(new java.lang.StringBuilder().append("val of i =").append(i).toString());
 			if (i == 2) {
@@ -95,8 +88,7 @@ public class JumpInsnNode_loops {
 	}
 
 	void forLoopWithContinue() {
-		int i;
-		i = 0;
+		int i = 0;
 		while (i < 10) {
 			java.lang.System.out.println("loop start");
 			if (i == 4) {

@@ -8,14 +8,10 @@ public class FieldInsnNode_static {
 	}
 
 	void accessPrivateStatic() {
-		java.io.PrintStream stream;
-		int localInt;
-		java.lang.String localStr;
-		java.lang.String anotherString;
-		stream = java.lang.System.out;
-		localInt = FieldInsnNode_static.staticInt;
-		localStr = FieldInsnNode_static.staticStr;
-		anotherString = "static string constant";
+		java.io.PrintStream stream = java.lang.System.out;
+		int localInt = FieldInsnNode_static.staticInt;
+		java.lang.String localStr = FieldInsnNode_static.staticStr;
+		java.lang.String anotherString = "static string constant";
 	}
 
 	static void <clinit>() {

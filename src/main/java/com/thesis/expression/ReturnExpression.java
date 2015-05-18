@@ -45,7 +45,6 @@ public class ReturnExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if (DataType.VOID.equals(mType)) return;
 		writer.write("return");
 		if (mExpression != null) {
 			writer.write(' ');

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Expression that represents a declaration of a local variable
+ * Expression that represents a declaration of a variable
  * <p>
  * it is not used for any instruction
  */
@@ -24,7 +24,7 @@ public class VariableDeclarationExpression extends Expression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		writer.write(mVariable.getType().print() + " " + mVariable.toString());
+		writer.write(mVariable.write());
 	}
 
 	@Override

@@ -9,10 +9,8 @@ public class TypeInsnNode_instanceof {
 	}
 
 	public void isInstance() {
-		int localInt;
-		boolean bool;
-		localInt = 1;
-		bool = this instanceof java.lang.Object && localInt < -128;
+		int localInt = 1;
+		boolean bool = this instanceof java.lang.Object && localInt < -128;
 		if ("" instanceof java.lang.Object) {
 			localInt = 2;
 		} else {

@@ -5,11 +5,8 @@ class TryCatchBlockNode {
 	}
 
 	void innerTryCatch() {
-		java.lang.String value;
 		int number;
-		java.lang.RuntimeException e;
-		java.lang.Object var4;
-		value = "4";
+		java.lang.String value = "4";
 		try {
 			try {
 				number = java.lang.Integer.valueOf(value).intValue();
@@ -34,9 +31,7 @@ class TryCatchBlockNode {
 	}
 
 	void onlyFinally() {
-		int number;
-		java.lang.Object var2;
-		number = 0;
+		int number = 0;
 		try {
 			number = java.lang.Integer.valueOf("3").intValue();
 		} finally {
@@ -45,27 +40,20 @@ class TryCatchBlockNode {
 	}
 
 	int finallyWithReturn() {
-		java.lang.String number;
-		java.lang.NumberFormatException e;
-		int var3;
-		java.lang.Object var4;
-		number = "1";
+		java.lang.String number = "1";
 		try {
 			e = java.lang.Integer.valueOf(number).intValue();
 		} catch (java.lang.NumberFormatException e) {
-			var3 = 0;
+			int var3 = 0;
 		} finally {
 			return -1;
 		}
 	}
 
 	void catchWithThrow() throws java.io.IOException {
-		java.lang.String a;
-		java.lang.NullPointerException e;
-		java.lang.Object var3;
-		a = "a";
+		java.lang.String a = "a";
 		try {
-			e = a.length();
+			int l = a.length();
 		} catch (java.lang.NullPointerException e) {
 			a = "caught";
 			throw new java.io.IOException(e);
@@ -75,12 +63,9 @@ class TryCatchBlockNode {
 	}
 
 	void simplePrintFile() throws java.io.IOException {
-		java.io.FileInputStream input;
-		int data;
-		java.lang.Object var3;
-		input = new java.io.FileInputStream("file.txt");
+		java.io.FileInputStream input = new java.io.FileInputStream("file.txt");
 		try {
-			data = input.read();
+			int data = input.read();
 			while (data != -1) {
 				java.lang.System.out.print((char) data);
 				data = input.read();
@@ -98,18 +83,13 @@ class TryCatchBlockNode {
 	}
 
 	void tryWithResourcesLikePrintFile() throws java.io.IOException {
-		java.io.FileInputStream input;
-		java.lang.Throwable exception;
-		int throwable;
-		java.lang.Object var4;
-		java.lang.Throwable innerException;
-		input = new java.io.FileInputStream("file.txt");
-		exception = null;
+		java.io.FileInputStream input = new java.io.FileInputStream("file.txt");
+		java.lang.Throwable exception = null;
 		try {
-			throwable = input.read();
-			while (throwable != -1) {
+			int data = input.read();
+			while (data != -1) {
 				java.lang.System.out.print((char) throwable);
-				throwable = input.read();
+				data = input.read();
 			}
 		} catch (java.lang.Throwable throwable) {
 			exception = (java.lang.Throwable) throwable;
@@ -130,15 +110,10 @@ class TryCatchBlockNode {
 	}
 
 	void tryWithResourcesPrintFile() throws java.io.IOException {
-		java.io.FileInputStream input;
-		java.lang.Object var2;
-		int data;
-		java.lang.Object var4;
-		java.lang.Object var5;
-		input = new java.io.FileInputStream("file.txt");
-		var2 = null;
+		java.io.FileInputStream input = new java.io.FileInputStream("file.txt");
+		java.lang.Object var2 = null;
 		try {
-			data = input.read();
+			int data = input.read();
 			while (data != -1) {
 				java.lang.System.out.print((char) data);
 				data = input.read();

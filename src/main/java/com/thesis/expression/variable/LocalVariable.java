@@ -19,11 +19,13 @@ public class LocalVariable extends Variable {
 	public LocalVariable(int index) {
 		super();
 		this.mIndex = index;
+		mPrintType = true;
 	}
 
 	public LocalVariable(String name, int index) {
 		this(index);
 		mName = name;
+		mPrintType = true;
 	}
 
 	public LocalVariable(LocalVariableNode variableNode) {
@@ -39,11 +41,13 @@ public class LocalVariable extends Variable {
 		mStart = variableNode.start.getLabel();
 		mEnd = variableNode.end.getLabel();
 		mDebugType = true;
+		mPrintType = true;
 	}
 
 	public LocalVariable(String name, DataType type, int index) {
 		super(name, type);
 		mIndex = index;
+		mPrintType = true;
 	}
 
 	public int getIndex() {
@@ -56,6 +60,7 @@ public class LocalVariable extends Variable {
 
 	public void setIsArgument(boolean isArgument) {
 		mIsArgument = isArgument;
+		mPrintType = !isArgument;
 	}
 
 	public boolean isArgument() {
@@ -81,5 +86,16 @@ public class LocalVariable extends Variable {
 	@Override
 	public String toString() {
 		return mName;
+	}
+
+	@Override
+	public String write() {
+		String variable = "";
+		if (mPrintType) {
+			variable += getType().print() + " ";
+			mPrintType = false;
+		}
+		variable += mName;
+		return variable;
 	}
 }

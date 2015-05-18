@@ -12,15 +12,13 @@ public class FieldInsnNode_field {
 	}
 
 	void assignFields() {
-		InnerClass c;
-		int localInt;
-		c = new InnerClass(this, null);
+		InnerClass c = new InnerClass(this, null);
 		this.intField = c.number;
 		this.intField = 100;
 		this.boolField = true;
 		this.longField = 43L;
 		this.stringField = "another literal";
-		localInt = this.intField;
+		int localInt = this.intField;
 	}
 
 	 /* synthetic */ class FieldInsnNode_field$1 {

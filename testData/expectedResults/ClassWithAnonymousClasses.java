@@ -8,10 +8,8 @@ public class ClassWithAnonymousClasses {
 	}
 
 	public void classMethod() {
-		int[] number;
-		SomeInterface anonObj;
-		number = new int[]{3};
-		anonObj = new ClassWithAnonymousClasses$1(this, number);
+		int[] number = new int[]{3};
+		SomeInterface anonObj = new ClassWithAnonymousClasses$1(this, number);
 	}
 
 	static  /* synthetic */ A access$000(ClassWithAnonymousClasses x0) {
@@ -85,8 +83,7 @@ public class ClassWithAnonymousClasses {
 		}
 
 		public int interfaceMethod() {
-			SomeInterface innerAnonObj;
-			innerAnonObj = new ClassWithAnonymousClasses$1$1(this);
+			SomeInterface innerAnonObj = new ClassWithAnonymousClasses$1$1(this);
 			return innerAnonObj.interfaceMethod();
 		}
 
@@ -99,8 +96,7 @@ public class ClassWithAnonymousClasses {
 			}
 
 			public int interfaceMethod() {
-				AA xaaObject;
-				xaaObject = new ClassWithAnonymousClasses$1$1$1XA(this);
+				AA xaaObject = new ClassWithAnonymousClasses$1$1$1XA(this);
 				return 99;
 			}
 

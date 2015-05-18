@@ -22,10 +22,8 @@ public class LookupSwitchInsnNode {
 	}
 
 	void stringSwitch(java.lang.String text) {
-		java.lang.String var2;
-		int var3;
-		var2 = text;
-		var3 = -1;
+		java.lang.String var2 = text;
+		int var3 = -1;
 		switch (var2.hashCode()) {
 			case 97440432:
 				if (var2.equals("first")) {

@@ -5,8 +5,7 @@ public class InvokedynamicInsnNode_lambda {
 	}
 
 	public void lambdaRunnable() {
-		java.lang.Runnable r;
-		r = java.lang.invoke.LambdaMetafactory.metafactory(/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup(), "run", java.lang.invoke.MethodType.methodType(java.lang.Runnable.class), java.lang.invoke.MethodType.methodType(void.class), java.lang.invoke.MethodHandles.lookup().findStatic(InvokedynamicInsnNode_lambda.class, "lambda$lambdaRunnable$0", java.lang.invoke.MethodType.methodType(void.class)), java.lang.invoke.MethodType.methodType(void.class));
+		java.lang.Runnable r = java.lang.invoke.LambdaMetafactory.metafactory(/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup(), "run", java.lang.invoke.MethodType.methodType(java.lang.Runnable.class), java.lang.invoke.MethodType.methodType(void.class), java.lang.invoke.MethodHandles.lookup().findStatic(InvokedynamicInsnNode_lambda.class, "lambda$lambdaRunnable$0", java.lang.invoke.MethodType.methodType(void.class)), java.lang.invoke.MethodType.methodType(void.class));
 		r.run();
 	}
 
@@ -19,9 +18,8 @@ public class InvokedynamicInsnNode_lambda {
 	}
 
 	public java.util.List<InvokedynamicInsnNode_lambda$Person> sortWithLambda(java.util.List<InvokedynamicInsnNode_lambda$Person> people) {
-		java.util.Comparator<InvokedynamicInsnNode_lambda$Person> byName;
 		java.util.Collections.sort(people, java.lang.invoke.LambdaMetafactory.metafactory(/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup(), "compare", java.lang.invoke.MethodType.methodType(java.util.Comparator.class), java.lang.invoke.MethodType.methodType(int.class), java.lang.invoke.MethodHandles.lookup().findStatic(InvokedynamicInsnNode_lambda.class, "lambda$sortWithLambda$2", java.lang.invoke.MethodType.methodType(int.class, Person.class, Person.class)), java.lang.invoke.MethodType.methodType(int.class)));
-		byName = java.util.Comparator.comparing(java.lang.invoke.LambdaMetafactory.metafactory(/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup(), "apply", java.lang.invoke.MethodType.methodType(java.util.function.Function.class), java.lang.invoke.MethodType.methodType(java.lang.Object.class), java.lang.invoke.MethodHandles.lookup().findVirtual(Person.class, "getName", java.lang.invoke.MethodType.methodType(java.lang.String.class)), java.lang.invoke.MethodType.methodType(java.lang.String.class)));
+		java.util.Comparator<InvokedynamicInsnNode_lambda$Person> byName = java.util.Comparator.comparing(java.lang.invoke.LambdaMetafactory.metafactory(/*stacked automatically by the VM*/ java.lang.invoke.MethodHandles.lookup(), "apply", java.lang.invoke.MethodType.methodType(java.util.function.Function.class), java.lang.invoke.MethodType.methodType(java.lang.Object.class), java.lang.invoke.MethodHandles.lookup().findVirtual(Person.class, "getName", java.lang.invoke.MethodType.methodType(java.lang.String.class)), java.lang.invoke.MethodType.methodType(java.lang.String.class)));
 		return people;
 	}
 
