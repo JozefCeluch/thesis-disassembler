@@ -26,6 +26,7 @@ public class MethodInvocationExpression extends Expression {
 	protected List<Expression> mArguments;
 	protected int mArgumentCount;
 	protected DataType mOwnerClass;
+	protected List<DataType> mArgTypes;
 	protected String mCallingMethod;
 	protected Expression mOwnerInstance;
 
@@ -36,6 +37,10 @@ public class MethodInvocationExpression extends Expression {
 		SignatureReader r = new SignatureReader(desc);
 		r.accept(v);
 		mType = DataType.getTypeFromObject(v.getReturnType());
+		mArgTypes = new ArrayList<>();
+		for (Type argType: Type.getArgumentTypes(desc)) {
+			mArgTypes.add(DataType.getType(argType));
+		}
 		mArgumentCount = v.getArguments().size();
 		mArguments = new ArrayList<>();
 		mOwnerClass = DataType.getType(Type.getObjectType(owner));

@@ -85,8 +85,10 @@ public class ExpressionStack {
 			Expression currentExp = mStack.get(i).getExpression();
 			if (currentExp instanceof UnaryExpression) {
 				if(((UnaryExpression) currentExp).isPostfix()) {
-					mStack.remove(i-1);
-					mLastImprovementPosition = i - 1;
+					if (i > 0) {
+						mStack.remove(i - 1);
+						mLastImprovementPosition = i - 1;
+					}
 				} else if (i + 1 < mStack.size()) {
 					mStack.remove(i+1);
 					mLastImprovementPosition = i + 1;

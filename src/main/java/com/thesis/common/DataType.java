@@ -2,6 +2,9 @@ package com.thesis.common;
 
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class DataType {
 
 	private enum SimpleType {
@@ -51,6 +54,7 @@ public class DataType {
 	public static final DataType VOID = SimpleType.VOID.getType();
 	public static final DataType UNKNOWN = new DataType("java.lang.Object");
 
+	public static final List<DataType> INT_SUBTYPES = Arrays.asList(BOOLEAN, BYTE, CHAR, SHORT, INT);
 	private String mTypeString;
 	private int mDimension;
 

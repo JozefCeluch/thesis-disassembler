@@ -46,7 +46,7 @@ public class PrimaryExpression extends Expression {
 
 		if (DataType.BOOLEAN.equals(mType)){
 			output += (int)mValue == 0 ? "false" : "true";
-		} else if (DataType.getTypeFromObject("java.lang.String").equals(mType)) {
+		} else if (DataType.getTypeFromObject("java.lang.String").equals(mType) && !"null".equals(mValue)) {
 			output += QUOTE + mValue + QUOTE;
 		} else if (DataType.getTypeFromObject("java.lang.Class").equals(mType) && mValue instanceof DataType) {
 			output += ((DataType)mValue).print() + ".class";

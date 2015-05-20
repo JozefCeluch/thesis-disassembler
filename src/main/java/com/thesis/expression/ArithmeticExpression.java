@@ -6,6 +6,7 @@ import org.objectweb.asm.util.Printer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 
 /**
  * Expression that represents a binary operation
@@ -101,12 +102,37 @@ public class ArithmeticExpression extends Expression {
 
 	@Override
 	public DataType getType() {
-		return mLeftSide.getType(); //todo think why?
+		if (mType == null) {
+			mergeTypes();
+		}
+		return mType;
 	}
 
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		mRightSide = stack.pop();
 		mLeftSide = stack.pop();
+		mergeTypes();
+	}
+
+	private void mergeTypes() {
+		DataType leftType = mLeftSide.getType();
+		DataType rightType = mRightSide.getType();
+
+		if (leftType == null && rightType == null) {
+			return;
+		}
+		if (leftType == null) {
+			mType = rightType;
+		} else if (rightType == null) {
+			mType = leftType;
+		} else if (leftType.equals(DataType.UNKNOWN) && !rightType.equals(DataType.UNKNOWN)) {
+			mType = rightType;
+		} else if (!leftType.equals(DataType.UNKNOWN) && rightType.equals(DataType.UNKNOWN)) {
+			mType = leftType;
+		} else if (DataType.INT_SUBTYPES.contains(leftType) && !DataType.INT_SUBTYPES.contains(rightType)) {
+			mType = rightType;
+		}
+		mType = leftType;
 	}
 }
