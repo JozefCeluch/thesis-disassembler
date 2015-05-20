@@ -111,7 +111,7 @@ class TryCatchBlockNode {
 
 	void tryWithResourcesPrintFile() throws java.io.IOException {
 		java.io.FileInputStream input = new java.io.FileInputStream("file.txt");
-		java.lang.Object var2 = null;
+		java.lang.Throwable var2 = null;
 		try {
 			int data = input.read();
 			while (data != -1) {
@@ -119,7 +119,7 @@ class TryCatchBlockNode {
 				data = input.read();
 			}
 		} catch (java.lang.Throwable var3) {
-			var2 = java.lang.Object;
+			var2 = var3;
 			throw var3;
 		} finally {
 			if (input != null) {

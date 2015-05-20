@@ -45,7 +45,7 @@ public class VarInsnNodeHandler extends AbstractHandler {
 				mState.addLocalVariable(varNum, localVar); //TODO set type according to the instruction
 			}
 			Expression rightSide = null;
-			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel())) {
+			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel()) && !(mState.getActiveStack().peek() instanceof VariablePrimaryExpression)) {
 				rightSide = new PrimaryExpression(localVar.getType().toString(), localVar.getType());
 			}
 			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar), rightSide));

@@ -123,6 +123,25 @@ public class DataType {
 		return print();
 	}
 
+	public boolean equalsWithoutGeneric(DataType other) {
+		if (this == other) return true;
+		if (other == null) return false;
+		
+		String thisWithoutGeneric = getTypeWithoutGenerics(mTypeString);
+		String otherWithoutGeneric = getTypeWithoutGenerics(other.mTypeString);
+
+		return thisWithoutGeneric.equals(otherWithoutGeneric);
+	}
+
+	private String getTypeWithoutGenerics(String typeString) {
+		int diamondLocation = typeString.indexOf('<');
+
+		if (diamondLocation > -1) {
+			return typeString.substring(0, diamondLocation);
+		}
+		return typeString;
+	}
+
 	@Override
 	public String toString() {
 		return mTypeString;

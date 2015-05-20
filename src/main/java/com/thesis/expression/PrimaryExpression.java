@@ -60,7 +60,7 @@ public class PrimaryExpression extends Expression {
 	}
 
 	protected String printCast() {
-		return mCastType != null ? "(" + mCastType.print() + ") " : "";
+		return mCastType != null && !mCastType.equals(getType()) ? "(" + mCastType.print() + ") " : "";
 	}
 
 	@Override

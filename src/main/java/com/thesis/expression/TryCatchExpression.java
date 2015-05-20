@@ -75,6 +75,11 @@ public class TryCatchExpression extends Expression {
 			if (mExceptions == null && mStack != null && mStack.size() > 0 && mStack.peek() instanceof ThrowExpression) {
 				mStack.pop();
 			}
+			if (mExpression != null && mExceptions != null) {
+				mExpression.getVariable().setType(mExceptions.size() == 1
+						? mExceptions.get(0)
+						: DataType.getTypeFromObject("java.lang.Throwable"));
+			}
 		}
 
 		public ExpressionStack getStack() {

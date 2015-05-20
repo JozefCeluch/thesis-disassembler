@@ -55,10 +55,15 @@ public class MethodInvocationExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		for(int i = 0; i < mArgumentCount; i++) {
-			mArguments.add(0, stack.pop());
+			Expression argument = stack.pop();
+			setCastType(mArgumentCount - i - 1, argument);
+			mArguments.add(0, argument);
 		}
 		if (!isStatic()) {
 			mOwnerInstance = stack.pop();
+			if (!mOwnerInstance.hasType()) {
+				mOwnerInstance.setType(mOwnerClass);
+			}
 		}
 	}
 
@@ -83,6 +88,16 @@ public class MethodInvocationExpression extends Expression {
 			mArguments.get(i).write(writer);
 		}
 		writer.write(")");
+	}
+
+	private void setCastType(int i, Expression arg) {
+		DataType typeFromDesc = mArgTypes.get(i);
+		if (typeFromDesc == null || DataType.UNKNOWN.equals(typeFromDesc)) {
+			return;
+		}
+		if (!typeFromDesc.equalsWithoutGeneric(arg.getType())) {
+			arg.setCastType(typeFromDesc);
+		}
 	}
 
 	private boolean isStatic() {
