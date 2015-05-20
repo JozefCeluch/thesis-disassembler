@@ -137,6 +137,33 @@ public class DisassemblerTest {
 	public Object param8(){return $($("ClassWithFields", makeDependencyString("SimpleAnnotation", "RepeatableAnnotation")));}
 	public Object param9(){return $($("ComplexAnnotation", makeDependencyString("EmptyInterfaceAnnotation", "EmptyEnum")));}
 
+
+	// the evaluation tests do not have any expected results, so they are commented out
+	/*
+	@Test
+	@Parameters(method = "casting, controlFlow, fibo, sable, tryFinally, usa")
+	public void testEvalTests(String name, String... dependencies) throws Throwable {
+		String compileString = TEST_FOLDER + name + ".java";
+		ArrayList<String> filesNames = new ArrayList<>();
+		if (dependencies != null && dependencies.length != 0) {
+			filesNames = new ArrayList<>(Arrays.asList(dependencies));
+		}
+		filesNames.add(0, compileString);
+
+		boolean success = compileClass(filesNames.toArray(new String[filesNames.size()]));
+		if (!success) {
+			fail("COMPILATION FAILED");
+		}
+		assertEquals("Classes do not equal", getJavaClassContent(name), Disassembler.createInstance(TEST_FOLDER).decompileClassFile(name + ".class").getJavaCode());
+	}
+	public Object tryFinally(){return $($("TryFinally", new String[]{}));}
+	public Object casting(){return $($("Casting", new String[]{}));}
+	public Object fibo(){return $($("Fibo", new String[]{}));}
+	public Object controlFlow(){return $($("ControlFlow", new String[]{}));}
+	public Object usa(){return $($("Usa", new String[]{}));}
+	public Object sable(){return $($("Sable", makeDependencyString("Drawable", "Circle", "Rectangle")));}
+	*/
+
 	private String[] makeDependencyString(String... deps) {
 		for (int i=0; i < deps.length; i++) {
 			deps[i] = TEST_FOLDER + deps[i] + ".java";
