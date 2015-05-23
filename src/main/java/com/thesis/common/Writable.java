@@ -8,5 +8,10 @@ import java.io.Writer;
  */
 public interface Writable {
 
+	/**
+	 * Writes the relevant parts of the object to the provided writer
+	 * @param writer a writer instance
+	 * @throws IOException in case of an error
+	 */
 	void write(Writer writer) throws IOException;
 }

@@ -12,7 +12,7 @@ public class ClassWithNumericExpressions {
 		int intVar = (anotherIntVar + 873) + ((anotherIntVar + param1) * v2);
 		java.lang.String str = "some random string literal";
 		int[] array = new int[14];
-		param1 = param1 + 1;
+		param1 = - (param1 + 1);
 		param1 += 1;
 		param1 += 3000;
 		param1 = param1 + 123456789;

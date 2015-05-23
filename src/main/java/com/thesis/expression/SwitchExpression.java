@@ -43,15 +43,13 @@ public class SwitchExpression extends Expression {
 	}
 
 	@Override
-	public void afterPush(ExpressionStack stack) {
-		super.afterPush(stack);
-	}
-
-	@Override
 	public void write(Writer writer) throws IOException {
 		mValue.write(writer);
 	}
 
+	/**
+	 * Expression that represents a case block of a switch
+	 */
 	public static class CaseExpression extends Expression {
 
 		public static final String DEFAULT = "default";
@@ -61,7 +59,7 @@ public class SwitchExpression extends Expression {
 		private Object mValue;
 		private int mLabel;
 		private int mDefaultLabel;
-		//TODO value can be number, String or enum
+
 		public CaseExpression(Object value, int label, int defaultLabel, ExpressionStack stack) {
 			super(0);
 			mValue = value;

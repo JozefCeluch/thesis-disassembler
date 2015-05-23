@@ -1,12 +1,12 @@
 package com.thesis.expression;
 
 import com.thesis.common.DataType;
+import com.thesis.common.Util;
 import com.thesis.translator.ExpressionStack;
-import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
 
 /**
  * Expression that represents a binary operation
@@ -29,60 +29,57 @@ public class ArithmeticExpression extends Expression {
 		super(opCode);
 	}
 
-	public void setLeftSide(Expression leftSide) {
-		mLeftSide = leftSide;
-	}
-
-	public void setRightSide(Expression rightSide) {
-		mRightSide = rightSide;
-	}
-
-	private Operand makeOperand(){ //TODO just compare the opcodes not strings
-		String opcode = Printer.OPCODES[mOpCode];
-		if (opcode.endsWith("MUL")){
-			return Operand.MULTIPLY;
+	private Operator makeOperator() {
+		if (Util.isBetween(mOpCode, Opcodes.IMUL, Opcodes.DMUL)) {
+			return Operator.MULTIPLY;
 		}
-		if (opcode.endsWith("DIV")){
-			return Operand.DIVIDE;
+		if (Util.isBetween(mOpCode, Opcodes.IDIV, Opcodes.DDIV)) {
+			return Operator.DIVIDE;
 		}
-		if (opcode.endsWith("ADD")){
-			return Operand.ADD;
+		if (Util.isBetween(mOpCode, Opcodes.IADD, Opcodes.DADD)) {
+			return Operator.ADD;
 		}
-		if (opcode.endsWith("SUB")){
-			return Operand.SUBTRACT;
+		if (Util.isBetween(mOpCode, Opcodes.ISUB, Opcodes.DSUB)) {
+			return Operator.SUBTRACT;
 		}
-		if (opcode.endsWith("REM")){
-			return Operand.REMAINDER;
+		if (Util.isBetween(mOpCode, Opcodes.IREM, Opcodes.DREM)) {
+			return Operator.REMAINDER;
 		}
-		if (opcode.endsWith("XOR")){
-			return Operand.BITWISE_XOR;
+		if (Util.isBetween(mOpCode, Opcodes.IXOR, Opcodes.LXOR)) {
+			return Operator.BITWISE_XOR;
 		}
-		if (opcode.endsWith("OR")){
-			return Operand.BITWISE_OR;
+		if (Util.isBetween(mOpCode, Opcodes.IOR, Opcodes.LOR)) {
+			return Operator.BITWISE_OR;
 		}
-		if (opcode.endsWith("AND")){
-			return Operand.BITWISE_AND;
+		if (Util.isBetween(mOpCode, Opcodes.IAND, Opcodes.LAND)) {
+			return Operator.BITWISE_AND;
 		}
-		if (opcode.endsWith("USHR")){
-			return Operand.LOGICAL_SHIFT_RIGHT;
+		if (Util.isBetween(mOpCode, Opcodes.IUSHR, Opcodes.LUSHR)) {
+			return Operator.LOGICAL_SHIFT_RIGHT;
 		}
-		if (opcode.endsWith("SHR")){
-			return Operand.ARITHMETIC_SHIFT_RIGHT;
+		if (Util.isBetween(mOpCode, Opcodes.ISHR, Opcodes.LSHR)) {
+			return Operator.ARITHMETIC_SHIFT_RIGHT;
 		}
-		if (opcode.endsWith("SHL")){
-			return Operand.ARITHMETIC_SHIFT_LEFT;
+		if (Util.isBetween(mOpCode, Opcodes.ISHL, Opcodes.LSHL)) {
+			return Operator.ARITHMETIC_SHIFT_LEFT;
 		}
-		return Operand.ERR;
+		if (Util.isBetween(mOpCode, Opcodes.INEG, Opcodes.DNEG)) {
+			return Operator.SUBTRACT;
+		}
+		return Operator.ERR;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		Operand op = makeOperand();
+		Operator op = makeOperator();
 		if (mCastType != null) {
 			writer.append("(").append(mCastType.toString()).append(") (");
 		}
-		writeSubExpression(mLeftSide, writer);
-		writer.append(" ").append(op.toString()).append(" ");
+		if (mLeftSide != null) {
+			writeSubExpression(mLeftSide, writer);
+			writer.append(" ");
+		}
+		writer.append(op.toString()).append(" ");
 		writeSubExpression(mRightSide, writer);
 
 		if (mCastType != null) {
@@ -111,13 +108,21 @@ public class ArithmeticExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		mRightSide = stack.pop();
-		mLeftSide = stack.pop();
+		if (!Util.isBetween(mOpCode, Opcodes.INEG, Opcodes.DNEG)) {
+			mLeftSide = stack.pop();
+		}
 		mergeTypes();
 	}
 
 	private void mergeTypes() {
-		DataType leftType = mLeftSide.getType();
-		DataType rightType = mRightSide.getType();
+		DataType leftType = null;
+		DataType rightType = null;
+		if (mLeftSide != null) {
+			leftType = mLeftSide.getType();
+		}
+		if (mRightSide != null) {
+			rightType = mRightSide.getType();
+		}
 
 		if (leftType == null && rightType == null) {
 			return;
@@ -132,7 +137,8 @@ public class ArithmeticExpression extends Expression {
 			mType = leftType;
 		} else if (DataType.INT_SUBTYPES.contains(leftType) && !DataType.INT_SUBTYPES.contains(rightType)) {
 			mType = rightType;
+		} else {
+			mType = leftType;
 		}
-		mType = leftType;
 	}
 }

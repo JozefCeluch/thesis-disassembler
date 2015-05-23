@@ -34,10 +34,6 @@ public class AssignmentExpression extends  Expression{
 		mRightSide = rightSide;
 	}
 
-	public void setRightSide(Expression rightSide) {
-		mRightSide = rightSide;
-	}
-
 	public Expression getRightSide() {
 		return mRightSide;
 	}

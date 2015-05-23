@@ -2,11 +2,28 @@ package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
 
+/**
+ * General class representing a variable
+ */
 public abstract class Variable {
-
+	/**
+	 * Variable name
+	 */
 	protected String mName;
+
+	/**
+	 * Variable typs
+	 */
 	protected DataType mType;
+
+	/**
+	 * Flag to check if variable has a type from debug information
+	 */
 	protected boolean mDebugType;
+
+	/**
+	 * Flag to check if variable should print its type
+	 */
 	protected boolean mPrintType;
 
 	public Variable() {
@@ -32,6 +49,9 @@ public abstract class Variable {
 		mName = name;
 	}
 
+	/**
+	 * @return if variable has a defined type
+	 */
 	public boolean hasType() {
 		return mType != null && !mType.toString().isEmpty() && !mType.equals(DataType.UNKNOWN);
 	}

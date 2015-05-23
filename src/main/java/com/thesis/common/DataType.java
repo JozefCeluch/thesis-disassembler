@@ -5,8 +5,18 @@ import org.objectweb.asm.Type;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Representation of a Java type
+ *
+ * handles the translation from bytecode type to Java type
+ */
 public class DataType {
 
+	/**
+	 * Simple Java types
+	 *
+	 * INT, LONG, FLOAT, DOUBLE, BYTE, CHAR, SHORT, BOOLEAN, VOID
+	 */
 	private enum SimpleType {
 		INT(new DataType("int")),
 		LONG(new DataType("long")),
@@ -20,14 +30,22 @@ public class DataType {
 
 		private DataType mType;
 
-		private SimpleType(DataType type) {
+		SimpleType(DataType type) {
 			mType = type;
 		}
 
+		/**
+		 * @return data type instance of given enum instance
+		 */
 		public DataType getType(){
 			return mType;
 		}
 
+		/**
+		 * Method to check if the string is one of the simple types
+		 * @param string type string
+		 * @return true if the string is a simple type, false otherwise
+		 */
 		public static boolean contains(String string) {
 			for(SimpleType type : SimpleType.values()) {
 				if (type.toString().equals(string)) {
@@ -54,8 +72,15 @@ public class DataType {
 	public static final DataType VOID = SimpleType.VOID.getType();
 	public static final DataType UNKNOWN = new DataType("java.lang.Object");
 
+	/**
+	 * List of JVM subtypes of int (boolean, byte, char, short, int)
+	 */
 	public static final List<DataType> INT_SUBTYPES = Arrays.asList(BOOLEAN, BYTE, CHAR, SHORT, INT);
+
 	private String mTypeString;
+	/**
+	 * Array dimension, non-array types have dimension 0
+	 */
 	private int mDimension;
 
 	private DataType(String typeString) {
@@ -72,28 +97,52 @@ public class DataType {
 		}
 	}
 
+	/**
+	 * Creates the type instance from type descriptor
+	 * @param desc type descriptor
+	 * @return data type instance
+	 */
 	public static DataType getTypeFromDesc(String desc) {
 		if (desc == null || desc.isEmpty()) return UNKNOWN;
 		return new DataType(Type.getType(desc));
 	}
 
+	/**
+	 * Creates the type instance from Java type name
+	 * @param objectType Java type name
+	 * @return data type instance
+	 */
 	public static DataType getTypeFromObject(String objectType) {
 		if (objectType == null || objectType.isEmpty()) return UNKNOWN;
 		return new DataType(Type.getObjectType(objectType));
 	}
 
+	/**
+	 * Creates the type instance from the ASM Type
+	 * @param type ASM type instance
+	 * @return data type instance
+	 */
 	public static DataType getType(Type type) {
 		return new DataType(type);
 	}
 
+	/**
+	 * @return returns true if the type is not a SimpleType {@link com.thesis.common.DataType.SimpleType}
+	 */
 	public boolean isReferenceType() {
 		return !SimpleType.contains(this.mTypeString);
 	}
 
+	/**
+	 * @return returns true if the type has a dimenstion at least one (1 dimensional array)
+	 */
 	public boolean isArrayType() {
 		return mDimension > 0;
 	}
 
+	/**
+	 * @return dimension of the type (1 is simple array)
+	 */
 	public int getDimension() {
 		return mDimension;
 	}
@@ -102,6 +151,10 @@ public class DataType {
 		mDimension = dimension;
 	}
 
+	/**
+	 * Prints the text representation of the type
+	 * @return Java representation of the type
+	 */
 	public String print(){
 		return Util.javaObjectName(mTypeString) + printBrackets();
 	}
@@ -123,6 +176,11 @@ public class DataType {
 		return print();
 	}
 
+	/**
+	 * Compares the types without generics
+	 * @param other second data type
+	 * @return true if the base types equal
+	 */
 	public boolean equalsWithoutGeneric(DataType other) {
 		if (this == other) return true;
 		if (other == null) return false;

@@ -24,9 +24,9 @@ public class LogicGateExpression extends JumpExpression {
 		mType = DataType.BOOLEAN;
 		updateBranches();
 		if (mLeft.getJumpDestination() == right.getJumpDestination()) {
-			mOperand = Operand.AND;
+			mOperator = Operator.AND;
 		} else {
-			mOperand = Operand.OR;
+			mOperator = Operator.OR;
 			left.negate();
 		}
 		mThenBranchStart = right.getThenBranchStart();
@@ -53,7 +53,7 @@ public class LogicGateExpression extends JumpExpression {
 	public void negate() {
 		mLeft.negate();
 		mRight.negate();
-		mOperand = mOperand.neg();
+		mOperator = mOperator.neg();
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class LogicGateExpression extends JumpExpression {
 	@Override
 	public void write(Writer writer) throws IOException {
 		mLeft.write(writer);
-		writer.append(" ").append(mOperand.toString()).append(" ");
+		writer.append(" ").append(mOperator.toString()).append(" ");
 		mRight.write(writer);
 	}
 }

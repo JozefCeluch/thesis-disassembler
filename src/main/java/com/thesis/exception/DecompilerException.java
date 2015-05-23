@@ -1,5 +1,8 @@
 package com.thesis.exception;
 
+/**
+ * General decompilation exception
+ */
 public class DecompilerException extends Exception {
 
 	public DecompilerException(String message) {

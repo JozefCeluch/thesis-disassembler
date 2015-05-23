@@ -41,7 +41,7 @@ public class VarInsnNodeHandler extends AbstractHandler {
 		if (Util.isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
 			LocalVariable localVar = mState.getLocalVariable(varNum);
 			if (localVar == null) {
-				localVar = new LocalVariable("var" + varNum, DataType.UNKNOWN, varNum);
+				localVar = new LocalVariable(Util.VARIABLE_NAME_BASE + varNum, DataType.UNKNOWN, varNum);
 				mState.addLocalVariable(varNum, localVar); //TODO set type according to the instruction
 			}
 			Expression rightSide = null;

@@ -16,16 +16,50 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
+/**
+ * Representation of a class
+ *
+ * Drives the decompilation process and stores the results
+ */
 public class ClassBlock extends Block {
 
 	private ClassNode mClassNode;
+
+	/**
+	 * Class level annotations
+	 */
 	private List<Object> mAnnotations;
+
+	/**
+	 * Class access modifiers
+	 */
 	private String mAccessFlags;
+
+	/**
+	 * Type of the class
+	 */
 	private DataType mClassType;
+
+	/**
+	 * Superclasses
+	 */
 	private String mExtends = "";
+
+	/**
+	 * Superinterfaces
+	 */
 	private String mImplements = "";
+
+	/**
+	 * Bytecode in ASM format
+	 */
 	private String mBytecode;
 
+	/**
+	 * Constructor
+	 * @param classNode instance of ASM ClassNode that represents a class
+	 * @param parent enclosing class, non-null in case of innner class
+	 */
 	public ClassBlock(ClassNode classNode, Block parent) {
 		super(parent);
 		mClassNode = classNode;
@@ -63,10 +97,18 @@ public class ClassBlock extends Block {
 		return this;
 	}
 
+	/**
+	 * Textual representation of class file
+	 * @param bytecode disassembled bytecode
+	 */
 	public void setBytecode(String bytecode) {
 		mBytecode = bytecode;
 	}
 
+	/**
+	 *
+	 * @return bytecode of this class and all its inner classes
+	 */
 	public String getBytecode() {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(mBytecode);
@@ -90,7 +132,6 @@ public class ClassBlock extends Block {
 			removeFromBuffer("abstract ");
 		} else if (!Util.containsFlag(mClassNode.access, Opcodes.ACC_ENUM)) {
 			buf.append("class ");
-//			isClass = true;
 		}
 		return buf.toString();
 	}
@@ -108,13 +149,17 @@ public class ClassBlock extends Block {
 		if (interfaces != null && interfaces.size() > 0) {
 			buf.append(" implements ");
 			for (int i = 0; i < interfaces.size(); i++) {
-				addComma(i);
+				buf.append(Util.getCommaIfNeeded(i));
 				buf.append(DataType.getTypeFromObject((String) interfaces.get(i)).print());
 			}
 		}
 		return buf.toString();
 	}
 
+	/**
+	 * Decompiles methods of the class
+	 * @param methods list of {@link MethodNode}s
+	 */
 	private void appendMethods(List methods) {
 		for (Object method : methods) {
 			MethodBlock methodBlock = new MethodBlock((MethodNode)method, this);
@@ -124,7 +169,11 @@ public class ClassBlock extends Block {
 		}
 	}
 
-	protected void appendFields(List fields) {
+	/**
+	 * Decompiles fields
+	 * @param fields list of {@link FieldNode}s
+	 */
+	private void appendFields(List fields) {
 		for (Object object : fields) {
 			FieldNode field = (FieldNode)object;
 			FieldBlock fieldBlock = new FieldBlock(field, this);
@@ -132,7 +181,11 @@ public class ClassBlock extends Block {
 		}
 	}
 
-	protected void appendInnerClasses(List innerClasses) {
+	/**
+	 * Decompiles inner classes
+	 * @param innerClasses list of {@link InnerClassNode}
+	 */
+	private void appendInnerClasses(List innerClasses) {
 		for (Object object : innerClasses) {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
@@ -154,10 +207,7 @@ public class ClassBlock extends Block {
 	private void saveInnerClassName(InnerClassNode innerClass) {
 		if (innerClass.innerName != null && innerClass.outerName != null) {
 			Disassembler.getInstance().addInnerClassName(innerClass.name, innerClass.innerName);
-		} else if (innerClass.name.length() > mClassNode.name.length()) {
-//			Parser.getInstance().addInnerClassName(innerClass.name, innerClass.name.replace(mClassNode.name, ""));
 		}
-
 	}
 
 	private boolean shouldAddInnerClass(InnerClassNode innerClass) {

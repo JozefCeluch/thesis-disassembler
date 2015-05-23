@@ -27,7 +27,7 @@ public class TryCatchExpression extends Expression {
 
 		mCatchExpressions.addAll(
 				tryCatchItem.getCatchLocations().stream()
-						.map(location -> new CatchExpression(location, tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
+						.map(location -> new CatchExpression(tryCatchItem.getHandlerType(location), tryCatchItem.getCatchBlock(location)))
 						.collect(Collectors.toList()));
 		mTryStack = tryCatchItem.getTryStack();
 	}
@@ -54,16 +54,17 @@ public class TryCatchExpression extends Expression {
 
 	}
 
+	/**
+	 * Expression that represents a catch block
+	 */
 	public class CatchExpression extends Expression {
 
-		private int mLabel;
 		private ArrayList<DataType> mExceptions;
 		private AssignmentExpression mExpression;
 		private ExpressionStack mStack;
 
-		public CatchExpression(int label, ArrayList<String> exceptions, ExpressionStack stack) {
+		public CatchExpression(ArrayList<String> exceptions, ExpressionStack stack) {
 			super(0);
-			mLabel = label;
 			mStack = stack;
 			mExpression = mStack != null && mStack.get(0) instanceof AssignmentExpression ? (AssignmentExpression) mStack.remove(0) : null;
 			if (exceptions != null && !exceptions.isEmpty()) {
@@ -112,10 +113,6 @@ public class TryCatchExpression extends Expression {
 			} else {
 				writer.write(" finally");
 			}
-		}
-
-		public int getLine() {
-			return mLine;
 		}
 	}
 }

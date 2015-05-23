@@ -9,29 +9,47 @@ import org.objectweb.asm.Opcodes;
  */
 public abstract class JumpExpression extends Expression {
 
+	/**
+	 * Destination is not set
+	 */
 	public static final int NO_DESTINATION = -1;
 
+	/**
+	 * Destination of the expression jump (label ID)
+	 */
 	protected int mJumpDestination = NO_DESTINATION;
+
+	/**
+	 * End of else branch (label ID)
+	 */
 	protected int mElseBranchEnd = NO_DESTINATION;
+
+	/**
+	 * End of then branch (label ID)
+	 */
 	protected int mThenBranchStart = NO_DESTINATION;
+
+	/**
+	 * Location of the frame at the beginning of the loop (if any)
+	 */
 	protected int mStartFrameLocation = NO_DESTINATION;
 	protected ExpressionStack thenBranch;
 	protected ExpressionStack elseBranch;
-	protected Operand mOperand;
+	protected Operator mOperator;
 	protected LoopType mLoopType;
 
 	public JumpExpression(int opCode, int jumpDestination) {
 		super(opCode);
 		mType = DataType.BOOLEAN;
 		mJumpDestination = jumpDestination;
-		mOperand = makeOperand(opCode).neg();
+		mOperator = makeOperator(opCode).neg();
 		mLoopType = LoopType.NONE;
 	}
 
 	@Override
 	public void setOpCode(int instruction) {
 		super.setOpCode(instruction);
-		mOperand = makeOperand(instruction).neg();
+		mOperator = makeOperator(instruction).neg();
 	}
 
 	public int getJumpDestination() {
@@ -101,15 +119,24 @@ public abstract class JumpExpression extends Expression {
 		return mJumpDestination != NO_DESTINATION;
 	}
 
+	/**
+	 * Helper method to test if the expression is a loop
+	 *
+	 * based on the jump locations
+	 * @return true in case of a loop
+	 */
 	public boolean isLoop() {
 		return mStartFrameLocation != NO_DESTINATION && ((mElseBranchEnd != NO_DESTINATION && mElseBranchEnd == mStartFrameLocation)
 				|| (mJumpDestination != NO_DESTINATION && mJumpDestination == mStartFrameLocation));
 	}
 
 	public void negate() {
-		mOperand = mOperand.neg();
+		mOperator = mOperator.neg();
 	}
 
+	/**
+	 * Updates the type of then branch in case of ternary expression
+	 */
 	public void updateThenBranchType() {
 		if (thenBranch.size() == 2) {
 			Expression expression = thenBranch.get(0);
@@ -120,6 +147,9 @@ public abstract class JumpExpression extends Expression {
 		}
 	}
 
+	/**
+	 * Updates the type of else branch in case of ternary expression
+	 */
 	public void updateElseBranchType() {
 		if (elseBranch.size() == 1) {
 			Expression expression = elseBranch.get(0);
@@ -129,6 +159,10 @@ public abstract class JumpExpression extends Expression {
 		}
 	}
 
+	/**
+	 * Test if the expression is a ternary expression
+	 * @return true in case of a ternary expression
+	 */
 	public boolean isTernaryExpression() {
 		if (thenBranch == null || elseBranch == null || thenBranch.size() != 2 || elseBranch.size() != 1) return false;
 
@@ -141,6 +175,10 @@ public abstract class JumpExpression extends Expression {
 					|| elseExp instanceof JumpExpression);
 	}
 
+	/**
+	 * Test if the expression contains logic gate (short-circuit AND / OR)
+	 * @return true in case it is a logic gate expression
+	 */
 	public boolean containsLogicGateExpression() {
 		if (thenBranch.isEmpty()) return false;
 		Expression branchTop = thenBranch.get(0);
@@ -154,29 +192,32 @@ public abstract class JumpExpression extends Expression {
 		return mType;
 	}
 
-	private static Operand makeOperand(int opcode) {
+	private static Operator makeOperator(int opcode) {
 		if (opcode == Opcodes.IFEQ || opcode == Opcodes.IF_ACMPEQ || opcode == Opcodes.IF_ICMPEQ || opcode == Opcodes.IFNULL) {
-			return Operand.EQUAL;
+			return Operator.EQUAL;
 		}
 		if (opcode == Opcodes.IFNE || opcode == Opcodes.IF_ACMPNE || opcode == Opcodes.IF_ICMPNE || opcode == Opcodes.IFNONNULL){
-			return Operand.NOT_EQUAL;
+			return Operator.NOT_EQUAL;
 		}
 		if (opcode == Opcodes.IFGE || opcode == Opcodes.IF_ICMPGE){
-			return Operand.GREATER_EQUAL;
+			return Operator.GREATER_EQUAL;
 		}
 		if (opcode == Opcodes.IFGT || opcode == Opcodes.IF_ICMPGT){
-			return Operand.GREATER_THAN;
+			return Operator.GREATER_THAN;
 		}
 		if (opcode == Opcodes.IFLE || opcode == Opcodes.IF_ICMPLE){
-			return Operand.LESS_EQUAL;
+			return Operator.LESS_EQUAL;
 		}
 		if (opcode == Opcodes.IFLT || opcode == Opcodes.IF_ICMPLT){
-			return Operand.LESS_THAN;
+			return Operator.LESS_THAN;
 		}
 
-		return Operand.ERR;
+		return Operator.ERR;
 	}
 
+	/**
+	 * Type of the loop
+	 */
 	public enum LoopType {
 		NONE, WHILE, FOR, DO_WHILE;
 	}

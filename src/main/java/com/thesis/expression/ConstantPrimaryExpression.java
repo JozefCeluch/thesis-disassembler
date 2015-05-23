@@ -2,6 +2,7 @@ package com.thesis.expression;
 
 import com.thesis.common.DataType;
 import com.thesis.common.Util;
+import com.thesis.exception.DecompilerRuntimeException;
 import org.objectweb.asm.Opcodes;
 
 /**
@@ -40,7 +41,7 @@ public class ConstantPrimaryExpression extends PrimaryExpression {
 			}
 		}
 
-		throw new RuntimeException("Unexpected opCode");
+		throw new DecompilerRuntimeException("Unexpected opCode");
 	}
 
 	private static DataType getType(int opCode) {
@@ -55,6 +56,6 @@ public class ConstantPrimaryExpression extends PrimaryExpression {
 		} else if (opCode == Opcodes.ACONST_NULL) {
 			return DataType.UNKNOWN;
 		}
-		throw new RuntimeException("Unexpected opCode");
+		throw new DecompilerRuntimeException("Unexpected opCode");
 	}
 }

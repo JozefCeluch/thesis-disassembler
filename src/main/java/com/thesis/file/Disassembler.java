@@ -46,7 +46,8 @@ public class Disassembler {
 	private ClassBlock disassembleClass(ClassReader classReader, Block parent) {
 		Writer bytecodeStringWriter = new StringWriter();
 		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(bytecodeStringWriter));
-		classReader.accept(classVisitor, ClassReader.SKIP_FRAMES);
+		classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+		System.out.println(bytecodeStringWriter.toString());
 
 		ClassNode classNode = new ClassNode();
 		classReader.accept(classNode, ClassReader. EXPAND_FRAMES);
@@ -97,7 +98,6 @@ public class Disassembler {
 		public String getJavaCode() {
 			if (mJavaCode == null) {
 				mJavaCode = printDecompiledClass();
-				getBytecode();
 			}
 			return mJavaCode;
 		}

@@ -76,10 +76,6 @@ public class ExpressionStack {
 		}
 	}
 
-//	public void pushBelow(Expression expression, int position) {
-//		//TODO preparation for DUP instructions
-//	}
-
 	private void improveStack() {
 		for (int i = mLastImprovementPosition; i < mStack.size(); i++) { //todo think if ok
 			Expression currentExp = mStack.get(i).getExpression();

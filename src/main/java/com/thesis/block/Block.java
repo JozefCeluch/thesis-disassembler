@@ -20,10 +20,21 @@ public abstract class Block extends CodeElement {
 	protected static final String BLOCK_START = " " + OPENING_BRACKET + NL;
 	protected static final String BLOCK_END = CLOSING_BRACKET + NL;
 
+	/**
+	 * Buffer used for building of Java representation
+	 */
 	protected StringBuffer buf;
+
 	protected final AnnotationParser mAnnotationParser;
+
+	/**
+	 * Children of this block
+	 */
 	protected List<CodeElement> children;
 
+	/**
+	 * @param parent the enclosing block
+	 */
 	protected Block(Block parent) {
 		super(parent);
 		buf = new StringBuffer();
@@ -31,16 +42,20 @@ public abstract class Block extends CodeElement {
 		children = new ArrayList<>();
 	}
 
+	/**
+	 * The method that drives the decompilation process
+	 * @return instance of this block
+	 */
 	public abstract Block disassemble();
-
-	public List<CodeElement> getChildren() {
-		return children;
-	}
 
 	protected void clearBuffer() {
 		buf.setLength(0);
 	}
 
+	/**
+	 * Appends the access strings to the StringBuffer
+	 * @param access int representing access flags
+	 */
 	protected void addAccess(int access) {
 		if (Util.containsFlag(access, Opcodes.ACC_PRIVATE)) {
 			buf.append("private ");
@@ -80,25 +95,36 @@ public abstract class Block extends CodeElement {
 		}
 	}
 
+	/**
+	 * Appends the string to the buffer enclosed in Java comments
+	 * @param comment contents of the comment
+	 */
 	protected String wrapInComment(String comment) {
 		return " /* " + comment + " */ ";
 	}
 
-	protected void addComma(int currentPosition) {
-		if (currentPosition > 0)
-			buf.append(", ");
-	}
-
+	/**
+	 * Appends semicolon and new line to the buffer
+	 */
 	protected void addStatementEnd() {
 		buf.append(";" + NL);
 	}
 
+	/**
+	 * Removes the first occurrence of the string from the buffer
+	 * @param str text that is to be removed from buffer
+	 */
 	protected void removeFromBuffer(String str) {
 		int location = buf.indexOf(str);
 		if (location > -1)
 			buf.replace(location, location + str.length(), "");
 	}
 
+	/**
+	 * Recursively writes the content of the list to the writer
+	 * @param pw destination writer
+	 * @param l source list
+	 */
 	public static void printList(final Writer pw, final List<?> l) {
 		for (Object o : l) {
 			if (o instanceof List) {
@@ -113,6 +139,11 @@ public abstract class Block extends CodeElement {
 		}
 	}
 
+	/**
+	 * Converts the annotations in the list to Java source representation
+	 * @param annotationLists annotations in class file format
+	 * @return list of annotations
+	 */
 	protected List<Object> getSingleLineAnnotations(List... annotationLists){
 		List<Object> annotations = new ArrayList<>();
 		String tabs = getTabs();

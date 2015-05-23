@@ -22,7 +22,7 @@ public class SingleConditional extends JumpExpression {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		if (mOperand.equals(Operand.EQUAL)) {
+		if (mOperator.equals(Operator.EQUAL)) {
 			writer.write("!");
 		}
 		mLeftExpression.write(writer);

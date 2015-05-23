@@ -14,27 +14,20 @@ import java.io.Writer;
  */
 public class MultiConditional extends JumpExpression {
 
-	private Expression left;
-	private Expression right;
-
-	public MultiConditional(int opCode, int jumpDestination, Expression rightExpression , Expression leftExpression, ExpressionStack then) {
-		super(opCode, jumpDestination);
-		super.thenBranch = then;
-		left = leftExpression;
-		right = rightExpression;
-	}
+	private Expression mLeft;
+	private Expression mRight;
 
 	public MultiConditional(int opCode, int jumpDestination, Expression rightExpression , Expression leftExpression) {
 		super(opCode, jumpDestination);
-		left = leftExpression;
-		right = rightExpression;
+		mLeft = leftExpression;
+		mRight = rightExpression;
 	}
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		left.write(writer);
-		writer.append(" ").append(mOperand.toString()).append(" ");
-		right.write(writer);
+		mLeft.write(writer);
+		writer.append(" ").append(mOperator.toString()).append(" ");
+		mRight.write(writer);
 	}
 
 	@Override

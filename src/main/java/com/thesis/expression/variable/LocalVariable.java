@@ -11,10 +11,24 @@ import org.objectweb.asm.tree.LocalVariableNode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A variable class representing a local method variable in bytecode
+ */
 public class LocalVariable extends Variable {
 
+	/**
+	 * Location
+	 */
 	private int mIndex;
+
+	/**
+	 * Flag is variable a method argument
+	 */
 	private boolean mIsArgument;
+
+	/**
+	 * List of variable scopes
+	 */
 	private List<Scope> mScopes = new ArrayList<>();
 
 	public LocalVariable(int index) {
@@ -65,6 +79,10 @@ public class LocalVariable extends Variable {
 		return mScopes;
 	}
 
+	/**
+	 * Merge same variables together that are used at different scopes
+	 * @param other same variable but at different scope
+	 */
 	public void merge(LocalVariable other) {
 		if (!this.equals(other)) {
 			return;
@@ -109,10 +127,23 @@ public class LocalVariable extends Variable {
 		return result;
 	}
 
+	/**
+	 * A helper class that holds scopes of a variable
+	 */
 	public static class Scope {
+		/**
+		 * Use when the scope is undefined
+		 */
 		public static final int UNDEFINED = -1;
 
+		/**
+		 * Starting label of the variable scope
+		 */
 		private Label mStart;
+
+		/**
+		 * Ending label of the variable scope
+		 */
 		private Label mEnd;
 
 		public Scope(Label start, Label end) {
@@ -120,6 +151,11 @@ public class LocalVariable extends Variable {
 			mEnd = end;
 		}
 
+		/**
+		 * Get ID of the starting label
+		 * @param stack current expression stack
+		 * @return label id, or {@link com.thesis.expression.variable.LocalVariable.Scope#UNDEFINED} if not set
+		 */
 		public int getStartLabelId(ExpressionStack stack) {
 			if (mStart == null) {
 				return UNDEFINED;
@@ -127,6 +163,11 @@ public class LocalVariable extends Variable {
 			return stack.getLabelId(mStart);
 		}
 
+		/**
+		 * Get ID of the ending label
+		 * @param stack current expression stack
+		 * @return label id, or {@link com.thesis.expression.variable.LocalVariable.Scope#UNDEFINED} if not set
+		 */
 		public int getEndLabelId(ExpressionStack stack) {
 			if (mEnd == null) {
 				return UNDEFINED;

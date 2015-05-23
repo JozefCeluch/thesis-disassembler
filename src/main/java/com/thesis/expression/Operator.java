@@ -1,6 +1,9 @@
 package com.thesis.expression;
 
-public enum Operand {
+/**
+ * Arithmetic operation
+ */
+public enum Operator {
 	ADD("+"),
 	SUBTRACT("-"),
 	MULTIPLY("*"),
@@ -26,12 +29,12 @@ public enum Operand {
 	private String mOperation;
 	private String mOpposite;
 
-	Operand(String operation){
+	Operator(String operation){
 		mOperation = operation;
 		mOpposite = operation;
 	}
 
-	Operand(String operation, String opposite){
+	Operator(String operation, String opposite){
 		mOperation = operation;
 		mOpposite = opposite;
 	}
@@ -41,11 +44,11 @@ public enum Operand {
 		return mOperation;
 	}
 
-	public Operand neg() {
+	public Operator neg() {
 		return getOpposite();
 	}
 
-	private Operand getOpposite(){
+	private Operator getOpposite(){
 		String op = mOpposite;
 		switch (op){
 			case "==":

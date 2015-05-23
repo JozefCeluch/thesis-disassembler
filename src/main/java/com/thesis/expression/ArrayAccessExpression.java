@@ -26,14 +26,6 @@ public class ArrayAccessExpression extends Expression {
 		super(opCode);
 	}
 
-	public void setIndexExpression(Expression indexExpression) {
-		this.indexExpression = indexExpression;
-	}
-
-	public void setArrayRef(Expression arrayRef) {
-		this.arrayRef = arrayRef;
-	}
-
 	@Override
 	public DataType getType() {
 		return arrayRef.getType();

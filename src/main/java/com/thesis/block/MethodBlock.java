@@ -16,17 +16,55 @@ import java.io.Writer;
 import java.util.*;
 
 public class MethodBlock extends Block {
-	MethodNode mMethodNode;
+	private MethodNode mMethodNode;
+
+	/**
+	 * Type of the enclosing class
+	 */
 	private DataType mClassType;
+
+	/**
+	 * Acces flags of the enclosing class
+	 */
 	private int mClassAccess;
+
+	/**
+	 * Method arguments
+	 *
+	 * maps variable to its postion
+	 */
 	private Map<Integer, LocalVariable> mArguments;
 
+	/**
+	 * Method annotations
+	 */
 	private List<Object> mAnnotations;
+
+	/**
+	 * Access modifiers
+	 */
 	private String mAccessFlags;
+
+	/**
+	 * Method type reconstructed from signature
+	 */
 	private String mGenericReturnType;
-	private String mName;
+
+	/**
+	 * Arguments reconstructed from the signature
+	 */
 	private String mGenericArgs;
+
+	/**
+	 * Throws list reconstructed from the signature
+	 */
 	private String mGenericExceptions;
+
+	/**
+	 * Method name
+	 */
+	private String mName;
+
 
 	public MethodBlock(MethodNode methodNode, Block parent) {
 		super(parent);
@@ -34,34 +72,45 @@ public class MethodBlock extends Block {
 		mArguments = new HashMap<>();
 	}
 
+	/**
+	 * @param classAccess access flags of the enclosing class
+	 */
 	public void setClassAccess(int classAccess) {
 		mClassAccess = classAccess;
-	}
-
-	public void setClassType(DataType classType) {
-		mClassType = classType;
 	}
 
 	public MethodNode getMethodNode() {
 		return mMethodNode;
 	}
 
+	/**
+	 * @param classType type of the enclosing class
+	 */
+	public void setClassType(DataType classType) {
+		mClassType = classType;
+	}
+
 	public DataType getClassType() {
 		return mClassType;
 	}
 
+	/**
+	 * @return method arguments (variables mapped to their postions)
+	 */
 	public Map<Integer, LocalVariable> getArguments() {
 		return mArguments;
 	}
 
 	public Block disassemble() {
 		mAnnotations = getSingleLineAnnotations(mMethodNode.visibleAnnotations, mMethodNode.invisibleAnnotations);
-		//TODO parameter annotations, easy with debug info
 		appendMethodNode(mMethodNode);
 		disassembleCodeBlock();
 		return this;
 	}
 
+	/**
+	 * Drives the decompilation of the code
+	 */
 	private void disassembleCodeBlock() {
 		clearBuffer();
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
@@ -70,6 +119,10 @@ public class MethodBlock extends Block {
 		}
 	}
 
+	/**
+	 * Drives the decompilation of the method header
+	 * @param method mehod node
+	 */
 	private void appendMethodNode(MethodNode method) {
 		clearBuffer();
 		parseSignature(method);
@@ -127,7 +180,7 @@ public class MethodBlock extends Block {
 	}
 
 	private DataType getReturnType(String desc, String genericReturn) {
-		if (Util.isNotEmpty(genericReturn)){
+		if (genericReturn != null && !genericReturn.isEmpty()){
 			return DataType.getTypeFromObject(genericReturn);
 		} else {
 			return DataType.getType(Type.getReturnType(desc));
@@ -138,7 +191,7 @@ public class MethodBlock extends Block {
 		boolean isStatic = Util.containsFlag(method.access, Opcodes.ACC_STATIC);
 		clearBuffer();
 		buf.append("(");
-		if (Util.isNotEmpty(genericDecl)) {
+		if (genericDecl != null && !genericDecl.isEmpty()) {
 			buf.append(genericDecl);
 		} else {
 			int maxArgumentCount;
@@ -148,7 +201,7 @@ public class MethodBlock extends Block {
 				maxArgumentCount = mArguments.size()-1;
 			}
 			for (int i = 0; i < maxArgumentCount; i++) {
-				addComma(i);
+				buf.append(Util.getCommaIfNeeded(i));
 				addAnnotations(method, i);
 				LocalVariable variable = mArguments.get(isStatic ? i : i+1);
 				buf.append(variable.getType().print()).append(" ").append(variable.toString());
@@ -209,13 +262,13 @@ public class MethodBlock extends Block {
 
 	private String getExceptions(List exceptions, String genericExceptions) {
 		clearBuffer();
-		if (Util.isNotEmpty(genericExceptions)) {
+		if (genericExceptions != null && !genericExceptions.isEmpty()) {
 			buf.append(genericExceptions);
 		} else {
 			if (exceptions != null && exceptions.size() > 0) {
 				buf.append(" throws ");
 				for (int i = 0; i < exceptions.size(); ++i) {
-					addComma(i);
+					buf.append(Util.getCommaIfNeeded(i));
 					buf.append(Type.getObjectType((String)exceptions.get(i)).getClassName());
 				}
 			}

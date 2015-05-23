@@ -16,7 +16,15 @@ import java.util.List;
 public class FieldBlock extends Block {
 
 	private FieldNode mFieldNode;
+
+	/**
+	 * Decompiled annotations of this field
+	 */
 	private List<Object> mAnnotations;
+
+	/**
+	 * Access modifiers of the field
+	 */
 	private String mAccessFlags;
 
 	public FieldBlock(FieldNode fieldNode, Block parent) {

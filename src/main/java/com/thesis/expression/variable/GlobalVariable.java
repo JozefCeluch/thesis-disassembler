@@ -2,8 +2,14 @@ package com.thesis.expression.variable;
 
 import com.thesis.common.DataType;
 
+/**
+ * A variable class representing a field in bytecode
+ */
 public class GlobalVariable extends Variable {
 
+	/**
+	 * Enclosing class
+	 */
 	private DataType mOwner;
 
 	public GlobalVariable(String name, DataType type, DataType owner) {

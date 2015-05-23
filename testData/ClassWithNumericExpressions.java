@@ -16,7 +16,7 @@ public class ClassWithNumericExpressions {
 		intVar = anotherIntVar + 873 + (anotherIntVar + param1) * v2;
 		str = "some random string literal";
 		array = new int[14];
-		param1 = param1 + 1;
+		param1 = - (param1 + 1);
 		param1 += 1;
 		param1 += 3000;
 		param1 += 123456789;

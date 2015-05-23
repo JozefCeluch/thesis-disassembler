@@ -77,6 +77,9 @@ public class PrimaryExpression extends Expression {
 		// no preparation necessary
 	}
 
+	/**
+	 * @return true if the expression is a constant
+	 */
 	public boolean isConstant() {
 		return true;
 	}

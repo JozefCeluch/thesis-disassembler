@@ -16,10 +16,23 @@ public class AnnotationParser {
 		buf = new StringBuffer();
 	}
 
+	/**
+	 * Converts the annotation list to Java source string
+	 * @param annotations list of annotations
+	 * @param separator separating character between anotations
+	 * @return textual representation of annotations
+	 */
 	public String getAnnotations(List annotations, String separator) {
 		return getAnnotations(annotations, null, separator);
 	}
 
+	/**
+	 * Converts the annotation list to Java source string
+	 * @param annotations list of annotations
+	 * @param prefix a string that is added before each annotation (e.g. tabs)
+	 * @param suffix a string that is added after each annotation (e.g. separator)
+	 * @return textual representation of annotations
+	 */
 	public String getAnnotations(List annotations, String prefix, String suffix) {
 		if (annotations == null) return "";
 
@@ -32,6 +45,11 @@ public class AnnotationParser {
 		return buf.toString();
 	}
 
+	/**
+	 * Converts the default value of annotation interface method
+	 * @param value {@link org.objectweb.asm.tree.MethodNode#annotationDefault}
+	 * @return textual representation of the value
+	 */
 	public String getAnnotationValue(Object value) {
 		buf.setLength(0);
 		addAnnotationValue(null, value);
@@ -40,7 +58,7 @@ public class AnnotationParser {
 
 	private void addAnnotationNode(String desc, List values) {
 		if (desc != null) {
-			buf.append("@").append(Type.getType(desc).getClassName()); //todo more complicated annotations?
+			buf.append("@").append(Type.getType(desc).getClassName());
 			if (values != null) {
 				buf.append("(");
 				for (int i = 0; i < values.size(); i += 2) {
