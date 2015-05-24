@@ -211,7 +211,7 @@ public class TryCatchManager {
 		}
 
 		/**
-		 * Adds catch types to the matching ({@link .Item#matches(Item)}) item
+		 * Adds catch types to the matching item
 		 * @param handlerLocations locations of catch blocks
 		 * @param catchTypes types of caught exceptions
 		 */

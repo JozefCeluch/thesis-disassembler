@@ -98,6 +98,7 @@ public abstract class Block extends CodeElement {
 	/**
 	 * Appends the string to the buffer enclosed in Java comments
 	 * @param comment contents of the comment
+	 * @return text in Java comment block
 	 */
 	protected String wrapInComment(String comment) {
 		return " /* " + comment + " */ ";

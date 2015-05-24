@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Expression that represents the short-circuit operators && and ||
+ * Expression that represents the short-circuit operators {@literal &&} and {@literal ||}
  *<p>
  * in bytecode these operators do not have any special instructions,
  * this expression is inferred from the jump destinations of the processed conditional expression

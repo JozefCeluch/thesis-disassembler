@@ -190,7 +190,7 @@ public class ExpressionStack {
 	 * Returns the expression at the specified position in the stack
 	 * @param index position
 	 * @return object at the specified index
-	 * @throws ArrayIndexOutOfBoundsException - if the index is out of range ( index < 0 || index >= size())
+	 * @throws ArrayIndexOutOfBoundsException - if the index is out of range {@literal ( index < 0 || index >= size())}
 	 */
 	public Expression get(int index) {
 		return mStack.get(index).getExpression();
@@ -200,7 +200,7 @@ public class ExpressionStack {
 	 * Returns the item at given index
 	 * @param index position
 	 * @return item at the specified index
-	 * @throws ArrayIndexOutOfBoundsException - if the index is out of range ( index < 0 || index >= size())
+	 * @throws ArrayIndexOutOfBoundsException - if the index is out of range {@literal ( index < 0 || index >= size())}
 	 */
 	Item getItem(int index) {
 		return mStack.get(index);

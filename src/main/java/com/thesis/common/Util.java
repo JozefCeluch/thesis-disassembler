@@ -124,7 +124,10 @@ public class Util {
 	}
 
 	/**
-	 * min and max are inclusive
+	 *
+	 * @param num tested number
+	 * @param min inclusive minimum value
+	 * @param max inclusive maximum value
 	 * @return true if num is between min and max
 	 */
 	public static boolean isBetween(int num, int min, int max) {

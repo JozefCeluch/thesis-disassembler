@@ -1,6 +1,5 @@
 package com.thesis.file;
 
-
 import com.thesis.exception.DecompilerException;
 
 import java.io.*;
@@ -11,16 +10,31 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * Opens and reads class files
+ * <p>
+ * Contains also methods for handling jar files but those are not used
+ */
 public class Reader {
 
     private String mDirectoryName;
     private Path mPath;
 
+	/**
+	 * Creates new instance
+	 * @param directory directory containing the class files
+	 */
     public Reader(String directory) {
         mDirectoryName = directory;
         mPath = openDirectory();
     }
 
+	/**
+	 * Opens the given file
+	 * @param fileName name of the class file in the provided directory
+	 * @return opened file input stream
+	 * @throws FileNotFoundException in case file was not found
+	 */
     InputStream openClassFile(String fileName) throws FileNotFoundException {
         return new FileInputStream(mDirectoryName + File.separator + fileName);
     }
