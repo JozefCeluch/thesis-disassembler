@@ -1,6 +1,8 @@
 package com.thesis.file;
 
 
+import com.thesis.exception.DecompilerException;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -20,12 +22,8 @@ public class Reader {
     }
 
     InputStream openClassFile(String fileName) throws FileNotFoundException {
-        InputStream stream = null;
-
-        stream = new FileInputStream(mDirectoryName + File.separator + fileName);
-        return stream;
+        return new FileInputStream(mDirectoryName + File.separator + fileName);
     }
-
 
     Path openDirectory() {
         Path directory = Paths.get(mDirectoryName);
@@ -35,12 +33,7 @@ public class Reader {
         return null;
     }
 
-    public void setDirectoryName(String directoryName) {
-        mDirectoryName = directoryName;
-        mPath = openDirectory();
-    }
-
-    public List<Path> listAllFiles(Path path) {
+    List<Path> listAllFiles(Path path) {
         if (path == null) {
             path = mPath;
         }
@@ -57,34 +50,12 @@ public class Reader {
         return files;
     }
 
-    private Path createEmptyFolder(String name) {
-        if (name.endsWith(".jar")) {
-            name = name.substring(0, name.indexOf(".jar"));
-        }
-        Path folder = Paths.get(mPath.toString() + File.separator + name);
-        try {
-            if (!Files.exists(folder)) {
-                folder = Files.createDirectory(folder);
-            } else {
-                for (Path file: listAllFiles(folder)) {
-                    Files.deleteIfExists(file);
-                }
-            }
-        } catch (IOException e) {
-            //todo throw exception
-            e.printStackTrace();
-        }
-
-        return folder;
-    }
-
-    public Path extractClassFilesFromJar(String jarName) {
-        JarFile jarFile = null;
+    Path extractClassFilesFromJar(String jarName) throws DecompilerException{
+        JarFile jarFile;
         try {
             jarFile = new JarFile(mPath.toString() + File.separator + jarName);
         } catch (IOException e) {
-            e.printStackTrace();
-            //todo throw own exception
+            throw new DecompilerException("Problem while creating a jar file object",e);
         }
 
         Path folder = createEmptyFolder(jarName);
@@ -104,9 +75,29 @@ public class Reader {
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new DecompilerException("Problem while reading a jar",e);
             }
         }
+        return folder;
+    }
+
+    private Path createEmptyFolder(String name) throws DecompilerException {
+        if (name.endsWith(".jar")) {
+            name = name.substring(0, name.indexOf(".jar"));
+        }
+        Path folder = Paths.get(mPath.toString() + File.separator + name);
+        try {
+            if (!Files.exists(folder)) {
+                folder = Files.createDirectory(folder);
+            } else {
+                for (Path file: listAllFiles(folder)) {
+                    Files.deleteIfExists(file);
+                }
+            }
+        } catch (IOException e) {
+            throw new DecompilerException("Error while creating a folder", e);
+        }
+
         return folder;
     }
 }

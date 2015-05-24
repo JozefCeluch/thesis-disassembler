@@ -9,6 +9,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 
+/**
+ * A statement that represents the Java switch-case statement
+ */
 public class SwitchStatement extends Statement {
 
 	private BlockStatement mSwitchBlock;

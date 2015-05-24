@@ -17,7 +17,12 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 /**
- * ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET
+ * Handles the {@link VarInsnNode}
+ * <p>
+ * instructions:
+ * ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET.
+ * <p>
+ * RET is deprecated since Java 6.
  */
 public class VarInsnNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(VarInsnNodeHandler.class);
@@ -29,6 +34,7 @@ public class VarInsnNodeHandler extends AbstractHandler {
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
+		LOG.debug(logNode(node));
 		checkType(node, VarInsnNode.class);
 
 		ExpressionStack stack = mState.getActiveStack();
@@ -41,8 +47,8 @@ public class VarInsnNodeHandler extends AbstractHandler {
 		if (Util.isBetween(opCode, Opcodes.ISTORE, Opcodes.ASTORE)) {
 			LocalVariable localVar = mState.getLocalVariable(varNum);
 			if (localVar == null) {
-				localVar = new LocalVariable(Util.VARIABLE_NAME_BASE + varNum, DataType.UNKNOWN, varNum);
-				mState.addLocalVariable(varNum, localVar); //TODO set type according to the instruction
+				localVar = new LocalVariable(Util.VARIABLE_NAME_BASE + varNum, makeType(opCode), varNum);
+				mState.addLocalVariable(varNum, localVar);
 			}
 			Expression rightSide = null;
 			if (mState.getTryCatchManager().hasCatchBlockStart(mState.getCurrentLabel()) && !(mState.getActiveStack().peek() instanceof VariablePrimaryExpression)) {
@@ -51,6 +57,21 @@ public class VarInsnNodeHandler extends AbstractHandler {
 			stack.push(new AssignmentExpression(opCode, new LeftHandSide(opCode, localVar), rightSide));
 
 		}
-		// RET is deprecated since Java 6
+	}
+
+	private DataType makeType(int opcode) {
+		switch (opcode) {
+			case Opcodes.ISTORE:
+				return DataType.INT;
+			case Opcodes.LSTORE:
+				return DataType.LONG;
+			case Opcodes.FSTORE:
+				return DataType.FLOAT;
+			case Opcodes.DSTORE:
+				return DataType.DOUBLE;
+			case Opcodes.ASTORE:
+			default:
+				return DataType.UNKNOWN;
+		}
 	}
 }

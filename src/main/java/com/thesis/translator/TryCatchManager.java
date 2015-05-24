@@ -5,6 +5,9 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Handles try-catch blocks and their locations
+ */
 public class TryCatchManager {
 
 	/**
@@ -24,6 +27,13 @@ public class TryCatchManager {
 	}
 
 	//region INIT
+
+	/**
+	 * Creates a new instance and initializes the manager
+	 * @param tryCatchBlocks list of {@link TryCatchBlockNode}s
+	 * @param stack expression stack, used for creation of label ids
+	 * @return initialized TryCatchManager
+	 */
 	public static TryCatchManager newInstance(List tryCatchBlocks, ExpressionStack stack) {
 		TryCatchManager manager = new TryCatchManager();
 		List<Item> tryCatchItems = new ArrayList<>();
@@ -72,28 +82,25 @@ public class TryCatchManager {
 	}
 	//endregion
 
+	/**
+	 * @return true if the manager does not contain any try-catch blocks
+	 */
 	public boolean isEmpty() {
 		return mItems == null || mItems.isEmpty();
 	}
 
+	/**
+	 * @param labelId location
+	 * @return list of trycatch items at given label location
+	 */
 	public List<Item> getTryBlocksLocation(int labelId) {
 		return mItems.stream().filter(item -> item.getTryStartLocation() == labelId).collect(Collectors.toList());
 	}
 
-	public boolean hasCatchHandlerEnd(int labelId) {
-		for(Item item : mCatchBlockHandlers) {
-			if (item.getTryEndLocation() == labelId) return true;
-		}
-		return false;
-	}
-
-	public boolean hasCatchHandlerLocation(int labelId) {
-		for(Item item : mCatchBlockHandlers) {
-			if (item.getCatchLocations().contains(labelId)) return true;
-		}
-		return false;
-	}
-
+	/**
+	 * @param location label
+	 * @return true if the manager has a catch block that starts at the provided label
+	 */
 	public boolean hasCatchBlockStart(int location) {
 		for (Item item : mItems) {
 			if (item.getCatchLocations().contains(location)) {
@@ -103,14 +110,62 @@ public class TryCatchManager {
 		return false;
 	}
 
+	/**
+	 * @param labelId label
+	 * @return true if the manager has a catch block that ends at provided label id
+	 */
+	public boolean hasCatchHandlerEnd(int labelId) {
+		for(Item item : mCatchBlockHandlers) {
+			if (item.getTryEndLocation() == labelId) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param labelId location
+	 * @return true, if the manager has a catch block handler that starts at given label id
+	 */
+	public boolean hasCatchHandlerLocation(int labelId) {
+		for(Item item : mCatchBlockHandlers) {
+			if (item.getCatchLocations().contains(labelId)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * TryCatchManager item that holds information about a single try block (with possibly more catch blocks)
+	 */
 	public static class Item {
 
+		/**
+		 * Start of the try block
+		 */
 		private int mTryStartLocation;
+
+		/**
+		 * End of the try block
+		 */
 		private int mTryEndLocation;
+
+		/**
+		 * Locations of the catch blocks
+		 */
 		private Set<Integer> mCatchLocations = new HashSet<>();
-		private Map<Integer, ArrayList<String>> mCatchTypes = new HashMap<>(); // location, catch types (multicatch)
+
+		/**
+		 * Maps the location of catch block to the list of exceptions handled by the block (supports multicatch)
+		 */
+		private Map<Integer, ArrayList<String>> mCatchTypes = new HashMap<>();
+
+		/**
+		 * Try block
+		 */
 		private ExpressionStack mTryStack;
-		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>(); //location, stack
+
+		/**
+		 * Maps the location of catch block expression stack that contains expressions in the block
+		 */
+		private Map<Integer, ExpressionStack> mCatchStacks = new HashMap<>();
 
 		public Item(int tryStartLocation, int tryEndLocation, int catchLocation, String exception) {
 			mTryStartLocation = tryStartLocation;
@@ -155,6 +210,11 @@ public class TryCatchManager {
 			return mCatchStacks.size();
 		}
 
+		/**
+		 * Adds catch types to the matching ({@link .Item#matches(Item)}) item
+		 * @param handlerLocations locations of catch blocks
+		 * @param catchTypes types of caught exceptions
+		 */
 		public void addCatchTypes(List<Integer> handlerLocations, Map<Integer, ArrayList<String>> catchTypes) {
 			mCatchLocations.addAll(handlerLocations);
 
@@ -167,10 +227,18 @@ public class TryCatchManager {
 			}
 		}
 
+		/**
+		 * @param other item
+		 * @return true if the start and end locations of the try blocks match
+		 */
 		public boolean matches(Item other) {
 			return this.mTryStartLocation == other.mTryStartLocation && this.mTryEndLocation == other.mTryEndLocation;
 		}
 
+		/**
+		 * @param label location
+		 * @return true if the try-catch item has a catch block at given location
+		 */
 		public boolean hasHandlerLabel(int label) {
 			for(int key : mCatchTypes.keySet()) {
 				if (key == label) return true;
@@ -178,6 +246,11 @@ public class TryCatchManager {
 			return false;
 		}
 
+		/**
+		 * Adds a catch block to the given handler id
+		 * @param handlerId location of the catch block
+		 * @param catchStack expression stack
+		 */
 		public void addCatchBlock(int handlerId, ExpressionStack catchStack) {
 			mCatchStacks.put(handlerId, catchStack);
 		}
@@ -186,6 +259,10 @@ public class TryCatchManager {
 			return mCatchStacks.get(catchLocation);
 		}
 
+		/**
+		 * @param catchLocation location of catch block
+		 * @return list of caught exceptions
+		 */
 		public ArrayList<String> getHandlerType(int catchLocation) {
 			return mCatchTypes.get(catchLocation);
 		}

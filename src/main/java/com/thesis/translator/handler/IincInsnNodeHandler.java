@@ -15,6 +15,9 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 
 /**
+ * Handles the {@link IincInsnNode}
+ * <p>
+ * instructions:
  * IINC
  */
 public class IincInsnNodeHandler extends AbstractHandler {

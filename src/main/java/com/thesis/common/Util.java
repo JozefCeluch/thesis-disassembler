@@ -4,7 +4,9 @@ import com.thesis.file.Disassembler;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.util.Printer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Arbitrary helper methods
@@ -22,11 +24,46 @@ public class Util {
 	public static final String VARIABLE_NAME_BASE = "var";
 
 	/**
+	 * Map that maps the full inner class names to their displayed names
+	 *
+	 * full inner class name, displayed inner class name
+	 */
+	private static Map<String, String> mInnerClassMap;
+
+	/**
 	 * @param objectName full object name in bytecode representation
 	 * @return Java class name representation without outer classes
 	 */
 	public static String javaObjectName(String objectName) {
-		return Disassembler.getInstance().getInnerClassDisplayName(objectName);
+		return getInnerClassDisplayName(objectName);
+	}
+
+	/**
+	 * Adds the trimmed name of inner class to the map
+	 * @param fullName full name of inner class
+	 * @param displayName name of the inner class without the enclosing classes
+	 */
+	public static void addInnerClassName(String fullName, String displayName) {
+		if (mInnerClassMap == null) {
+			mInnerClassMap = new HashMap<>();
+		}
+		if (!mInnerClassMap.containsKey(fullName)) {
+			mInnerClassMap.put(fullName, displayName);
+		}
+	}
+
+	/**
+	 * Returns trimmed name of the inner class with the given full name
+	 * @param fullName fill name of the inner class
+	 * @return trimmed name, if there is any stored, otherwise the provided full name
+	 */
+	public static String getInnerClassDisplayName(String fullName) {
+		if (mInnerClassMap == null) {
+			return fullName;
+		}
+		String result = mInnerClassMap.get(fullName);
+
+		return result != null ? result : fullName;
 	}
 
 	/**

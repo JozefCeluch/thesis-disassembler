@@ -115,7 +115,8 @@ public class MethodBlock extends Block {
 		clearBuffer();
 		if (!Util.containsFlag(mMethodNode.access, Opcodes.ACC_ABSTRACT)){
 			InstructionTranslator translator = new InstructionTranslator(this);
-			children.addAll(translator.addCode());
+			translator.translate();
+			children.addAll(translator.getStatements());
 		}
 	}
 

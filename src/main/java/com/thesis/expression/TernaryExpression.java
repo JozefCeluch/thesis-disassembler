@@ -21,8 +21,8 @@ public class TernaryExpression extends JumpExpression {
 	public TernaryExpression(JumpExpression expression) {
 		super(expression.mOpCode, expression.getJumpDestination());
 		mCondition = expression;
-		mFirst = mCondition.getThenBranch().getAll().get(0).getExpression();
-		mSecond = mCondition.getElseBranch().getAll().get(0).getExpression();
+		mFirst = mCondition.getThenBranch().get(0);
+		mSecond = mCondition.getElseBranch().get(0);
 		if(mSecond instanceof JumpExpression) {
 			mSecond = new TernaryExpression((JumpExpression) mSecond);
 		}

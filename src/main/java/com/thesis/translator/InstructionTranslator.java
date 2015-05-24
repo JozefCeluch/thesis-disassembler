@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class that drives the translation of the bytecode of a single method to Java
+ */
 public class InstructionTranslator {
 	private static final Logger LOG = Logger.getLogger(InstructionTranslator.class);
 
@@ -25,6 +28,10 @@ public class InstructionTranslator {
 
 	private MethodState mState;
 
+	/**
+	 * Creates the object and prepares the helper classes
+	 * @param methodBlock method to decompile
+	 */
 	public InstructionTranslator(MethodBlock methodBlock) {
 		mState = new MethodState();
 		mMethodBlock = methodBlock;
@@ -34,7 +41,10 @@ public class InstructionTranslator {
 		prepareHandlers();
 	}
 
-	public List<Statement> addCode() {
+	/**
+	 * Converts the bytecode instructions into higher-level representations
+	 */
+	public void translate() {
 		LOG.debug("METHOD: " + mMethod.name);
 
 		mState.getFinalStack().addEnhancer(new LoopEnhancer());
@@ -45,7 +55,13 @@ public class InstructionTranslator {
 		}
 
 		mState.getFinalStack().enhance();
+	}
 
+	/**
+	 * Converts the decompiled expressions to statements and returns them
+	 * @return list of decompiled statements
+	 */
+	public List<Statement> getStatements() {
 		StatementCreator sc = new StatementCreator(mState.getFinalStack(), mMethodBlock);
 		List<Statement> statements = getLocalVariableAssignments();
 		statements.addAll(sc.getStatements());

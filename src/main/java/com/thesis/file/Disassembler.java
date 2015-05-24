@@ -9,35 +9,61 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
+/**
+ * The class responsible for initiating the decompilation process
+ * <p>
+ * Works as a singleton in order to facilitate decompilation of inner classes
+ */
 public class Disassembler {
 
     private Reader mReader;
 	private static Disassembler mDisassembler;
-	private Map<String, String> mInnerClassMap; // <full inner class name, displayed inner class name>
 
+	/**
+	 * Creates an instance of this class
+	 * <p>
+	 * The instance is stored as static field so subsequent calls to {@link Disassembler#getInstance()}
+	 * return this instance
+	 * @param directory where the classfiles are stored
+	 * @return initialized Disassembler
+	 */
 	public static Disassembler createInstance(String directory) {
 		mDisassembler = new Disassembler(directory);
 		return mDisassembler;
 	}
 
+	/**
+	 *
+	 * @return initialized instance of Disassembler, or null if {@link Disassembler#createInstance(String)} was not called before
+	 */
 	public static Disassembler getInstance() {
 		return mDisassembler;
 	}
 
     private Disassembler(String directory) {
         mReader = new Reader(directory);
-		mInnerClassMap = new HashMap<>();
     }
 
+	/**
+	 * Decompiles the file, should be used from outside
+	 * @param file name of the file to decompile
+	 * @return decompiled class in the encapsulating object
+	 * @throws DecompilerException or its subclass, in case of a problem
+	 */
     public DecompilationResult decompileClassFile(String file) throws DecompilerException {
 		ClassReader classReader = getClassReader(file);
 		ClassBlock classBlock = disassembleClass(classReader, null);
 		return new DecompilationResult(classBlock);
     }
 
+	/**
+	 * Decompiles the inner class file
+	 * @param file name of the file to decompile
+	 * @param parent enclosing class
+	 * @return instance of decompiled class that is used internally
+	 * @throws DecompilerException or its subclass, in case of a problem
+	 */
 	public ClassBlock decompileInnerClass(String file, Block parent) throws DecompilerException {
 		file = file.endsWith(".class") ? file : file + ".class";
 		return disassembleClass(getClassReader(file), parent);
@@ -47,7 +73,6 @@ public class Disassembler {
 		Writer bytecodeStringWriter = new StringWriter();
 		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(bytecodeStringWriter));
 		classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
-		System.out.println(bytecodeStringWriter.toString());
 
 		ClassNode classNode = new ClassNode();
 		classReader.accept(classNode, ClassReader. EXPAND_FRAMES);
@@ -66,28 +91,27 @@ public class Disassembler {
 		}
 	}
 
-	public void addInnerClassName(String fullName, String displayName) {
-		if (!mInnerClassMap.containsKey(fullName)) {
-			mInnerClassMap.put(fullName, displayName);
-		}
-	}
-
-	public String getInnerClassDisplayName(String fullName) {
-		String result = mInnerClassMap.get(fullName);
-
-		return result != null ? result : fullName;
-	}
-
+	/**
+	 * Holds the result of the decompilation process
+	 * <p>
+	 * Holds the instance of ClassBlock of the decompiled class and provides methods to
+	 * retrieve strings with Java source code and bytecode in ASM format
+	 */
+	@SuppressWarnings("unused")
 	public static class DecompilationResult {
 		private ClassBlock mClassBlock;
 
 		private String mJavaCode = null;
 		private String mBytecode = null;
 
-		public DecompilationResult(ClassBlock classBlock) {
+		DecompilationResult(ClassBlock classBlock) {
 			mClassBlock = classBlock;
 		}
 
+		/**
+		 * Convenience method to get the bytecode
+		 * @return string representation of class bytecode in ASM format
+		 */
 		public String getBytecode() {
 			if (mBytecode == null) {
 				mBytecode = mClassBlock.getBytecode();
@@ -95,6 +119,10 @@ public class Disassembler {
 			return mBytecode;
 		}
 
+		/**
+		 * Convenience method to get the generated Java code
+		 * @return string representation of the decompiled Java code
+		 */
 		public String getJavaCode() {
 			if (mJavaCode == null) {
 				mJavaCode = printDecompiledClass();
@@ -102,6 +130,10 @@ public class Disassembler {
 			return mJavaCode;
 		}
 
+		/**
+		 * Returns the complete decompiled ClassBlock
+		 * @return decompiled object
+		 */
 		public ClassBlock getClassBlock() {
 			return mClassBlock;
 		}

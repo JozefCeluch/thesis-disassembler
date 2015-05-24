@@ -56,7 +56,7 @@ class TryCatchBlockNode {
 			int var2 = a.length();
 		} catch (java.lang.NullPointerException e) {
 			a = "caught";
-			throw new java.io.IOException(e);
+			throw new java.io.IOException((java.lang.Throwable) e);
 		} finally {
 			a = "finally";
 		}

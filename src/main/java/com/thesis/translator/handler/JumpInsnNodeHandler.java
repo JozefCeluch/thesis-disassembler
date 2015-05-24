@@ -12,6 +12,14 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 
+/**
+ * Handles the {@link JumpInsnNode}
+ * <p>
+ * instructions:
+ * IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IFNULL or IFNONNULL
+ * IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
+ * GOTO, JSR (deprecated since Java 6).
+ */
 public class JumpInsnNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(JumpInsnNodeHandler.class);
 

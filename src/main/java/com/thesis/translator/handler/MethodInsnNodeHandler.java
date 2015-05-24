@@ -13,6 +13,9 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 /**
+ * Handles the {@link MethodInsnNode}
+ * <p>
+ * instructions:
  * INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE
  */
 public class MethodInsnNodeHandler extends AbstractHandler {

@@ -1,7 +1,6 @@
 package com.thesis.statement;
 
 import com.thesis.common.CodeElement;
-import com.thesis.translator.StatementCreator;
 import com.thesis.expression.TryCatchExpression;
 
 import java.io.IOException;
@@ -9,17 +8,20 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A statement that represents a try-catch-finally block
+ */
 public class TryCatchStatement extends Statement {
 
 	private BlockStatement mTryBlock;
-	private List<CatchStatement> mCatchBlocks;
+	private List<CatchStatement> mCatchStatements;
 
 	public TryCatchStatement(TryCatchExpression tryCatchExpression, int line, CodeElement parent) {
 		super(tryCatchExpression, line, parent);
 		mTryBlock = new BlockStatement(line, tryCatchExpression.getTryStack(), this);
-		mCatchBlocks = new ArrayList<>();
+		mCatchStatements = new ArrayList<>();
 		for(TryCatchExpression.CatchExpression catchExpression : tryCatchExpression.getCatchExpressions()) {
-			mCatchBlocks.add(new CatchStatement(catchExpression, this));
+			mCatchStatements.add(new CatchStatement(catchExpression, this));
 		}
 	}
 
@@ -27,12 +29,15 @@ public class TryCatchStatement extends Statement {
 	public void write(Writer writer) throws IOException {
 		writer.append(getTabs()).write("try");
 		mTryBlock.write(writer);
-		for (CatchStatement catchBlock : mCatchBlocks) {
-			catchBlock.write(writer);
+		for (CatchStatement catchStatement : mCatchStatements) {
+			catchStatement.write(writer);
 		}
 		writer.write(NL);
 	}
 
+	/**
+	 * A statement that represents a catch and a finally block (finally is a special case of a catch block)
+	 */
 	private class CatchStatement extends Statement {
 
 		private BlockStatement mCatchBlock;

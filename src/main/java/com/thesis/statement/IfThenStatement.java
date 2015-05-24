@@ -7,18 +7,34 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
+/**
+ * A statement that represents a if-then statement
+ */
 public class IfThenStatement extends Statement {
 
+	/**
+	 * Expression printed in the brackets
+	 */
 	protected JumpExpression mCondition;
-	protected Statement mThenStatement;
 
+	/**
+	 * Then block
+	 */
+	protected BlockStatement mThenBlock;
+
+	/**
+	 *
+	 * @param condition a jump expression that represents a simple if-then branching
+	 * @param line where the statement occurs in the original code
+	 * @param parent owning statement or block
+	 */
 	public IfThenStatement(JumpExpression condition, int line, CodeElement parent){
 		super(line, parent);
 		mCondition = condition;
 	}
 
-	public void setThenStatement(Statement thenStatement) {
-		mThenStatement = thenStatement;
+	public void setThenBlock(BlockStatement thenBlock) {
+		mThenBlock = thenBlock;
 	}
 
 	@Override
@@ -33,6 +49,6 @@ public class IfThenStatement extends Statement {
 		buf.setLength(0);
 		buf.append("if (").append(auxWriter.toString()).append(")");
 		writer.append(getTabs()).write(buf.toString());
-		mThenStatement.write(writer);
+		mThenBlock.write(writer);
 	}
 }

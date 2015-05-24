@@ -7,7 +7,26 @@ import org.objectweb.asm.tree.LabelNode;
 
 import java.util.*;
 
+/**
+ * The context of the decompilation of a single method
+ * <p>
+ * The class holds all the information about the current state of the decompilation. It handles the
+ * switching of {@link ExpressionStack}s, facilitates handling of local variables, keeps the reference
+ * to the currently processed node and keeps the information about the position in the bytecode.
+ */
 public class MethodState {
+
+	/**
+	 * Interface that allows receive notifications when the label changes
+	 */
+	public interface OnLabelChangeListener {
+		/**
+		 * Called after the label was set
+		 * @param newLabel label that was just set
+		 */
+		void onLabelChange(int newLabel);
+	}
+
 	private AbstractInsnNode mCurrentNode;
 	private int mCurrentLine;
 	private int mCurrentLabel;
@@ -17,7 +36,6 @@ public class MethodState {
 	private ExpressionStack mStack;
 	private Stack<ExpressionStack> mActiveStacks;
 	private OnLabelChangeListener mOnLabelChangeListener;
-
 	private TryCatchManager mTryCatchManager;
 
 	public MethodState() {
@@ -28,44 +46,76 @@ public class MethodState {
 		mActiveStacks.push(mStack);
 	}
 
+	/**
+	 * @return top-level ExpressionStack
+	 */
 	public ExpressionStack getFinalStack() {
 		return mStack;
 	}
 
+	/**
+	 * Creates a new stack and sets it as active.
+	 * The expressions are automatically being pushed onto the active stack.
+	 * @return the newly created stack
+	 */
 	public ExpressionStack startNewStack() {
 		ExpressionStack newStack = mActiveStacks.peek().getNew();
 		mActiveStacks.push(newStack);
 		return newStack;
 	}
 
+	/**
+	 * @return the active stack, expressions should always be pushed onto active stack
+	 */
 	public ExpressionStack getActiveStack() {
 		return mActiveStacks.peek();
 	}
 
+	/**
+	 * Finishes the currently active stack, the previous stack is used as active
+	 */
 	public void finishStack() {
 		mActiveStacks.pop();
 		ExpressionStack top = mActiveStacks.peek();
 		top.setLineNumber(mCurrentLine);
 	}
 
+	/**
+	 * Replaces the currently active stack with the provided stack
+	 * @param newStack stack to be used as active
+	 */
 	public void replaceActiveStack(ExpressionStack newStack) {
 		finishStack();
 		mActiveStacks.push(newStack);
 	}
 
+	/**
+	 * @return label id of the lastly visited frame
+	 */
 	public int getFrameLabel() {
 		return mFrameLabel;
 	}
 
-	public void setFrameLabel(int frameLabel) {
-		mFrameLabel = frameLabel;
-		getActiveStack().addFrame(frameLabel);
+	/**
+	 * Sets the provided label id as the current frame label
+	 * @param labelId id of the last visited label
+	 */
+	public void setFrameLabel(int labelId) {
+		mFrameLabel = labelId;
+		getActiveStack().addFrame(labelId);
 	}
 
+	/**
+	 * @return last visited label
+	 */
 	public int getCurrentLabel() {
 		return mCurrentLabel;
 	}
 
+	/**
+	 * Updates the current label and adds it to the visited labels
+	 * @param currentLabel currently visited label
+	 */
 	public void updateCurrentLabel(int currentLabel) {
 		mCurrentLabel = currentLabel;
 		getActiveStack().setLabel(currentLabel);
@@ -75,18 +125,33 @@ public class MethodState {
 		}
 	}
 
+	/**
+	 * @param label label id
+	 * @return true if the label is in the visited labels set
+	 */
 	public boolean isLabelVisited(int label) {
 		return mVisitedLabels.contains(label);
 	}
 
+	/**
+	 * @return currently handled node
+	 */
 	public AbstractInsnNode getCurrentNode() {
 		return mCurrentNode;
 	}
 
+	/**
+	 * Sets the current node, should only be used at the setup, to move node use {@link MethodState#moveNode()}
+	 * @param currentNode node
+	 */
 	public void setCurrentNode(AbstractInsnNode currentNode) {
 		mCurrentNode = currentNode;
 	}
 
+	/**
+	 * Moves the current node to the next
+	 * @return the current node after moving
+	 */
 	public AbstractInsnNode moveNode() {
 		if (mCurrentNode != null) {
 			mCurrentNode = mCurrentNode.getNext();
@@ -103,18 +168,23 @@ public class MethodState {
 		mOnLabelChangeListener = onLabelChangeListener;
 	}
 
-	public interface OnLabelChangeListener {
-		void onLabelChange(int newLabel);
-	}
-
 	public TryCatchManager getTryCatchManager() {
 		return mTryCatchManager;
 	}
 
+	/**
+	 * Creates a new instance of {@link TryCatchManager} from provided try-catch blocks
+	 * @param tryCatchBlocks {@link org.objectweb.asm.tree.TryCatchBlockNode}s
+	 */
 	public void setupTryCatchManager(List tryCatchBlocks) {
 		mTryCatchManager = TryCatchManager.newInstance(tryCatchBlocks, mStack);
 	}
 
+	/**
+	 * Adds a local variable at the given position
+	 * @param position variable position
+	 * @param variable variable object
+	 */
 	public void addLocalVariable(int position, LocalVariable variable) {
 		List<LocalVariable> variablesAtPos = mLocalVariables.get(position);
 		if (variablesAtPos == null) {
@@ -131,10 +201,17 @@ public class MethodState {
 		}
 	}
 
+	/**
+	 * @return map with local variables and their positions
+	 */
 	Map<Integer, List<LocalVariable>> getLocalVariables () {
 		return mLocalVariables;
 	}
 
+	/**
+	 * @param position position of the variable
+	 * @return variable at the given position depending on the current position in the code
+	 */
 	public LocalVariable getLocalVariable(int position) {
 		if (mLocalVariables == null || mLocalVariables.isEmpty()) {
 			return null;

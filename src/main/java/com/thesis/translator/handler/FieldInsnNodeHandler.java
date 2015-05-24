@@ -13,6 +13,12 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 
+/**
+ * Handles the {@link FieldInsnNode}
+ * <p>
+ * instructions:
+ * GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
+ */
 public class FieldInsnNodeHandler extends AbstractHandler {
 
 	private static final Logger LOG = Logger.getLogger(FieldInsnNodeHandler.class);
@@ -21,7 +27,6 @@ public class FieldInsnNodeHandler extends AbstractHandler {
 		super(state);
 	}
 
-	//	GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);
@@ -31,7 +36,7 @@ public class FieldInsnNodeHandler extends AbstractHandler {
 		int opCode = node.getOpcode();
 		if (opCode == Opcodes.PUTFIELD) {
 			Expression value = stack.pop();
-			if (!(stack.peek() instanceof PrimaryExpression)) { //TODO expects Primary expression on top because the previous was popped, maybe implementing DUP and POP is necessary
+			if (!(stack.peek() instanceof PrimaryExpression)) { //expects Primary expression on top because the previous was popped, maybe implementing DUP and POP is necessary
 				stack.pop();
 			}
 			PrimaryExpression owner = (PrimaryExpression)stack.pop();

@@ -206,7 +206,7 @@ public class ClassBlock extends Block {
 
 	private void saveInnerClassName(InnerClassNode innerClass) {
 		if (innerClass.innerName != null && innerClass.outerName != null) {
-			Disassembler.getInstance().addInnerClassName(innerClass.name, innerClass.innerName);
+			Util.addInnerClassName(innerClass.name, innerClass.innerName);
 		}
 	}
 

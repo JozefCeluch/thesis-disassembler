@@ -2,9 +2,16 @@ package com.thesis.translator;
 
 import com.thesis.expression.*;
 
-import java.util.List;
 import java.util.Stack;
 
+/**
+ * Enhances the {@link ExpressionStack} to better handle loops
+ * <p>
+ * The class is used to recognize the following patterns:
+ *  - presence of do-while loops
+ *  - presence of break and continue statement
+ *  - general loop detection that was not discovered properly during decompilation (like while(true) loop)
+ */
 public class LoopEnhancer implements StackEnhancer {
 
 	@Override
@@ -21,7 +28,7 @@ public class LoopEnhancer implements StackEnhancer {
 			if (exp instanceof JumpExpression) {
 				int loopStartLabel = stack.get(i).getLabelId();
 				int nextLabel = i < stack.size() - 1 ? stack.get(i+1).getLabelId() : -2;
-				fixLoopDetection((JumpExpression) exp, loopStartLabel, stack.get(i));
+				fixLoopDetection((JumpExpression) exp, loopStartLabel, stack.get(i).getExpression());
 				improveBreakAndContinue((JumpExpression) exp, nextLabel, (JumpExpression) exp);
 			}
 		}
@@ -40,37 +47,40 @@ public class LoopEnhancer implements StackEnhancer {
 		}
 	}
 
-	private void fixLoopDetection(JumpExpression topLevelExp, int loopStartLabel, ExpressionStack.Item stackItem) {
-		if (!(stackItem.getExpression() instanceof JumpExpression) || ((JumpExpression) stackItem.getExpression()).getThenBranch() == null) {
+	private void fixLoopDetection(JumpExpression topLevelExp, int loopStartLabel, Expression stackItem) {
+		if (!(stackItem instanceof JumpExpression) || ((JumpExpression) stackItem).getThenBranch() == null) {
 			return;
 		}
-		JumpExpression expression = ((JumpExpression) stackItem.getExpression());
-		for (ExpressionStack.Item item : expression.getThenBranch().getAll()) {
-			fixLoopDetection(topLevelExp, loopStartLabel, item);
-			if (item.getExpression() instanceof JumpExpression && ((JumpExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
-				topLevelExp.setElseBranchEnd(((JumpExpression) item.getExpression()).getJumpDestination());
+		JumpExpression expression = ((JumpExpression) stackItem);
+		for (int i = 0; i < expression.getThenBranch().size(); i++) {
+			Expression exp = expression.getThenBranch().get(i);
+			fixLoopDetection(topLevelExp, loopStartLabel, exp);
+			if (exp instanceof JumpExpression && ((JumpExpression) exp).getJumpDestination() == loopStartLabel) {
+				topLevelExp.setElseBranchEnd(((JumpExpression) exp).getJumpDestination());
 			}
 		}
 
-		if (((JumpExpression) stackItem.getExpression()).getElseBranch() != null) {
-			for (ExpressionStack.Item item : expression.getElseBranch().getAll()) {
-				fixLoopDetection(topLevelExp, loopStartLabel, item);
-				if (item.getExpression() instanceof JumpExpression && ((JumpExpression) item.getExpression()).getJumpDestination() == loopStartLabel) {
-					topLevelExp.setElseBranchEnd(((JumpExpression) item.getExpression()).getJumpDestination());
+		if (((JumpExpression) stackItem).getElseBranch() != null) {
+			for (int i = 0; i < expression.getElseBranch().size(); i++) {
+				Expression exp = expression.getElseBranch().get(i);
+				fixLoopDetection(topLevelExp, loopStartLabel, exp);
+				if (exp instanceof JumpExpression && ((JumpExpression) exp).getJumpDestination() == loopStartLabel) {
+					topLevelExp.setElseBranchEnd(((JumpExpression) exp).getJumpDestination());
 				}
 			}
 		}
 	}
 
 	private void improveBreakAndContinue(JumpExpression exp, int nextLabel, JumpExpression topLevelExpression) {
-		List<ExpressionStack.Item> thenBranch;
-		List<ExpressionStack.Item> elseBranch;
+		ExpressionStack thenBranch;
+		ExpressionStack elseBranch;
 
 		if (exp.getThenBranch() != null) {
-			thenBranch = exp.getThenBranch().getAll();
-			for (ExpressionStack.Item innerExp : thenBranch) {
-				if (innerExp.getExpression() instanceof JumpExpression) {
-					improveBreakAndContinue((JumpExpression) innerExp.getExpression(), nextLabel, topLevelExpression);
+			thenBranch = exp.getThenBranch();
+			for (int i = 0; i < thenBranch.size(); i++) {
+				Expression innerExp = thenBranch.get(i);
+				if (innerExp instanceof JumpExpression) {
+					improveBreakAndContinue((JumpExpression) innerExp, nextLabel, topLevelExpression);
 				}
 			}
 			addBreak(nextLabel, topLevelExpression, thenBranch);
@@ -78,10 +88,11 @@ public class LoopEnhancer implements StackEnhancer {
 		}
 
 		if (exp.getElseBranch() != null) {
-			elseBranch = exp.getElseBranch().getAll();
-			for (ExpressionStack.Item innerExp : elseBranch) {
-				if (innerExp.getExpression() instanceof JumpExpression) {
-					improveBreakAndContinue((JumpExpression) innerExp.getExpression(), nextLabel, topLevelExpression);
+			elseBranch = exp.getElseBranch();
+			for (int i = 0; i < elseBranch.size(); i++) {
+				Expression innerExp = elseBranch.get(i);
+				if (innerExp instanceof JumpExpression) {
+					improveBreakAndContinue((JumpExpression) innerExp, nextLabel, topLevelExpression);
 				}
 			}
 
@@ -90,11 +101,11 @@ public class LoopEnhancer implements StackEnhancer {
 		}
 	}
 
-	private void addBreak(int nextLabel, JumpExpression topLevelExpression, List<ExpressionStack.Item> branch) {
+	private void addBreak(int nextLabel, JumpExpression topLevelExpression, ExpressionStack branch) {
 		if (branch.isEmpty()) return;
-		ExpressionStack.Item lastItem = branch.get(branch.size() - 1);
-		if (lastItem.getExpression() instanceof UnconditionalJump) {
-			ExpressionStack.Item lastElseBranchItem = branch.get(branch.size() - 1);
+		Expression lastItem = branch.get(branch.size() - 1);
+		if (lastItem instanceof UnconditionalJump) {
+			ExpressionStack.Item lastElseBranchItem = branch.getItem(branch.size() - 1);
 			if (topLevelExpression.isLoop() &&
 					((UnconditionalJump) lastElseBranchItem.getExpression()).getJumpDestination() == nextLabel) {
 				lastElseBranchItem.setExpression(new BreakExpression((UnconditionalJump) lastElseBranchItem.getExpression()));
@@ -103,12 +114,12 @@ public class LoopEnhancer implements StackEnhancer {
 		}
 	}
 
-	private void addContinue(JumpExpression currentExp, JumpExpression topLevelExp, List<ExpressionStack.Item> branch) {
+	private void addContinue(JumpExpression currentExp, JumpExpression topLevelExp, ExpressionStack branch) {
 		if (currentExp.equals(topLevelExp) || branch.isEmpty()) return;
 
-		ExpressionStack.Item topLevelLastItem = topLevelExp.getThenBranch().getAll().get(topLevelExp.getThenBranch().size() - 1);
-		ExpressionStack.Item lastItem = branch.get(branch.size() - 1);
-		if (lastItem.getExpression() instanceof UnconditionalJump && topLevelLastItem.getExpression() instanceof UnconditionalJump) {
+		Expression topLevelLastItem = topLevelExp.getThenBranch().get(topLevelExp.getThenBranch().size() - 1);
+		ExpressionStack.Item lastItem = branch.getItem(branch.size() - 1);
+		if (lastItem.getExpression() instanceof UnconditionalJump && topLevelLastItem instanceof UnconditionalJump) {
 			if (topLevelExp.isLoop() && ((UnconditionalJump) lastItem.getExpression()).getJumpDestination() == topLevelExp.getStartFrameLocation()) {
 				lastItem.setExpression(new ContinueExpression((UnconditionalJump) lastItem.getExpression()));
 			}

@@ -14,6 +14,12 @@ import org.objectweb.asm.tree.TypeInsnNode;
 /**
  * NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
  */
+/**
+ * Handles the {@link TypeInsnNode}
+ * <p>
+ * instructions:
+ * NEW, INSTANCEOF, ANEWARRAY
+ */
 public class TypeInsnNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(TypeInsnNodeHandler.class);
 

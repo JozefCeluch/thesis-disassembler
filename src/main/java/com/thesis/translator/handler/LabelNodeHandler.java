@@ -7,6 +7,9 @@ import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 
+/**
+ * Handles the {@link LabelNode}
+ */
 public class LabelNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(LabelNodeHandler.class);
 

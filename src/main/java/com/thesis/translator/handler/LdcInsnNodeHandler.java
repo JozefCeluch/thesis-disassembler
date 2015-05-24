@@ -10,6 +10,12 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 
+/**
+ * Handles the {@link LdcInsnNode}
+ * <p>
+ * instructions:
+ * LDC
+ */
 public class LdcInsnNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(LdcInsnNodeHandler.class);
 
@@ -17,7 +23,6 @@ public class LdcInsnNodeHandler extends AbstractHandler {
 		super(state);
 	}
 
-	// LDC
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

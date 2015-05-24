@@ -7,6 +7,12 @@ import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 
+/**
+ * Handles the {@link InvokeDynamicInsnNode}
+ * <p>
+ * instructions:
+ * INVOKEDYNAMIC
+ */
 public class InvokeDynamicInsnNodeHandler extends AbstractHandler {
 	private static final Logger LOG = Logger.getLogger(InvokeDynamicInsnNodeHandler.class);
 
@@ -14,7 +20,6 @@ public class InvokeDynamicInsnNodeHandler extends AbstractHandler {
 		super(state);
 	}
 
-	//	INVOKEDYNAMIC
 	@Override
 	public void handle(AbstractInsnNode node) throws IncorrectNodeException {
 		super.handle(node);

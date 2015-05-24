@@ -3,6 +3,7 @@ package com.thesis.file;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,13 +13,12 @@ import static org.junit.Assert.*;
 
 public class ReaderTest {
 
-	private static String TEST_FOLDER = "testData/";
+	private static String TEST_FOLDER = "testData" + File.separator;
     private Reader mReader;
 
     @Before
     public void setUp() throws Exception {
         mReader = new Reader(TEST_FOLDER);
-        mReader.setDirectoryName(TEST_FOLDER);
     }
 
     @Test

@@ -6,6 +6,9 @@ import org.apache.log4j.Logger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FrameNode;
 
+/**
+ * Handles the {@link FrameNode}
+ */
 public class FrameNodeHandler extends AbstractHandler {
 
 	private static final Logger LOG = Logger.getLogger(FrameNodeHandler.class);

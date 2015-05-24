@@ -22,6 +22,14 @@ import static junitparams.JUnitParamsRunner.$;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * The test class for Disassembler. Uses parametrized tests to test similar test files in a single test.
+ * <p>
+ * All tests first compile the provided Java class, then decompile it and compare the result with the expected results.
+ * JavaCompiler API is used for compilation and classes are compiled with the debug information.
+ * Evaluation tests are commented out because there are no expected results for them.
+ * They are used just for visual inspection.
+ */
 @RunWith(value = JUnitParamsRunner.class)
 public class DisassemblerTest {
 
@@ -218,14 +226,5 @@ public class DisassemblerTest {
 			System.out.println("Error closing the file manager");
 		}
 		return result != null && result;
-	}
-
-	private void printLines(String name, InputStream ins) throws IOException{
-		String line;
-		BufferedReader in = new BufferedReader(
-				new InputStreamReader(ins));
-		while ((line = in.readLine()) != null) {
-			System.out.println(name + " " + line);
-		}
 	}
 }

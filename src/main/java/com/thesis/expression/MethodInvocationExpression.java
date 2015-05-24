@@ -55,9 +55,7 @@ public class MethodInvocationExpression extends Expression {
 	@Override
 	public void prepareForStack(ExpressionStack stack) {
 		for(int i = 0; i < mArgumentCount; i++) {
-			Expression argument = stack.pop();
-			setCastType(mArgumentCount - i - 1, argument);
-			mArguments.add(0, argument);
+			mArguments.add(0, stack.pop());
 		}
 		if (!isStatic()) {
 			mOwnerInstance = stack.pop();
@@ -85,19 +83,25 @@ public class MethodInvocationExpression extends Expression {
 		writer.write("(");
 		for(int i = 0; i < mArguments.size(); i++) {
 			writer.append(Util.getCommaIfNeeded(i));
-			mArguments.get(i).write(writer);
+			Expression arg = mArguments.get(i);
+			setArgumentCastType(i, arg);
+			arg.write(writer);
 		}
 		writer.write(")");
 	}
 
-	private void setCastType(int i, Expression arg) {
-		DataType typeFromDesc = mArgTypes.get(i);
+	private void setArgumentCastType(int argumentPosition, Expression arg) {
+		DataType typeFromDesc = mArgTypes.get(argumentPosition);
 		if (typeFromDesc == null || DataType.UNKNOWN.equals(typeFromDesc)) {
 			return;
 		}
-		if (!typeFromDesc.equalsWithoutGeneric(arg.getType())) {
+		if (!typeFromDesc.equalsWithoutGeneric(arg.getType()) && !isValueNull(arg)) {
 			arg.setCastType(typeFromDesc);
 		}
+	}
+
+	private boolean isValueNull(Expression exp) {
+		return exp instanceof ConstantPrimaryExpression && "null".equals(((ConstantPrimaryExpression) exp).getValue());
 	}
 
 	private boolean isStatic() {

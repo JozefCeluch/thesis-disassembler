@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Handles the {@link LookupSwitchInsnNode} and {@link TableSwitchInsnNode}
+ * <p>
+ * instructions:
  * TABLESWITCH, LOOKUPSWITCH
  */
 public class SwitchInsnNodeHandler extends AbstractHandler {

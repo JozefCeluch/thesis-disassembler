@@ -8,6 +8,9 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 
 /**
+ * Handles the {@link MultiANewArrayInsnNode}
+ * <p>
+ * instructions:
  * MULTIANEWARRAY
  */
 public class MultiANewArrayInsnNodeHandler extends AbstractHandler {
