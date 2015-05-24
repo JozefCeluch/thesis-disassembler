@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -55,6 +56,8 @@ public class ClassBlock extends Block {
 	 */
 	private String mBytecode;
 
+	private String mPackage;
+
 	/**
 	 * Constructor
 	 * @param classNode instance of ASM ClassNode that represents a class
@@ -72,6 +75,12 @@ public class ClassBlock extends Block {
 
 		mAnnotations = getSingleLineAnnotations(mClassNode.visibleAnnotations, mClassNode.invisibleAnnotations);
 		mAccessFlags = getAccessFlags();
+		int packageEnd = mClassNode.name.lastIndexOf(File.separator);
+		if (packageEnd > -1) {
+			mPackage = mClassNode.name.substring(0, packageEnd + 1);
+		} else {
+			mPackage = "";
+		}
 		mClassType = DataType.getTypeFromObject(mClassNode.name);
 
 		String genericDeclaration = null;
@@ -190,7 +199,8 @@ public class ClassBlock extends Block {
 			InnerClassNode innerClass = (InnerClassNode) object;
 			if (shouldAddInnerClass(innerClass)) {
 				try {
-					children.add(Disassembler.getInstance().decompileInnerClass(innerClass.name, this));
+					String innerClassName = mPackage.isEmpty() ? innerClass.name : innerClass.name.replace(mPackage, "");
+					children.add(Disassembler.getInstance().decompileInnerClass(innerClassName, this));
 				} catch (DecompilerException e) {
 					children.add(new Statement(new PrimaryExpression(wrapInComment("Classfile of inner class " + innerClass.name + " was not found"),DataType.UNKNOWN), 0, this));
 				}
