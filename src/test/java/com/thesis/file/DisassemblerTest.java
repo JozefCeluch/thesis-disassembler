@@ -208,7 +208,7 @@ public class DisassemblerTest {
 			return null;
 		}
 		System.out.println("COMPILATION SUCCESS: " + name);
-		System.out.println("PARSING: " + name);
+		System.out.println("DECOMPILING: " + name);
 		return disassembler.decompileClassFile(name + ".class").getJavaCode();
 	}
 

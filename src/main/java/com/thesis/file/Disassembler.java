@@ -3,6 +3,7 @@ package com.thesis.file;
 import com.thesis.block.Block;
 import com.thesis.block.ClassBlock;
 import com.thesis.exception.DecompilerException;
+import com.thesis.exception.UnsupportedVersionException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.tree.ClassNode;
@@ -69,13 +70,16 @@ public class Disassembler {
 		return disassembleClass(getClassReader(file), parent);
 	}
 
-	private ClassBlock disassembleClass(ClassReader classReader, Block parent) {
+	private ClassBlock disassembleClass(ClassReader classReader, Block parent) throws UnsupportedVersionException {
 		Writer bytecodeStringWriter = new StringWriter();
 		ClassVisitor classVisitor = new TraceClassVisitor(new PrintWriter(bytecodeStringWriter));
 		classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 
 		ClassNode classNode = new ClassNode();
 		classReader.accept(classNode, ClassReader. EXPAND_FRAMES);
+		if (classNode.version < 51 || classNode.version > 52) {
+			throw new UnsupportedVersionException("Class files of version " + classNode.version + " are not supported");
+		}
 		ClassBlock classBlock = new ClassBlock(classNode, parent);
 
 		classBlock.setBytecode(bytecodeStringWriter.toString());
